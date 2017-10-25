@@ -1,0 +1,60 @@
+3        % nbDepots
+15        % nbCients
+
+
+5        % nbPeriods
+10        % max number of vehicules
+
+
+100        % Capacity of the vehicules
+
+
+200        % Capacity of depots
+70        % Capacity of the clients
+100 100 100         % Fixed cost for opening a depots
+
+
+8 9 20         % Ordering cost at the depots
+0 0 0         % Initial inventory at depot
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0         % Initial inventory at client
+1         % Holding cost at depots (1 per line)
+3
+5
+5         % Holding cost at clients (same for all)
+
+
+6 2 7 2 6       % Demand of clients
+9 6 3 9 2
+9 2 5 2 2 
+2 4 9 4 3 
+6 4 2 3 7
+3 6 1 5 5 
+7 2 1 5 2 
+5 8 3 7 2 
+9 5 4 1 5 
+9 4 3 8 6 
+8 2 1 4 5  
+1 2 9 5 9  
+5 9 9 1 2  
+2 1 1 4 2 
+9 9 7 8 5 
+9 5         % Coordinates of clients, depots and plant
+6 7 
+7 4 
+6 6 
+4 5 
+5 0 
+3 9 
+2 9 
+4 6 
+0 5 
+9 5 
+2 9 
+9 2 
+6 8 
+9 5 
+3 3 
+2 4 
+7 7 
+5 5 
+9999         % Control
