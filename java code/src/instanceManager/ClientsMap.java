@@ -26,7 +26,7 @@ public class ClientsMap extends Layer {
 		// The parameter urban_ratio determines the proportion of clients that belong
 		// to an urban area
 		super(gridSize, nbClients);
-		this.generateClientsMap(citiesSizes, urbanRatio, 1);
+		this.generateClientsMap(citiesSizes, urbanRatio);
 	}
 	
 	/**
@@ -47,13 +47,13 @@ public class ClientsMap extends Layer {
 		super(gridSize, nbClients);
 		this.sites = new Client[this.nbSites];
 		// Compute the location of each client on the map
-		Point2D[] clientsCoords = this.generateClientsMap(citiesSizes, urbanRatio, holdingCost);
+		Point2D[] clientsCoords = this.generateClientsMap(citiesSizes, urbanRatio);
 		// We set the average demand per box as the total demand (avgD/site * nbSites) divided among the number of demand boxes on the map
-		double[][] clientsDemands = this.generateDemands(planningHorizon, period, uniformDistrib, 	((maxD + minD) / 2) * nbSites / (Parameters.nbSteps * Parameters.nbSteps));
+		double[][] clientsDemands = this.generateDemands(planningHorizon, period, uniformDistrib, ((maxD + minD) / 2) * nbSites / (Parameters.nbSteps * Parameters.nbSteps));
 	
 		// Fill the clients array with their respective coordinates and demand sequences
 		for(int sIndex = 0; sIndex < this.nbSites; sIndex++) {
-			this.sites[sIndex] = new Client(clientsCoords[sIndex], clientsDemands[sIndex]);
+			this.sites[sIndex] = new Client(clientsCoords[sIndex], holdingCost, clientsDemands[sIndex], 0, -1);
 		}
 	}
 
@@ -105,10 +105,9 @@ public class ClientsMap extends Layer {
 	 * Fill the clients map with the clients according to the positions of cities
 	 * @param citiesSizes	the sizes of the cities that influence the density of the clients repartition
 	 * @param urbanRatio		the proportion of clients that belong to an urban area
-	 * @param holdingCost	the holding cost of the clients	
 	 * @throws IOException
 	 */
-	private Point2D[] generateClientsMap(double[] citiesSizes, double urbanRatio, double holdingCost) throws IOException {
+	private Point2D[] generateClientsMap(double[] citiesSizes, double urbanRatio) throws IOException {
 		System.out.println("Creating a client with "+ citiesSizes.length + " cities and ur=" + urbanRatio + "...");
 		this.citiesMap = new CitiesMap(this.gridSize, citiesSizes);
 		this.urbanRatio = urbanRatio;

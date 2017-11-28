@@ -146,7 +146,7 @@ public class InstanceCreator extends JDialog implements ActionListener, Property
 					for (int vIter = 0; vIter < vCapacities.length; vIter++) {
 						vCapacities[vIter] = this.vehiclesPane.getCapa();
 					}
-					Instance inst = new Instance(Parameters.grid_size, clientsPane.getHorizon(), dMap, cMap, vCapacities);
+					Instance inst = new Instance(clientsPane.getHorizon(), dMap, cMap, vCapacities);
 					System.out.println(this.clientsPane.getCitySizes().length);
 					System.out.println((int) this.clientsPane.getUrbanRatio());
 					System.out.println("Instances/Layers/Clients/"+this.clientsPane.getCitySizes().length+"_cities/ur"+ ((int) this.clientsPane.getUrbanRatio()));

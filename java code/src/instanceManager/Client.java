@@ -15,9 +15,8 @@ public class Client extends Location{
 	 * @param demands		the sequence of customers' demands faced by the client
 	 * @throws IOException
 	 */
-	public Client(Point2D coordClient, double[] demands) throws IOException{
+	public Client(Point2D coordClient) throws IOException{
 		super(coordClient);
-		this.demands = demands;
 	}
 	
 	/**
