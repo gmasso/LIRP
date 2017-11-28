@@ -34,7 +34,7 @@ import java.text.NumberFormat;
 
 public class InstanceCreator extends JDialog implements ActionListener, PropertyChangeListener {
 	public static final long serialVersionUID = 42L;
-	private double gridSize = 100; // Default number of km for the size of a map
+	
 	private JButton cancelB = new JButton("Cancel");
 	private JButton genB = new JButton("Generate!");
 	private JPanel mapsPane;
@@ -135,9 +135,8 @@ public class InstanceCreator extends JDialog implements ActionListener, Property
 		if(e.getSource() == this.genB) {
 			int nbMaps = (int) this.nbMapsField.getValue();
 			
-			
-			int dMapsIndex = new File("Instances/Layers/Depots").listFiles().length;
-			int cMapsIndex = new File("Instances/Layers/Clients/"+this.clientsPane.getCitySizes().length+"_cities/").listFiles().length;
+			int dMapsIndex = new File("../Instances/Layers/Depots").listFiles().length;
+			int cMapsIndex = new File("../Instances/Layers/Clients/"+this.clientsPane.getCitySizes().length+"_cities/").listFiles().length;
 
 			try {
 				for(int instIndex = 0; instIndex < nbMaps; instIndex++) {

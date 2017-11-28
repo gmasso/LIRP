@@ -21,15 +21,15 @@ import instanceManager.InstanceFilter;
 
 public class InstanceGUI extends JFrame implements ActionListener {
 
-	/**
-	 * Static attributes
+	/*
+	 * STATIC ATTRIBUTES
 	 */
 	private static final long serialVersionUID = 1L;
 
 	static private final String newline = "\n";
 
-	/**
-	 * Class attributes
+	/*
+	 * ATTRIBUTES
 	 */
 	private boolean calledFromSolver = false;
 	private JButton selectButton;

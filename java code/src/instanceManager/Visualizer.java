@@ -66,45 +66,45 @@ public class Visualizer extends javax.swing.JFrame {
 		setVisible(true);
 	}
 
-	private void drawElements(Layer map) {
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-		panel = new JPanel() {
-			/**
-			 * 
-			 */
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public void paintComponent(Graphics g) {
-				super.paintComponent(g);
-				g2d = (Graphics2D) g.create();
-				// Draw clients as blue circles on the map
-				for (int locIndex = 0; locIndex < map.getNbSites(); locIndex++) {
-					Point2D.Double pt = (Point2D.Double) map.getSite(locIndex).getCoordinates();
-					if(map instanceof ClientsMap){
-						g.setColor(Color.BLUE);
-						Ellipse2D dot = new Ellipse2D.Double(pt.x - diam/2, pt.y - diam/2, diam, diam);
-						g2d.fill(dot);
-					}
-					else if(map instanceof DepotsMap) {
-						// Draw depots as red triangles on the map
-						g.setColor(Color.RED);
-						GeneralPath triangle = new GeneralPath(GeneralPath.WIND_EVEN_ODD, 3);
-						triangle.moveTo(pt.x - Math.sqrt(3) * diam / 2, pt.y - diam/2);
-						triangle.lineTo(pt.x, pt.y + diam);
-						triangle.moveTo(pt.x + Math.sqrt(3) * diam / 2, pt.y - diam/2);
-						triangle.closePath();
-						g2d.fill(triangle);
-					}
-					g2d.dispose();
-				}
-			}
-		};
-
-		setContentPane(panel);
-		setBounds(100, 100, 200, 200);
-
-		setVisible(true);
-	}
+//	private void drawElements(Layer map) {
+//		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//
+//		panel = new JPanel() {
+//			/**
+//			 * 
+//			 */
+//			private static final long serialVersionUID = 1L;
+//
+//			@Override
+//			public void paintComponent(Graphics g) {
+//				super.paintComponent(g);
+//				g2d = (Graphics2D) g.create();
+//				// Draw clients as blue circles on the map
+//				for (int locIndex = 0; locIndex < map.getNbSites(); locIndex++) {
+//					Point2D.Double pt = (Point2D.Double) map.getSite(locIndex).getCoordinates();
+//					if(map instanceof ClientsMap){
+//						g.setColor(Color.BLUE);
+//						Ellipse2D dot = new Ellipse2D.Double(pt.x - diam/2, pt.y - diam/2, diam, diam);
+//						g2d.fill(dot);
+//					}
+//					else if(map instanceof DepotsMap) {
+//						// Draw depots as red triangles on the map
+//						g.setColor(Color.RED);
+//						GeneralPath triangle = new GeneralPath(GeneralPath.WIND_EVEN_ODD, 3);
+//						triangle.moveTo(pt.x - Math.sqrt(3) * diam / 2, pt.y - diam/2);
+//						triangle.lineTo(pt.x, pt.y + diam);
+//						triangle.moveTo(pt.x + Math.sqrt(3) * diam / 2, pt.y - diam/2);
+//						triangle.closePath();
+//						g2d.fill(triangle);
+//					}
+//					g2d.dispose();
+//				}
+//			}
+//		};
+//
+//		setContentPane(panel);
+//		setBounds(100, 100, 200, 200);
+//
+//		setVisible(true);
+//	}
 }
