@@ -1,4 +1,4 @@
-package GUI;
+package userInterfaceLIRP;
 
 import java.awt.GridLayout;
 import java.awt.event.ItemEvent;

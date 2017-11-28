@@ -1,4 +1,4 @@
-package GUI;
+package userInterfaceLIRP;
 
 import javax.swing.JPanel;
 

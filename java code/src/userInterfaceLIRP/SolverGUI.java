@@ -1,4 +1,4 @@
-package GUI;
+package userInterfaceLIRP;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -27,8 +27,8 @@ import solverLIRP.Solver;
 
 public class SolverGUI extends JFrame implements ActionListener {
 
-	/**
-	 * 
+	/*
+	 * STATIC ATTRIBUTES
 	 */
 	private static final long serialVersionUID = 1L;
 	

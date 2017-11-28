@@ -1,4 +1,4 @@
-package GUI;
+package userInterfaceLIRP;
 
 import java.awt.BorderLayout;
 import java.awt.Insets;
