@@ -4,7 +4,6 @@ import java.util.Scanner;
 
 public class Instance {
 
-	/*sdkgjbqskdjbgkqsdbfkljqsbdf*/
 	private int nbDepots;
 	private int nbPeriods;
 	private int nbClients; 
@@ -116,7 +115,7 @@ public class Instance {
 	 *****************************************/
 
 	/**
-	 * Constructeur d'une instance à partir d'un fichier de données
+	 * Constructeur d'une instance ï¿½ partir d'un fichier de donnï¿½es
 	 * @param nomFichier
 	 * @throws IOException
 	 */
