@@ -4,6 +4,7 @@ import java.util.Scanner;
 
 public class Instance {
 
+	/*sdkgjbqskdjbgkqsdbfkljqsbdf*/
 	private int nbDepots;
 	private int nbPeriods;
 	private int nbClients; 
