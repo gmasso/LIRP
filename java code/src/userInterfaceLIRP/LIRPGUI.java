@@ -4,14 +4,17 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.KeyStroke;
 
-public class MainGUI {
+public class LIRPGUI {
 
 	public JMenuBar createMenuBar() {
 		/* Create the menu bar */
@@ -23,21 +26,47 @@ public class MainGUI {
 
 		/* Add the instances menu */
 		JMenu menuInst = new JMenu("Instances");
-	    menuInst.setMnemonic(KeyEvent.VK_A);
+	    menuInst.setMnemonic(KeyEvent.VK_I);
         menuInst.getAccessibleContext().setAccessibleDescription(
                 "Access the instance manager");
 
         //a group of JMenuItems
         JMenuItem menuItem = new JMenuItem("Select an existing LIRP instance",
-                                 KeyEvent.VK_T);
+                                 KeyEvent.VK_E);
         menuItem.setAccelerator(KeyStroke.getKeyStroke(
-                KeyEvent.VK_1, ActionEvent.ALT_MASK));
+                KeyEvent.VK_E, ActionEvent.ALT_MASK));
         menuItem.getAccessibleContext().setAccessibleDescription(
                 "Select one or several LIRP instances");
         menuInst.add(menuItem);
         
-		/* Add the LIRP menu */
+		/* Add the Solver menu */
 		JMenu menuSolver = new JMenu("Solver");
+	    menuSolver.setMnemonic(KeyEvent.VK_S);
+        menuSolver.getAccessibleContext().setAccessibleDescription(
+                "Choose solver options");
+		ButtonGroup modelGroup = new ButtonGroup();
+		
+		/* Choose between model 1 and model 2 */
+		JRadioButtonMenuItem mod1MenuItem = new JRadioButtonMenuItem("Model 1 (direct-loop)");
+        mod1MenuItem.setSelected(true);
+		mod1MenuItem.setMnemonic(KeyEvent.VK_1);
+        modelGroup.add(mod1MenuItem);
+        menuSolver.add(mod1MenuItem);
+        
+		JRadioButtonMenuItem mod2MenuItem = new JRadioButtonMenuItem("Model 2 (loop-direct)");
+		mod2MenuItem.setMnemonic(KeyEvent.VK_2);
+        modelGroup.add(mod2MenuItem);
+        menuSolver.add(mod2MenuItem);
+
+        /* Decide which ampling methods to use to use */
+        menuSolver.addSeparator();
+        JCheckBoxMenuItem cbRouteSampling = new JCheckBoxMenuItem("Use the route sampling method");
+        cbRouteSampling.setMnemonic(KeyEvent.VK_R);
+        menuSolver.add(cbRouteSampling);
+
+        JCheckBoxMenuItem cbZoneSampling = new JCheckBoxMenuItem("Use the zone sampling method");
+        cbZoneSampling.setMnemonic(KeyEvent.VK_Z);
+        menuSolver.add(cbZoneSampling);
 
 		menuBar.add(menuLIRP);
 		menuBar.add(menuInst);
@@ -60,11 +89,11 @@ public class MainGUI {
      */
     private static void createAndShowGUI() {
         //Create and set up the window.
-        JFrame frame = new JFrame("LIRP");
+        JFrame frame = new JFrame("LIRP Project");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
  
         //Create and set up the content pane.
-        MainGUI lirpGUI = new MainGUI();
+        LIRPGUI lirpGUI = new LIRPGUI();
         frame.setJMenuBar(lirpGUI.createMenuBar());
         frame.setContentPane(lirpGUI.createContentPane());
  
