@@ -1,21 +1,32 @@
 package userInterfaceLIRP;
 
 import java.awt.BorderLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 
 public class LIRPGUI {
 
+	/*
+	 * ATTRIBUTES
+	 */
+	private DefaultListModel<String> instList = new DefaultListModel<>();
+	private JList<String> fList;
+	
 	public JMenuBar createMenuBar() {
 		/* Create the menu bar */
 		JMenuBar menuBar = new JMenuBar();
@@ -67,7 +78,7 @@ public class LIRPGUI {
         JCheckBoxMenuItem cbZoneSampling = new JCheckBoxMenuItem("Use the zone sampling method");
         cbZoneSampling.setMnemonic(KeyEvent.VK_Z);
         menuSolver.add(cbZoneSampling);
-
+ 
 		menuBar.add(menuLIRP);
 		menuBar.add(menuInst);
 		menuBar.add(menuSolver);
@@ -77,6 +88,25 @@ public class LIRPGUI {
 	
 	public JPanel createContentPane() {
 		JPanel contentPane = new JPanel(new BorderLayout());
+		
+		this.instList.addElement("an instance");
+		this.fList = new JList<> (instList);
+		JScrollPane scrollPane = new JScrollPane(fList);
+		
+		JPanel buttonPanel = new JPanel(new GridLayout(1,4));
+		
+		JButton visualizeButton = new JButton("Visualize");
+		JButton solveSelectButton = new JButton("Solve selection");
+		JButton solveAllButton = new JButton("Solve all");
+		JButton cancelButton = new JButton("Cancel");
+		
+		buttonPanel.add(visualizeButton);
+		buttonPanel.add(solveSelectButton);
+		buttonPanel.add(solveAllButton);
+		buttonPanel.add(cancelButton);
+		
+		contentPane.add(scrollPane);
+		contentPane.add(buttonPanel,  BorderLayout.SOUTH);
 		contentPane.setOpaque(true);
 		
 		return contentPane;
@@ -98,7 +128,7 @@ public class LIRPGUI {
         frame.setContentPane(lirpGUI.createContentPane());
  
         //Display the window.
-        frame.setSize(450, 600);
+        frame.setSize(600, 400);
         frame.setVisible(true);
     }
  

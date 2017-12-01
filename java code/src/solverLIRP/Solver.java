@@ -13,26 +13,22 @@ import ilog.cplex.IloCplex;
 import ilog.cplex.IloCplex.DoubleParam;
 
 import instanceManager.Instance;
+import instanceManager.Parameters;
 
 public class Solver{
-	// TIME LIMIT FOR THE SOLVER
-	private static final double TimeLimit = 1000;  // in seconds
-	//---------------------------------------------------
 
 	public static Solution solve(Instance LIRPInstance, Route[] availableRoutes, PrintStream printStreamSol) throws IloException {
 
-		/**************************************
-		 **************** DATA ***************
-		 **************************************/
+		/* Data */
 		int nbClients = LIRPInstance.getNbClients();  // number of clients
 		int nbDepots = LIRPInstance.getNbDepots();  // number of depots
 		int nbPeriods = LIRPInstance.getNbPeriods(); // number of periods
 		int nbRoutes = availableRoutes.length;  // number of routes
 
-		// Definition of parameters Alpha and Beta
+		/* Definition of parameters Alpha and Beta */
 		int[][] Alpha = new int[nbClients][nbRoutes]; // = 1 if client i is in route r
 		int[][] Beta = new int[nbDepots][nbRoutes]; // = 1 if depot j is in route r
-		// Fill the two arrays by checking for each route which clients and which depots it contains
+		/* Fill the two arrays by checking for each route which clients and which depots it contains */
 		for(int rIter=0; rIter<nbRoutes; rIter++) {
 			for(int cIter=0; cIter<nbClients; cIter++)
 				Alpha[cIter][rIter] = availableRoutes[rIter].containsLocation(LIRPInstance.getClient(cIter)) ? 1 : 0;
@@ -40,28 +36,24 @@ public class Solver{
 				Beta[dIter][rIter] = availableRoutes[rIter].containsLocation(LIRPInstance.getDepot(dIter)) ? 1 : 0;
 		}
 
-		/**************************************
-		 ************ CPLEX SOLVER ************
-		 **************************************/
+		/* CPLEX solver */
 		IloCplex LIRPSolver = new IloCplex();
 		// Set the time limit
-		LIRPSolver.setParam(DoubleParam.TiLim, TimeLimit);
+		LIRPSolver.setParam(DoubleParam.TiLim, Parameters.TimeLimit);
 
-		/**************************************
-		 ************** VARIABLES *************
-		 **************************************/
-		// Boolean variables
+		/* Variables */
+		/* Boolean */
 		IloIntVar[] y = LIRPSolver.boolVarArray(nbDepots);  // facility location variables (depots)
 		// Integer variables
 		IloIntVar[][] z = new IloIntVar[nbRoutes][nbPeriods];  // = 1 if route r is used on period t
 		IloIntVar[][] x = new IloIntVar[nbDepots][nbPeriods];   // = 1 is depot j is delivered on period t
-		// Continuous variables
+		/* Continuous */
 		IloNumVar[][] q = new IloNumVar[nbDepots][nbPeriods]; 	// quantity delivered to depot j in period t
 		IloNumVar[][][] u = new IloNumVar[nbClients][nbRoutes][nbPeriods]; // quantity delivered by route r to client i on period t
 		IloNumVar[][] InvClients = new IloNumVar[nbClients][nbPeriods]; // inventory  at clients
 		IloNumVar[][] InvDepots = new IloNumVar[nbDepots][nbPeriods]; // inventory at depots
 
-		// Initialization of the variables
+		/* Initialization */
 		for(int t = 0; t < nbPeriods; t++) {
 			for(int rIter = 0; rIter < nbRoutes; rIter++)
 				z[rIter][t] = LIRPSolver.boolVar();
@@ -77,11 +69,9 @@ public class Solver{
 			}
 		}
 
-		/**************************************
-		 ************* CONSTRAINTS ************
-		 **************************************/	
+		/* Constraints */	
 		for (int t = 0; t < nbPeriods; t++) {
-			// Client is served by at most one route in every period (2)
+			/* Client is served by at most one route in every period (2) */
 			for (int cIter = 0; cIter < nbClients; cIter++) {
 				IloLinearNumExpr expr2 = LIRPSolver.linearNumExpr();
 				for (int rIter = 0; rIter < nbRoutes; rIter++) {
@@ -90,18 +80,18 @@ public class Solver{
 				LIRPSolver.addLe(expr2, 1);
 			}
 			for(int dIter = 0; dIter < nbDepots; dIter++) {
-				// Capacity constraint between the plant and depots (3)
+				/* Capacity constraint between the plant and depots (3) */
 				IloLinearNumExpr expr3 = LIRPSolver.linearNumExpr();
 				expr3.addTerm(1, q[dIter][t]);
 				expr3.addTerm(-LIRPInstance.getCapacityVehicle(0), x[dIter][t]);
 				LIRPSolver.addLe(expr3, 0);
-				// Delivering only open depots (4)
+				/* Delivering only open depots (4) */
 				IloLinearIntExpr expr4 = LIRPSolver.linearIntExpr();
 				expr4.addTerm(1, x[dIter][t]);
 				expr4.addTerm(-1, y[dIter]);
 				LIRPSolver.addLe(expr4, 0);
 			}
-			// Capacity constraint of the vehicle delivering to the clients (5)
+			/* Capacity constraint of the vehicle delivering to the clients (5) */
 			for (int rIter = 0; rIter < nbRoutes; rIter++) {
 				IloLinearNumExpr expr5 = LIRPSolver.linearNumExpr();
 				for (int cIter = 0; cIter < nbClients; cIter++) {
@@ -110,12 +100,12 @@ public class Solver{
 				expr5.addTerm(-LIRPInstance.getCapacityVehicle(0), z[rIter][t]);
 				LIRPSolver.addLe(expr5, 0);
 			}
-			// Maximum number of vehicles between available for delivery (6)		
+			/* Maximum number of vehicles between available for delivery (6) */		
 			IloLinearNumExpr expr6 = LIRPSolver.linearNumExpr();
 			for (int rIter = 0; rIter < nbRoutes; rIter++)
 				expr6.addTerm(1, z[rIter][t]);
 			LIRPSolver.addLe(expr6, LIRPInstance.getNbVehicles());
-			// Only the routes with an open depot as a starting point exist (7)
+			/* Only the routes with an open depot as a starting point exist (7) */
 			for (int rIter = 0; rIter < nbRoutes; rIter++) {
 				IloLinearNumExpr expr7 = LIRPSolver.linearNumExpr();
 				expr7.addTerm(1, z[rIter][t]);
@@ -124,7 +114,7 @@ public class Solver{
 				}
 				LIRPSolver.addLe(expr7, 0);
 			}
-			// Flow conservation at the depots (8)
+			/* Flow conservation at the depots (8) */
 			for(int dIter = 0; dIter < nbDepots; dIter++) {
 				IloLinearNumExpr expr8 = LIRPSolver.linearNumExpr();
 				expr8.addTerm(1, InvDepots[dIter][t]);
@@ -140,7 +130,7 @@ public class Solver{
 				}
 				LIRPSolver.addEq(expr8, rhs8);
 			}
-			// Flow conservation at the clients (9)
+			/* Flow conservation at the clients (9) */
 			for (int cIter = 0; cIter < nbClients; cIter++){
 				IloLinearNumExpr expr9 = LIRPSolver.linearNumExpr();
 				expr9.addTerm(1, InvClients[cIter][t]);

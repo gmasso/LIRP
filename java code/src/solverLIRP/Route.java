@@ -31,6 +31,19 @@ public class Route {
 		this.stopsPermutation = bruteForceFindBestRoute(new ArrayList<Integer>(), startingPermutation);
 		this.cost = computeCost(this.stopsPermutation);
 	}
+	
+	/**
+	 * Create a Route object from the coordinates of a start point and a stop point (direct route only)
+	 * @param start, stop
+	 * @throws IOException
+	 */
+	public Route(Location start, Location stop) throws IOException {
+		this.start = start;
+		this.stops = new Location[0];
+		this.stops[0] = stop;
+		this.stopsPermutation.add(0); 
+		this.cost = computeCost(this.stopsPermutation);
+	}
 
 
 	/*
@@ -61,22 +74,6 @@ public class Route {
 	}
 
 	/**
-	 * Check if the contains a given location
-	 * @param loc	the location of interest
-	 * @return		true if the route contains the location, false otherwise
-	 */
-	public boolean containsLocation(Location loc) {
-		// Start by checking if loc is the starting point of the route
-		boolean inRoute = (loc==this.start);
-		int stopsIter = 0;
-		// Loop through the stops and update inRoute if one corresponds to loc
-		while(!inRoute && stopsIter < stops.length) {
-			inRoute = (loc == stops[stopsIter]);
-		}
-		return inRoute;
-	}
-	
-	/**
 	 * Get the position of a given stop
 	 * @param stopIndex	the index of a location of interest along the route
 	 * @return			the index of the corresponding stop in the sequence
@@ -92,10 +89,37 @@ public class Route {
 	public double getCost() {
 		return this.cost;
 	}
+	
+	/*
+	 * MUTATORS
+	 */
+	/**
+	 * Increase the cost of a route with a fixed orderin cost
+	 * @param OC
+	 */
+	public void addToCost(double OC) {
+		this.cost += OC;
+	}
 
 	/*
 	 * METHODS
 	 */	
+	/**
+	 * Check if the contains a given location
+	 * @param loc	the location of interest
+	 * @return		true if the route contains the location, false otherwise
+	 */
+	public boolean containsLocation(Location loc) {
+		// Start by checking if loc is the starting point of the route
+		boolean inRoute = (loc==this.start);
+		int stopsIter = 0;
+		// Loop through the stops and update inRoute if one corresponds to loc
+		while(!inRoute && stopsIter < stops.length) {
+			inRoute = (loc == stops[stopsIter]);
+		}
+		return inRoute;
+	}
+
 	/**
 	 * Compute the best permutation of the stops to minimize the cost of the route (brute force)
 	 * @param partialPermutation	the current permutation of the stops in the route

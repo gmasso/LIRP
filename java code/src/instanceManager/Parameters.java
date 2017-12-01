@@ -51,4 +51,10 @@ public final class Parameters {
 	public static double epsilon = 0.000001; // Precision for the constraints
 	public static final double TimeLimit = 1000;  // Time limit for the solver in seconds
 	
+	public enum typeModel {
+			direct_direct,
+			direct_loop,
+			loop_direct,
+			loop_loop	
+		}
 }
