@@ -22,7 +22,7 @@ public class Depot extends Location{
 	public Depot(Point2D coordDepot, Location supplier) throws IOException{
 		super(coordDepot);
 		this.fixedCost = 0;
-		this.orderingCost = this.getDistance(supplier);;
+		this.orderingCost = 0;
 	}
 	
 	/**
@@ -39,7 +39,6 @@ public class Depot extends Location{
 		super(coordDepot, holdingCost, initialInventory, capacity);
 		this.fixedCost = fixedCost;
 		this.orderingCost = (orderingCost>0) ? orderingCost : 0;
-		this.orderingCost += this.getDistance(supplier);
 	}	
 	
 	/**
@@ -50,7 +49,7 @@ public class Depot extends Location{
 	public Depot(JSONObject jsonDepot) throws IOException {
 		super(jsonDepot);
 		this.fixedCost = jsonDepot.isNull("fc") ? 0 : jsonDepot.getDouble("fc"); // Fixed cost for opening this depot
-		this.orderingCost = jsonDepot.isNull("oc") ? -1 : jsonDepot.getDouble("oc"); // Fixed ordering cost of the depot
+		this.orderingCost = jsonDepot.isNull("oc") ? 0 : jsonDepot.getDouble("oc"); // Fixed ordering cost of the depot
 	}
 	
 	/*

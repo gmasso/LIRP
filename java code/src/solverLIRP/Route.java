@@ -29,7 +29,7 @@ public class Route {
 		for(int i=0; i < stops.length; i++)
 			startingPermutation.add(i);
 		this.stopsPermutation = bruteForceFindBestRoute(new ArrayList<Integer>(), startingPermutation);
-		this.cost = computeCost(this.stopsPermutation);
+		this.cost = Parameters.fixed_cost_route + (Parameters.cost_km / Parameters.avg_speed) * computeDuration(this.stopsPermutation);
 	}
 	
 	/**
@@ -42,7 +42,7 @@ public class Route {
 		this.stops = new Location[0];
 		this.stops[0] = stop;
 		this.stopsPermutation.add(0); 
-		this.cost = computeCost(this.stopsPermutation);
+		this.cost = Parameters.fixed_cost_route + (Parameters.cost_km / Parameters.avg_speed) * computeDuration(this.stopsPermutation);
 	}
 
 
@@ -132,11 +132,11 @@ public class Route {
 		ArrayList<Integer> bestRoute = new ArrayList<Integer>(partialPermutation);
 		// Add all the remaining stops to the candidate as they appear in the stopsNotInRoute
 		bestRoute.addAll(indicesNotInRoute);
-		double bestCost = computeCost(bestRoute);
+		double bestCost = computeDuration(bestRoute);
 
 		// If the start of the route is already greater than the maximum time allowed, 
 		// stop computations and return the current candidate
-		if(computeCost(partialPermutation) > Parameters.max_time_route)
+		if(computeDuration(partialPermutation) + Parameters.stopping_time * partialPermutation.size() > Parameters.max_time_route)
 			return bestRoute;
 		
 		// If there are stops that are not included in the route, try to add them one by one
@@ -151,7 +151,7 @@ public class Route {
 
 				// Compute the best remaining route
 				ArrayList<Integer> permutationCandidate = bruteForceFindBestRoute(newPartialPermutation, indicesNotInRoute);
-				double costCandidate = computeCost(permutationCandidate);
+				double costCandidate = computeDuration(permutationCandidate) + Parameters.stopping_time * permutationCandidate.size();
 				// Compare its cost with the current best cost and update the best route if necessary
 				if(costCandidate < Parameters.max_time_route && costCandidate < bestCost) {
 					bestRoute = permutationCandidate;
@@ -170,25 +170,26 @@ public class Route {
 	 * @param stopsIndices	the permutation of the stops
 	 * @return				the cost incurred by the sequence stopsIndices
 	 */
-	private double computeCost(ArrayList<Integer> stopsIndices) {
+	private double computeDuration(ArrayList<Integer> stopsIndices) {
 		// Start with a time of 0 for the route
-		double time_route = 0;
+		double travel_time = 0;
+		double stops_time = Parameters.stopping_time * stopsIndices.size();
 		// Set the current stop at the starting point
 		Location currentStop = this.start;
 		
 		int nextIndex;
 		Location nextStop;
         Iterator<Integer> indexIterator = stopsIndices.iterator();
-		// Iterate through the indices of the stops and increment the cost with the time necessary to reach the next stop and the average time spent at the stop 
-        while (time_route < Parameters.max_time_route && indexIterator.hasNext()) {
+        // Iterate through the indices of the stops and increment the cost with the time necessary to reach the next stop and the average time spent at the stop 
+        while (travel_time + stops_time < Parameters.max_time_route && indexIterator.hasNext()) {
         	nextIndex = indexIterator.next();
         	nextStop = this.stops[nextIndex];
-			time_route += Parameters.stopping_time + Parameters.avg_speed * currentStop.getDistance(nextStop);
-			currentStop = nextStop;
+        	travel_time += Parameters.avg_speed * currentStop.getDistance(nextStop);
+        	currentStop = nextStop;
         }
         // Add the time to return to the starting point of the route
-		time_route += Parameters.avg_speed * currentStop.getDistance(this.start);
-		return time_route;
+		travel_time += Parameters.avg_speed * currentStop.getDistance(this.start);
+		return travel_time;
 	}
 }
 

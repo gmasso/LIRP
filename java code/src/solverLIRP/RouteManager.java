@@ -8,7 +8,6 @@ import instanceManager.Depot;
 import instanceManager.Instance;
 import instanceManager.Location;
 import instanceManager.Parameters;
-import instanceManager.Parameters;
 
 public class RouteManager {
 
@@ -42,17 +41,29 @@ public class RouteManager {
 		}
 		
 		/* Get an upper bound on the maximum number of stops in a route */
-		int maxNbStops = (int) Math.floor(Parameters.max_time_route/Parameters.stopping_time);
+		int maxNbStops = (int) Math.ceil(Parameters.max_time_route/Parameters.stopping_time);
 		
 		/* If the stopping time is too long to include multi-stops routes, stop here */
-		if(maxNbStops < 2) {
+		if(maxNbStops < 3) {
 			loopSD = null;
 			loopDC = null;
 		}
+		/* If the stopping time is small enough, build the multi-stops routes for this instance */
 		else {
+			ArrayList<Route> routesSDToAdd = new ArrayList<Route>();
+			for(int nbStops = 2; nbStops < maxNbStops; nbStops++) {
+				/* Compute the remaining time that can be used to travel */
+				double remainingTime = Parameters.max_time_route - nbStops * Parameters.stopping_time;
 			
+				ArrayList<Route> routesDCToAdd = new ArrayList<Route>();
+
+				for (int cIndex = 0; cIndex < nbClients; cIndex++) {
+					
+				}
+			}
 		}
-		ArrayList<Route> routesToAdd = new ArrayList<Route>();
+		routesToAdd.add(new Route(supplier, ))
+		{
 	}
 
 	/*
@@ -74,6 +85,24 @@ public class RouteManager {
 			break;
 		default: 
 			break;
+		}
+	}
+
+	/*
+	 * METHODS
+	 */
+	private int[] computeStops(int[] assignedStops, int remainingStops, int startingIndex, int endIndex) {
+		if(endIndex - startingIndex < remainingStops)
+			return null;
+		else if(endIndex - startingIndex == remainingStops) {
+			for(int index = remainingStops;  index > 0; index--) {
+				assignedStops[assignedStops.length - index] = endIndex - index;
+			}
+			return assignedStops;
+		}
+			else {
+				
+			}
 		}
 	}
 }
