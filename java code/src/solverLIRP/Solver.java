@@ -17,7 +17,7 @@ import instanceManager.Parameters;
 
 public class Solver{
 
-	public static Solution solve(Instance LIRPInstance, Route[] availableRoutes, PrintStream printStreamSol) throws IloException {
+	public static Solution solve(Instance LIRPInstance, RouteManager availableRoutes, PrintStream printStreamSol) throws IloException {
 
 		/* Data */
 		int nbClients = LIRPInstance.getNbClients();  // number of clients

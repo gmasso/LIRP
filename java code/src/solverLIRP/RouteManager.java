@@ -103,5 +103,17 @@ public class RouteManager {
 		}	
 		return new int[10];
 	}
+	
+	/**
+	 * 
+	 * @param splitParam	the maximum number of routes in a subset
+	 * @return			an array of RouteManager objects with no more than splitParam routes in each loop arrays
+	 */
+	public RouteManager[] sampleRoutes(int splitParam){
+		int nbManagers = (int) Math.ceil(this.loopSD.length / splitParam);
+		RouteManager[] resultRManagers = new RouteManager[nbManagers];
+		
+		return resultRManagers;
+	}
 
 }
