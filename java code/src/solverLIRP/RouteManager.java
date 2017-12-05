@@ -54,7 +54,7 @@ public class RouteManager {
 			for(int nbStops = 2; nbStops < maxNbStops; nbStops++) {
 				/* Compute the remaining time that can be used to travel */
 				double remainingTime = Parameters.max_time_route - nbStops * Parameters.stopping_time;
-			
+				
 				ArrayList<Route> routesDCToAdd = new ArrayList<Route>();
 
 				for (int cIndex = 0; cIndex < nbClients; cIndex++) {
@@ -62,14 +62,12 @@ public class RouteManager {
 				}
 			}
 		}
-		routesToAdd.add(new Route(supplier, ))
-		{
 	}
 
 	/*
 	 * ACCESSORS
 	 */
-	public getRoutes(Parameters.typeModel model) {
+	public void getRoutes(Parameters.typeModel model) {
 		switch (model) {
 		case direct_direct:
 			loopSD = null;
@@ -100,9 +98,10 @@ public class RouteManager {
 			}
 			return assignedStops;
 		}
-			else {
-				
-			}
-		}
+		else {
+
+		}	
+		return new int[10];
 	}
+
 }

@@ -28,7 +28,12 @@ public class Route {
 		ArrayList<Integer> startingPermutation = new ArrayList<Integer>();
 		for(int i=0; i < stops.length; i++)
 			startingPermutation.add(i);
-		this.stopsPermutation = bruteForceFindBestRoute(new ArrayList<Integer>(), startingPermutation);
+		
+		if(this.getLB() > Parameters.max_time_route)
+			this.stopsPermutation = startingPermutation;
+		else
+			this.stopsPermutation = bruteForceFindBestRoute(new ArrayList<Integer>(), startingPermutation);
+
 		this.cost = Parameters.fixed_cost_route + (Parameters.cost_km / Parameters.avg_speed) * computeDuration(this.stopsPermutation);
 	}
 	
@@ -164,7 +169,24 @@ public class Route {
 		return bestRoute;
 	}
 	
-	// Compute the cost of the route for the sequence of stops contained in routeStops
+	/**
+	 * 
+	 * @return	the lower bound on the duration of the road (longest triangle route between the start and two stops, plus the stop durations)
+	 */
+	private double getLB() {
+		/* Initialize the lower bound to the cumulative duration of the stops */
+		double stopsTime = this.stops.length * Parameters.stopping_time;
+		double travelTime = 0;
+				
+		for(int stop1 = 0; stop1 < this.stops.length - 1; stop1++)
+			for(int stop2 = stop1 + 1; stop2 < this.stops.length; stop2++) {
+				double tt = this.start.getDistance(this.stops[stop1]) + this.start.getDistance(this.stops[stop2]) + this.stops[stop1].getDistance(this.stops[stop2]);
+				travelTime = (tt > travelTime) ? tt : travelTime;
+			}
+				
+		return stopsTime + travelTime;
+	}
+	
 	/**
 	 * Compute the cost of the route associated with a given permutation
 	 * @param stopsIndices	the permutation of the stops
@@ -172,8 +194,8 @@ public class Route {
 	 */
 	private double computeDuration(ArrayList<Integer> stopsIndices) {
 		// Start with a time of 0 for the route
-		double travel_time = 0;
-		double stops_time = Parameters.stopping_time * stopsIndices.size();
+		double travelTime = 0;
+		double stopsTime = Parameters.stopping_time * stopsIndices.size();
 		// Set the current stop at the starting point
 		Location currentStop = this.start;
 		
@@ -181,15 +203,15 @@ public class Route {
 		Location nextStop;
         Iterator<Integer> indexIterator = stopsIndices.iterator();
         // Iterate through the indices of the stops and increment the cost with the time necessary to reach the next stop and the average time spent at the stop 
-        while (travel_time + stops_time < Parameters.max_time_route && indexIterator.hasNext()) {
+        while (travelTime + stopsTime < Parameters.max_time_route && indexIterator.hasNext()) {
         	nextIndex = indexIterator.next();
         	nextStop = this.stops[nextIndex];
-        	travel_time += Parameters.avg_speed * currentStop.getDistance(nextStop);
+        	travelTime += Parameters.avg_speed * currentStop.getDistance(nextStop);
         	currentStop = nextStop;
         }
         // Add the time to return to the starting point of the route
-		travel_time += Parameters.avg_speed * currentStop.getDistance(this.start);
-		return travel_time;
+		travelTime += Parameters.avg_speed * currentStop.getDistance(this.start);
+		return travelTime;
 	}
 }
 
