@@ -154,7 +154,7 @@ public class Route {
 	 */
 	public boolean containsLocation(Location loc) {
 		// Start by checking if loc is the starting point of the route
-		boolean inRoute = (loc==this.start);
+		boolean inRoute = (loc == this.start);
 		int stopsIter = 0;
 		// Loop through the stops and update inRoute if one corresponds to loc
 		while(!inRoute && stopsIter < stops.length) {

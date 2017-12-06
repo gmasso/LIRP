@@ -31,12 +31,24 @@ public class RouteManager {
 		this.populateLoops(instLIRP);
 	}
 	
-	public RouteManager(RouteManager rm, ArrayList<Route> loopSD, ArrayList<Route> loopDC) {
+	/**
+	 * Create a new RouteManager object from an existing one, changing the multi-stops routes
+	 * @param rm			the RouteManager object from which the new RouteManager is created
+	 * @param loopSD		the 
+	 * @param loopDC
+	 */
+	public RouteManager(RouteManager rm, int[] loopSDIndices, int[] loopDCIndices) {
 		this.directSD = rm.getDirectSDRoutes();
 		this.directDC = rm.getDirectDCRoutes();
 		
-		this.loopSD = loopSD;
-		this.loopDC = loopDC;
+		this.loopSD = new ArrayList<Route>();
+		for(int routeSDIter = 0; routeSDIter < loopSDIndices.length; routeSDIter++) {
+			this.loopSD.add(rm.getLoopSDRoutes().get(routeSDIter));
+		}
+		this.loopDC = new ArrayList<Route>();
+		for(int routeDCIter = 0; routeDCIter < loopDCIndices.length; routeDCIter++) {
+			this.loopDC.add(rm.getLoopDCRoutes().get(routeDCIter));
+		}
 	}
 
 	/*
@@ -66,6 +78,7 @@ public class RouteManager {
 		
 		return this.loopSD;
 	}
+	
 	/**
 	 * 
 	 * @return	the ArrayList of multi-stops routes from the supplier to the depots
@@ -74,6 +87,42 @@ public class RouteManager {
 		return this.loopDC;
 	}
 
+	/**
+	 * 
+	 * @return	an array containing of all Route objects in the route manager from the supplier to the depots
+	 */
+	public Route[] getSDRoutes() {
+		Route[] routesSD = new Route[this.directSD.size() + this.directDC.size() + this.loopSD.size() + this.loopDC.size()];
+		
+		for(int directSDIter = 0; directSDIter < this.directSD.size(); directSDIter++) {
+			routesSD[directSDIter] = this.directSD.get(directSDIter);
+		}
+
+		for(int loopSDIter = 0; loopSDIter < this.loopSD.size(); loopSDIter++) {
+			routesSD[this.loopSD.size() + loopSDIter] = this.loopSD.get(loopSDIter);
+		}
+
+		return routesSD;
+	}
+	
+	/**
+	 * 
+	 * @return	an array containing of all Route objects in the route manager from depots to clients
+	 */
+	public Route[] getDCRoutes() {
+		Route[] routesDC = new Route[this.directDC.size() + this.directDC.size() + this.loopDC.size() + this.loopDC.size()];
+		
+		for(int directDCIter = 0; directDCIter < this.directDC.size(); directDCIter++) {
+			routesDC[directDCIter] = this.directDC.get(directDCIter);
+		}
+
+		for(int loopDCIter = 0; loopDCIter < this.loopDC.size(); loopDCIter++) {
+			routesDC[this.loopDC.size() + loopDCIter] = this.loopDC.get(loopDCIter);
+		}
+
+		return routesDC;
+	}
+	
 	/*
 	 * METHODS
 	 */
@@ -144,7 +193,6 @@ public class RouteManager {
 			}
 		}
 	}
-	
 
 	/**
 	 * 
@@ -171,10 +219,10 @@ public class RouteManager {
 					}
 				}
 			}
+		}
+		return routesToAdd;
 	}
-	return routesToAdd;
-}
-	
+
 	/**
 	 * 
 	 * @param splitParam	the maximum number of routes in a subset

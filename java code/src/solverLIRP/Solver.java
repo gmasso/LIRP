@@ -23,19 +23,28 @@ public class Solver{
 		int nbClients = LIRPInstance.getNbClients();  // number of clients
 		int nbDepots = LIRPInstance.getNbDepots();  // number of depots
 		int nbPeriods = LIRPInstance.getNbPeriods(); // number of periods
-		int nbRoutes = availableRoutes.length;  // number of routes
+		Route[] routesSD = availableRoutes.getSDRoutes(); // array of routes from the supplier to the depot
+		Route[] routesDC = availableRoutes.getDCRoutes(); // array of available routes from the depots to the clients
 
-		/* Definition of parameters Alpha and Beta */
-		int[][] Alpha = new int[nbClients][nbRoutes]; // = 1 if client i is in route r
-		int[][] Beta = new int[nbDepots][nbRoutes]; // = 1 if depot j is in route r
+		/* Definition of parameters Alpha and Beta (for the depots-clients routes)*/
+		int[][] Alpha = new int[nbClients][routesDC.length]; // = 1 if client i is in route r
+		int[][] Beta = new int[nbDepots][routesDC.length]; // = 1 if depot j is in route r
 		/* Fill the two arrays by checking for each route which clients and which depots it contains */
-		for(int rIter=0; rIter<nbRoutes; rIter++) {
-			for(int cIter=0; cIter<nbClients; cIter++)
-				Alpha[cIter][rIter] = availableRoutes[rIter].containsLocation(LIRPInstance.getClient(cIter)) ? 1 : 0;
-			for(int dIter=0; dIter<nbDepots; dIter++)
-				Beta[dIter][rIter] = availableRoutes[rIter].containsLocation(LIRPInstance.getDepot(dIter)) ? 1 : 0;
+		for(int rIter = 0; rIter < routesDC.length; rIter++) {
+			for(int cIter = 0; cIter < nbClients; cIter++)
+				Alpha[cIter][rIter] = routesDC[rIter].containsLocation(LIRPInstance.getClient(cIter)) ? 1 : 0;
+			for(int dIter = 0; dIter < nbDepots; dIter++)
+				Beta[dIter][rIter] = routesDC[rIter].containsLocation(LIRPInstance.getDepot(dIter)) ? 1 : 0;
 		}
 
+		/* Definition of parameters Gamma (for the supplier-depots routes) */
+		int[][] Gamma = new int[nbDepots][routesSD.length]; // = 1 if depot j is in route r
+		/* Fill the two arrays by checking for each route which clients and which depots it contains */
+		for(int rIter = 0; rIter < routesSD.length; rIter++) {
+			for(int dIter = 0; dIter < nbDepots; dIter++)
+				Gamma[dIter][rIter] = routesSD[rIter].containsLocation(LIRPInstance.getDepot(dIter)) ? 1 : 0;
+		}
+		
 		/* CPLEX solver */
 		IloCplex LIRPSolver = new IloCplex();
 		// Set the time limit
