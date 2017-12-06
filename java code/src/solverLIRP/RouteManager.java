@@ -46,7 +46,7 @@ public class RouteManager {
 	 * 
 	 * @return	the ArrayList of direct routes from the supplier to the depots
 	 */
-	private ArrayList<Route> getDirectSDRoutes() {
+	public ArrayList<Route> getDirectSDRoutes() {
 		return this.directSD;
 	}
 	
@@ -54,7 +54,7 @@ public class RouteManager {
 	 * 
 	 * @return	the ArrayList of direct routes from the depots to the clients
 	 */
-	private ArrayList<Route> getDirectDCRoutes() {
+	public ArrayList<Route> getDirectDCRoutes() {
 		return this.directDC;
 	}
 	
@@ -62,7 +62,7 @@ public class RouteManager {
 	 * 
 	 * @return	the ArrayList of multi-stops routes from the supplier to the depots
 	 */
-	private ArrayList<Route> getLoopSDRoutes(){
+	public ArrayList<Route> getLoopSDRoutes(){
 		
 		return this.loopSD;
 	}
@@ -70,7 +70,7 @@ public class RouteManager {
 	 * 
 	 * @return	the ArrayList of multi-stops routes from the supplier to the depots
 	 */
-	private ArrayList<Route> getLoopDCRoutes(){
+	public ArrayList<Route> getLoopDCRoutes(){
 		return this.loopDC;
 	}
 
@@ -113,49 +113,67 @@ public class RouteManager {
 		/* Get the number of depots and the number of clients from the instance */
 		int nbDepots = instLIRP.getNbDepots();
 		int nbClients = instLIRP.getNbClients();
-		
-		/* Get an upper bound on the maximum number of stops in a route */
-		int maxNbStops = (int) Math.ceil(Parameters.max_time_route/Parameters.stopping_time);
-		
-		/* If the stopping time is too long to include multi-stops routes, stop here */
-		if(maxNbStops < 3) {
-			loopSD = null;
-			loopDC = null;
-		}
-		
-		/* If the stopping time is small enough, build the multi-stops routes for this instance */
-		else {
-			for(int nbStops = 2; nbStops < maxNbStops; nbStops++) {
-				/* Compute the remaining time that can be used to travel */
-				double remainingTime = Parameters.max_time_route - nbStops * Parameters.stopping_time;
-				
-				ArrayList<Route> routesDCToAdd = new ArrayList<Route>();
 
-				for (int cIndex = 0; cIndex < nbClients; cIndex++) {
-					
+		/* Get an upper bound on the maximum number of stops in a route */
+		int maxNbStops = (int) Math.floor(Parameters.max_time_route/Parameters.stopping_time);
+
+		this.loopSD = new ArrayList<Route>();
+		this.loopDC = new ArrayList<Route>();
+
+		/* If the stopping time is small enough, build the multi-stops routes for this instance */
+		if(maxNbStops > 1){
+			ArrayList<Depot> stopDCandidates = new ArrayList<Depot>();
+			for(int dIter = 0; dIter < nbDepots; dIter++) {
+				stopDCandidates.add(instLIRP.getDepot(dIter));
+			}
+			for(int dIndex = 0; dIndex < stopDCandidates.size() - 1; dIndex++) {
+				Route initSDRoute = new Route(instLIRP.getSupplier(), stopDCandidates.get(dIndex));
+				this.loopSD.addAll(computeAllRoutes(initSDRoute, new ArrayList<Location>(stopDCandidates.subList(dIndex + 1, stopDCandidates.size())), maxNbStops - 1));
+
+			}
+
+			ArrayList<Client> stopCCandidates = new ArrayList<Client>();
+			for(int cIter = 0; cIter < nbClients; cIter++) {
+				stopCCandidates.add(instLIRP.getClient(cIter));
+			}
+			for(int dIter = 0; dIter < nbDepots; dIter++) {
+				for(int cIndex = 0; cIndex < stopCCandidates.size() - 1; cIndex++) {
+					Route initDCRoute = new Route(instLIRP.getDepot(dIter), stopCCandidates.get(cIndex));
+					this.loopSD.addAll(computeAllRoutes(initDCRoute, new ArrayList<Location>(stopCCandidates.subList(cIndex + 1, stopCCandidates.size())), maxNbStops - 1));
 				}
 			}
 		}
 	}
 	
-	private ArrayList<Location> computeStops(Route currentLoop, ArrayList<Location> stopCandidates, int nbRemainingStops, int startingIndex, int endIndex) {
-		
-		if(nbRemainingStops < 2) {
-			for(remainingStops
-		}
-		if(endIndex - startingIndex < remainingStops)
-			return null;
-		else if(endIndex - startingIndex == remainingStops) {
-			for(int index = remainingStops;  index > 0; index--) {
-				assignedStops[assignedStops.length - index] = endIndex - index;
-			}
-			return assignedStops;
-		}
-		else {
 
-		}	
-		return new int[10];
+	/**
+	 * 
+	 * @param currentRoute		the current Route object that is considered as a basis to build new ones
+	 * @param stopCandidates		the stops that can be added to currentRoute
+	 * @param nbRemainingStops	the maximum number of stops that can be added to the currentRoute
+	 * @return
+	 * @throws IOException
+	 */
+	private ArrayList<Route> computeAllRoutes(Route currentRoute, ArrayList<Location> stopCandidates, int nbRemainingStops) throws IOException {
+		ArrayList<Route> routesToAdd = new ArrayList<Route>();
+		/* If some stop candidates remain to extend the route, try to add them to the route */
+		if(nbRemainingStops > 0 && !stopCandidates.isEmpty()) {
+			for(int stopIter = 0; stopIter < stopCandidates.size(); stopIter++) {
+				/* Create a new Route object by adding one stop among the candidates to currentRoute */
+				Route routeCandidate = currentRoute.extend(stopCandidates.get(stopIter));
+				/* If it is valid, add it to the set of routes to add and call recursively */
+				if(routeCandidate.isValid()) {
+					routesToAdd.add(routeCandidate);
+					/* If the stop currently added is not the last of the list, call recursively with the remaining candidates */
+					if(stopIter < stopCandidates.size() - 1) {
+						ArrayList<Location> newStopCandidates = new ArrayList<Location>(stopCandidates.subList(stopIter + 1, stopCandidates.size()));
+						routesToAdd.addAll(computeAllRoutes(routeCandidate, newStopCandidates, nbRemainingStops - 1));
+					}
+				}
+			}
 	}
+	return routesToAdd;
+}
 	
 	/**
 	 * 
@@ -163,7 +181,7 @@ public class RouteManager {
 	 * @return			an array of RouteManager objects with no more than splitParam routes in each loop arrays
 	 */
 	public RouteManager[] sampleRoutes(int splitParam){
-		int nbManagers = (int) Math.ceil(this.loopSD.length / splitParam);
+		int nbManagers = (int) Math.ceil(this.loopSD.size() / splitParam);
 		RouteManager[] resultRManagers = new RouteManager[nbManagers];
 		
 		return resultRManagers;

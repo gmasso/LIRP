@@ -13,8 +13,9 @@ public class Route {
 	private Location start; // The start of the route (depot in model 1, supplier in model 2)
 	private Location[] stops; // Coordinates of the stopping points along the route (clients in model 1, depots in model 2)
 	private ArrayList<Integer> stopsPermutation; // Permutation of the stops indices corresponding to the best route
-	private double duration; // the duration of the route (travel and stopping time)
-	private double cost; // the cost of the route
+	private double travelTime; // The duration of the route (travel and stopping time)
+	private double stopTime; // The total time spent delivering the stops
+	private double cost; // The cost of the route
 
 
 	/*
@@ -37,8 +38,9 @@ public class Route {
 		else
 			this.stopsPermutation = bruteForceFindBestRoute(new ArrayList<Integer>(), startingPermutation);
 
-		this.duration = computeDuration(this.stopsPermutation);
-		this.cost = Parameters.fixed_cost_route + (Parameters.cost_km / Parameters.avg_speed) * this.duration;
+		this.travelTime = computeDuration(this.stopsPermutation);
+		this.stopTime = Parameters.stopping_time * this.stops.length;
+		this.cost = Parameters.fixed_cost_route + (Parameters.cost_km / Parameters.avg_speed) * this.travelTime;
 	}
 
 	/**
@@ -48,11 +50,12 @@ public class Route {
 	 */
 	public Route(Location start, Depot stop) throws IOException {
 		this.start = start;
-		this.stops = new Location[0];
+		this.stops = new Location[1];
 		this.stops[0] = stop;
 		this.stopsPermutation.add(0); 
-		this.duration = computeDuration(this.stopsPermutation);
-		this.cost = stop.getOrderingCost() + Parameters.fixed_cost_route + (Parameters.cost_km / Parameters.avg_speed) * this.duration;
+		this.travelTime = computeDuration(this.stopsPermutation);
+		this.stopTime = Parameters.stopping_time * this.stops.length;
+		this.cost = stop.getOrderingCost() + Parameters.fixed_cost_route + (Parameters.cost_km / Parameters.avg_speed) * this.travelTime;
 	}
 	
 	/**
@@ -62,13 +65,13 @@ public class Route {
 	 */
 	public Route(Location start, Client stop) throws IOException {
 		this.start = start;
-		this.stops = new Location[0];
+		this.stops = new Location[1];
 		this.stops[0] = stop;
 		this.stopsPermutation.add(0); 
-		this.duration = computeDuration(this.stopsPermutation);
-		this.cost = Parameters.fixed_cost_route + (Parameters.cost_km / Parameters.avg_speed) * this.duration;
+		this.travelTime = computeDuration(this.stopsPermutation);
+		this.stopTime = Parameters.stopping_time * this.stops.length;
+		this.cost = Parameters.fixed_cost_route + (Parameters.cost_km / Parameters.avg_speed) * this.travelTime;
 	}
-
 
 	/*
 	 * ACCESSORS 
@@ -119,8 +122,9 @@ public class Route {
 	 * @return	the duration of the route given its stops sequence
 	 */
 	public double getDuration() {
-		return this.duration;
+		return this.travelTime + this.stopTime;
 	}
+	
 	/*
 	 * MUTATORS
 	 */
@@ -140,7 +144,7 @@ public class Route {
 	 * @return	True if the duration of the route is less than the maximum time allowed 
 	 */
 	public boolean isValid() {
-		return this.duration < Parameters.max_time_route;
+		return this.getDuration() < Parameters.max_time_route;
 	}
 	
 	/**
@@ -157,6 +161,27 @@ public class Route {
 			inRoute = (loc == stops[stopsIter]);
 		}
 		return inRoute;
+	}
+	
+	/**
+	 * Create a new Route object by adding a new stop to this route
+	 * @param stop	the new stop to be added
+	 * @return		a new Route object extending the current one with the addition of stop to the loop
+	 * @throws IOException
+	 */
+	public Route extend(Location stop) throws IOException {
+		/* Check that the route does not already contains the stop that is about to be added */
+		if(this.containsLocation(stop)){
+			System.out.println("Trying to add a stop to route that already contains it");
+			System.exit(1);
+		}
+
+		/* Create a new array to list the stops of the new Route object */
+		Location[] newStops = new Location[this.stops.length + 1];
+		for(int stopsIter = 0; stopsIter < this.stops.length; stopsIter++)
+			newStops[stopsIter] = this.stops[stopsIter];
+		newStops[this.stops.length] = stop;
+		return new Route(this.start, newStops);
 	}
 
 	/**
@@ -232,18 +257,18 @@ public class Route {
 		double stopsTime = Parameters.stopping_time * stopsIndices.size();
 		// Set the current stop at the starting point
 		Location currentStop = this.start;
-		
+
 		int nextIndex;
 		Location nextStop;
-        Iterator<Integer> indexIterator = stopsIndices.iterator();
-        // Iterate through the indices of the stops and increment the cost with the time necessary to reach the next stop and the average time spent at the stop 
-        while (travelTime + stopsTime < Parameters.max_time_route && indexIterator.hasNext()) {
-        	nextIndex = indexIterator.next();
-        	nextStop = this.stops[nextIndex];
-        	travelTime += Parameters.avg_speed * currentStop.getDistance(nextStop);
-        	currentStop = nextStop;
-        }
-        // Add the time to return to the starting point of the route
+		Iterator<Integer> indexIterator = stopsIndices.iterator();
+		// Iterate through the indices of the stops and increment the cost with the time necessary to reach the next stop and the average time spent at the stop 
+		while (travelTime + stopsTime < Parameters.max_time_route && indexIterator.hasNext()) {
+			nextIndex = indexIterator.next();
+			nextStop = this.stops[nextIndex];
+			travelTime += Parameters.avg_speed * currentStop.getDistance(nextStop);
+			currentStop = nextStop;
+		}
+		// Add the time to return to the starting point of the route
 		travelTime += Parameters.avg_speed * currentStop.getDistance(this.start);
 		return travelTime;
 	}
