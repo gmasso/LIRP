@@ -3,6 +3,8 @@ package solverLIRP;
 import java.io.IOException;
 import java.util.*;
 
+import instanceManager.Client;
+import instanceManager.Depot;
 import instanceManager.Location;
 import instanceManager.Parameters;
 
@@ -11,6 +13,7 @@ public class Route {
 	private Location start; // The start of the route (depot in model 1, supplier in model 2)
 	private Location[] stops; // Coordinates of the stopping points along the route (clients in model 1, depots in model 2)
 	private ArrayList<Integer> stopsPermutation; // Permutation of the stops indices corresponding to the best route
+	private double duration; // the duration of the route (travel and stopping time)
 	private double cost; // the cost of the route
 
 
@@ -34,7 +37,22 @@ public class Route {
 		else
 			this.stopsPermutation = bruteForceFindBestRoute(new ArrayList<Integer>(), startingPermutation);
 
-		this.cost = Parameters.fixed_cost_route + (Parameters.cost_km / Parameters.avg_speed) * computeDuration(this.stopsPermutation);
+		this.duration = computeDuration(this.stopsPermutation);
+		this.cost = Parameters.fixed_cost_route + (Parameters.cost_km / Parameters.avg_speed) * this.duration;
+	}
+
+	/**
+	 * Create a Route object from the coordinates of a start point and a stop point (direct route only)
+	 * @param start, stop
+	 * @throws IOException
+	 */
+	public Route(Location start, Depot stop) throws IOException {
+		this.start = start;
+		this.stops = new Location[0];
+		this.stops[0] = stop;
+		this.stopsPermutation.add(0); 
+		this.duration = computeDuration(this.stopsPermutation);
+		this.cost = stop.getOrderingCost() + Parameters.fixed_cost_route + (Parameters.cost_km / Parameters.avg_speed) * this.duration;
 	}
 	
 	/**
@@ -42,12 +60,13 @@ public class Route {
 	 * @param start, stop
 	 * @throws IOException
 	 */
-	public Route(Location start, Location stop) throws IOException {
+	public Route(Location start, Client stop) throws IOException {
 		this.start = start;
 		this.stops = new Location[0];
 		this.stops[0] = stop;
 		this.stopsPermutation.add(0); 
-		this.cost = Parameters.fixed_cost_route + (Parameters.cost_km / Parameters.avg_speed) * computeDuration(this.stopsPermutation);
+		this.duration = computeDuration(this.stopsPermutation);
+		this.cost = Parameters.fixed_cost_route + (Parameters.cost_km / Parameters.avg_speed) * this.duration;
 	}
 
 
@@ -95,11 +114,18 @@ public class Route {
 		return this.cost;
 	}
 	
+	/**
+	 * 
+	 * @return	the duration of the route given its stops sequence
+	 */
+	public double getDuration() {
+		return this.duration;
+	}
 	/*
 	 * MUTATORS
 	 */
 	/**
-	 * Increase the cost of a route with a fixed orderin cost
+	 * Increase the cost of a route with a fixed ordering cost
 	 * @param OC
 	 */
 	public void addToCost(double OC) {
@@ -108,7 +134,15 @@ public class Route {
 
 	/*
 	 * METHODS
-	 */	
+	 */
+	/**
+	 * 
+	 * @return	True if the duration of the route is less than the maximum time allowed 
+	 */
+	public boolean isValid() {
+		return this.duration < Parameters.max_time_route;
+	}
+	
 	/**
 	 * Check if the contains a given location
 	 * @param loc	the location of interest
