@@ -32,7 +32,7 @@ public class Solution {
 	/*****************************************
 	 *********** CONSTRUCTEUR ****************
 	 *****************************************/
-	public Solution(Instance instance, RouteManager availableRoutes){
+	public Solution(Instance instance, Route[] routesSD, Route[] routesDC){
 		this.instance = instance;
 		this.routes = availableRoutes;
 
