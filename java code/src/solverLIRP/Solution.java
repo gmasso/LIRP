@@ -8,7 +8,7 @@ public class Solution {
 	// The instance to which the solution relates
 	private Instance instance;
 	// The set of route that can be used
-	private Route[] routes;
+	private RouteManager routes;
 
 	// Variables related to depots
 	private int[] openDepots;       		// Binary indicating whether depot j is opened or not
@@ -32,7 +32,7 @@ public class Solution {
 	/*****************************************
 	 *********** CONSTRUCTEUR ****************
 	 *****************************************/
-	public Solution(Instance instance, Route[] availableRoutes){
+	public Solution(Instance instance, RouteManager availableRoutes){
 		this.instance = instance;
 		this.routes = availableRoutes;
 

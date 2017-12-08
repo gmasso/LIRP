@@ -50,79 +50,100 @@ public class Solver{
 		// Set the time limit
 		LIRPSolver.setParam(DoubleParam.TiLim, Parameters.TimeLimit);
 
-		/* Variables */
+		/*===============
+		 *   VARIABLES 
+		 ================*/
 		/* Boolean */
 		IloIntVar[] y = LIRPSolver.boolVarArray(nbDepots);  // facility location variables (depots)
 		// Integer variables
-		IloIntVar[][] z = new IloIntVar[nbRoutes][nbPeriods];  // = 1 if route r is used on period t
-		IloIntVar[][] x = new IloIntVar[nbDepots][nbPeriods];   // = 1 is depot j is delivered on period t
+		IloIntVar[][] x = new IloIntVar[routesSD.length][nbPeriods];   // = 1 is route r is delivered on period t (supplier-depot)
+		IloIntVar[][] z = new IloIntVar[routesDC.length][nbPeriods];  // = 1 if route r is used on period t (depot-clients)
 		/* Continuous */
-		IloNumVar[][] q = new IloNumVar[nbDepots][nbPeriods]; 	// quantity delivered to depot j in period t
-		IloNumVar[][][] u = new IloNumVar[nbClients][nbRoutes][nbPeriods]; // quantity delivered by route r to client i on period t
+		IloNumVar[][][] u = new IloNumVar[nbClients][routesDC.length][nbPeriods]; // quantity delivered by route r to client i on period t
+		IloNumVar[][][] v = new IloNumVar[nbDepots][routesSD.length][nbPeriods]; // quantity delivered by route r to depot j on period t
 		IloNumVar[][] InvClients = new IloNumVar[nbClients][nbPeriods]; // inventory  at clients
 		IloNumVar[][] InvDepots = new IloNumVar[nbDepots][nbPeriods]; // inventory at depots
 
 		/* Initialization */
 		for(int t = 0; t < nbPeriods; t++) {
-			for(int rIter = 0; rIter < nbRoutes; rIter++)
-				z[rIter][t] = LIRPSolver.boolVar();
-			for(int cIter = 0; cIter < nbClients; cIter++) {
-				InvClients[cIter][t] = LIRPSolver.numVar(0, Double.MAX_VALUE);
-				for(int rIter = 0; rIter < nbRoutes; rIter++)
-					u[cIter][rIter][t] = LIRPSolver.numVar(0, Double.MAX_VALUE);
-				for(int dIter = 0; dIter < nbDepots; dIter++) {
-					x[dIter][t] = LIRPSolver.boolVar(); 
-					q[dIter][t] = LIRPSolver.numVar(0, Double.MAX_VALUE);
-					InvDepots[dIter][t] = LIRPSolver.numVar(0, Double.MAX_VALUE);
-				}
+			for(int rIter = 0; rIter < routesSD.length; rIter++){
+				x[rIter][t] = LIRPSolver.boolVar();
+				for(int dIter = 0; dIter < nbDepots; dIter++)
+					v[dIter][rIter][t] = LIRPSolver.numVar(0, Double.MAX_VALUE);
 			}
+			for(int rIter = 0; rIter < routesDC.length; rIter++) {
+				z[rIter][t] = LIRPSolver.boolVar();
+				for(int cIter = 0; cIter < nbClients; cIter++) 
+					u[cIter][rIter][t] = LIRPSolver.numVar(0, Double.MAX_VALUE);
+			}
+			for(int cIter = 0; cIter < nbClients; cIter++)
+				InvClients[cIter][t] = LIRPSolver.numVar(0, Double.MAX_VALUE);
+			for(int dIter = 0; dIter < nbDepots; dIter++)
+				InvDepots[dIter][t] = LIRPSolver.numVar(0, Double.MAX_VALUE);
 		}
 
-		/* Constraints */	
+		/*=================
+		 *   CONSTRAINTS 
+		 ==================*/
 		for (int t = 0; t < nbPeriods; t++) {
-			/* Client is served by at most one route in every period (2) */
-			for (int cIter = 0; cIter < nbClients; cIter++) {
+			/* Constraints on the route for depots */
+			for(int dIter = 0; dIter < nbDepots; dIter++) {
+				/* Each depot is served by at most one route in every period (2) */
 				IloLinearNumExpr expr2 = LIRPSolver.linearNumExpr();
-				for (int rIter = 0; rIter < nbRoutes; rIter++) {
-					expr2.addTerm(Alpha[cIter][rIter], z[rIter][t]);
-				}
+				for (int rIter = 0; rIter < routesSD.length; rIter++) 
+					expr2.addTerm(Beta[dIter][rIter], x[rIter][t]);
 				LIRPSolver.addLe(expr2, 1);
 			}
-			for(int dIter = 0; dIter < nbDepots; dIter++) {
-				/* Capacity constraint between the plant and depots (3) */
+
+			/* Each client is served by at most one route in every period (3)*/
+			for(int cIter = 0; cIter < nbClients; cIter++) {
 				IloLinearNumExpr expr3 = LIRPSolver.linearNumExpr();
-				expr3.addTerm(1, q[dIter][t]);
-				expr3.addTerm(-LIRPInstance.getCapacityVehicle(0), x[dIter][t]);
-				LIRPSolver.addLe(expr3, 0);
-				/* Delivering only open depots (4) */
-				IloLinearIntExpr expr4 = LIRPSolver.linearIntExpr();
-				expr4.addTerm(1, x[dIter][t]);
-				expr4.addTerm(-1, y[dIter]);
-				LIRPSolver.addLe(expr4, 0);
+				for (int rIter = 0; rIter < routesDC.length; rIter++)
+					expr3.addTerm(Alpha[cIter][rIter], z[rIter][t]);
+				LIRPSolver.addLe(expr3, 1);
 			}
-			/* Capacity constraint of the vehicle delivering to the clients (5) */
-			for (int rIter = 0; rIter < nbRoutes; rIter++) {
-				IloLinearNumExpr expr5 = LIRPSolver.linearNumExpr();
-				for (int cIter = 0; cIter < nbClients; cIter++) {
-					expr5.addTerm(1, u[cIter][rIter][t]);
+
+			for(int dIter = 0; dIter < nbDepots; dIter++) {
+				for (int rIter = 0; rIter < routesSD.length; rIter++) {
+					/* A supplier-depot route is used only if all depots on this route are opened (4)*/
+					IloLinearNumExpr expr4 = LIRPSolver.linearNumExpr();
+					expr4.addTerm(Gamma[dIter][rIter], x[rIter][t]);
+					expr4.addTerm(-1, y[dIter]);
+					LIRPSolver.addLe(expr4, 0);
 				}
-				expr5.addTerm(-LIRPInstance.getCapacityVehicle(0), z[rIter][t]);
+			}
+
+			/* Each route delivering customers can only departs from an opened depot (5)*/
+			for (int rIter = 0; rIter < routesDC.length; rIter++) {
+				IloLinearNumExpr expr5 = LIRPSolver.linearNumExpr();
+				expr5.addTerm(1, z[rIter][t]);
+				for(int dIter = 0; dIter < nbDepots; dIter++) {
+					expr5.addTerm(-Beta[dIter][rIter], y[dIter]);
+				}
 				LIRPSolver.addLe(expr5, 0);
 			}
-			/* Maximum number of vehicles between available for delivery (6) */		
-			IloLinearNumExpr expr6 = LIRPSolver.linearNumExpr();
-			for (int rIter = 0; rIter < nbRoutes; rIter++)
-				expr6.addTerm(1, z[rIter][t]);
-			LIRPSolver.addLe(expr6, LIRPInstance.getNbVehicles());
-			/* Only the routes with an open depot as a starting point exist (7) */
-			for (int rIter = 0; rIter < nbRoutes; rIter++) {
+
+			/* Vehicle capacity on each delivery on each opened supplier-depot route (6)*/
+			for (int rIter = 0; rIter < routesSD.length; rIter++) {
+				IloLinearNumExpr expr6 = LIRPSolver.linearNumExpr();
+				for(int dIter = 0; dIter < nbDepots; dIter++)
+					expr6.addTerm(1, v[dIter][rIter][t]);
+				// TO MODIFY IN THE FINAL VERSION
+				expr6.addTerm(-LIRPInstance.getCapacityVehicle(0), x[rIter][t]);
+				LIRPSolver.addLe(expr6, 0);
+			}
+
+
+			/* Vehicle capacity on each delivery on each opened depot-client route (7)*/
+			for (int rIter = 0; rIter < routesDC.length; rIter++) {
 				IloLinearNumExpr expr7 = LIRPSolver.linearNumExpr();
-				expr7.addTerm(1, z[rIter][t]);
-				for (int dIter = 0; dIter < nbDepots; dIter++) {
-					expr7.addTerm(-Beta[dIter][rIter], y[dIter]);
-				}
+				for(int cIter = 0; cIter < nbClients; cIter++)
+					expr7.addTerm(1, u[cIter][rIter][t]);
+				// TO MODIFY IN THE FINAL VERSION
+				expr7.addTerm(-LIRPInstance.getCapacityVehicle(0), x[rIter][t]);
 				LIRPSolver.addLe(expr7, 0);
 			}
+
 			/* Flow conservation at the depots (8) */
 			for(int dIter = 0; dIter < nbDepots; dIter++) {
 				IloLinearNumExpr expr8 = LIRPSolver.linearNumExpr();
@@ -132,13 +153,15 @@ public class Solver{
 					rhs8 = LIRPInstance.getDepot(dIter).getInitialInventory();
 				else
 					expr8.addTerm(-1, InvDepots[dIter][t-1]);
-				expr8.addTerm(-1, q[dIter][t]);
-				for (int rIter = 0; rIter < nbRoutes; rIter++) {
+				for(int rSDIter = 0; rSDIter < routesSD.length; rSDIter++)
+					expr8.addTerm(-1, v[dIter][rSDIter][t]);
+				for (int rIter = 0; rIter < routesDC.length; rIter++) {
 					for (int cIter = 0; cIter < nbClients; cIter++)
 						expr8.addTerm(Beta[dIter][rIter], u[cIter][rIter][t]);
 				}
 				LIRPSolver.addEq(expr8, rhs8);
 			}
+			
 			/* Flow conservation at the clients (9) */
 			for (int cIter = 0; cIter < nbClients; cIter++){
 				IloLinearNumExpr expr9 = LIRPSolver.linearNumExpr();
@@ -148,92 +171,88 @@ public class Solver{
 					rhs9 += LIRPInstance.getClient(cIter).getInitialInventory();
 				else
 					expr9.addTerm(-1, InvClients[cIter][t - 1]);
-				for (int rIter = 0; rIter < nbRoutes; rIter++) {
+				for (int rIter = 0; rIter < routesDC.length; rIter++) {
 					expr9.addTerm(-1, u[cIter][rIter][t]);
 				}
 				LIRPSolver.addEq(expr9, rhs9);
 			}
-			// Stock capacity at the client or ensuring that the inventory is not greater than the sum of remaining demands (10)
-			// I am not sure this constraint is really useful, since optimal solutions won't contain over-stock. 
+
+			/* Stock capacity at the client or ensuring that the inventory is not greater than the sum of remaining demands (10) */
+			// IS THIS LAST ASPECT OF THE CONSTRAINT REALLY USEFUL? 
 			for (int cIter = 0; cIter < nbClients; cIter++) {
 				double remainingDemand = LIRPInstance.getClient(cIter).getCumulDemands(t+1, nbPeriods);
 				IloLinearNumExpr expr10 = LIRPSolver.linearNumExpr();
 				expr10.addTerm(1, InvClients[cIter][t]);
-				LIRPSolver.addLe(expr10, remainingDemand);
-				LIRPSolver.addLe(expr10, LIRPInstance.getClient(cIter).getCapacity());
+				if(remainingDemand < LIRPInstance.getClient(cIter).getCapacity())
+					LIRPSolver.addLe(expr10, remainingDemand);
+				else
+					LIRPSolver.addLe(expr10, LIRPInstance.getClient(cIter).getCapacity());
 			}
-			// Capacity constraints at depots (11)
+
+			/* Capacity constraints at depots (11) */
 			for (int dIter = 0; dIter < nbDepots; dIter++) {
 				IloLinearNumExpr expr11 = LIRPSolver.linearNumExpr();
 				expr11.addTerm(1, InvDepots[dIter][t]);
 				LIRPSolver.addLe(expr11, LIRPInstance.getDepot(dIter).getCapacity());
 			}
-			// A customer can only be delivered by routes to which it belongs (12)
-			for (int rIter = 0; rIter < nbRoutes; rIter++) {
-				for (int cIter = 0; cIter < nbClients; cIter++) {
-					IloLinearNumExpr expr12 = LIRPSolver.linearNumExpr();
-					expr12.addTerm(1, u[cIter][rIter][t]);
-					LIRPSolver.addLe(expr12, LIRPInstance.getCapacityVehicle(0)*Alpha[cIter][rIter]);
-				}
-			}
 		}
 
-		/**************************************
-		 ********* OBJECTIVE FUNCTION *********
-		 **************************************/
+		/*=======================
+		 *  OBJECTIVE FUNCTION 
+		 ========================*/
 		IloNumVar obj = LIRPSolver.numVar(0, Double.MAX_VALUE, "obj"); // objective function
 
-		// Expression of the objection function
+		/* Definition of the objective function */
 		IloLinearNumExpr objExpr = LIRPSolver.linearNumExpr();
 
+		/* Fixed opening costs */
 		for (int dIter = 0; dIter < nbDepots; dIter++) {
-			// 1st term: Fixed location costs
 			objExpr.addTerm(LIRPInstance.getDepot(dIter).getFixedCost(), y[dIter]);
 		}
 		for (int t = 0; t < nbPeriods; t++) {
-			for (int dIter = 0; dIter < nbDepots; dIter++) {
-				// 2nd term: Cost of delivering depots
-				objExpr.addTerm(LIRPInstance.getDepot(dIter).getOrderingCost(), x[dIter][t]);
-				// 4th term: Inventory at depots
+			/* Delivering costs for the depots */
+			for (int rSDIter = 0; rSDIter < routesSD.length; rSDIter++)
+				objExpr.addTerm(routesSD[rSDIter].getCost(), x[rSDIter][t]);
+			/* Delivering costs for the clients */
+			for (int rDCIter = 0; rDCIter < routesDC.length; rDCIter++)
+				objExpr.addTerm(routesDC[rDCIter].getCost(), z[rDCIter][t]);
+			/* Holding cost incurred by the depots */
+			for (int dIter = 0; dIter < nbDepots; dIter++)
 				objExpr.addTerm(LIRPInstance.getDepot(dIter).getHoldingCost(), InvDepots[dIter][t]);
-			}
-			for (int rIter = 0; rIter < nbRoutes; rIter++) {
-				// 3rd term : routing costs from depots to clients
-				objExpr.addTerm(availableRoutes[rIter].getCost(), z[rIter][t]);
-			}
-			for (int cIter = 0; cIter < nbClients; cIter++) {
-				// 5th term: Inventory at clients
+			/* Holding cost incurred by the clients */
+			for (int cIter = 0; cIter < nbClients; cIter++)
 				objExpr.addTerm(LIRPInstance.getClient(cIter).getHoldingCost(), InvClients[cIter][t]);
-			}
 		}
 		
-		/**************************************
-		 ************* RESOLUTION *************
-		 **************************************/
+		/*================
+		 *   RESOLUTION 
+		 =================*/
 		LIRPSolver.addLe(objExpr, obj);
 		LIRPSolver.addObjective(IloObjectiveSense.Minimize, obj);
 		LIRPSolver.solve();
 		
+		
+		/*===============================
+		*     SAVE THE SOLVER OUTPUT
+		=================================*/
 		Solution sol  = new Solution(LIRPInstance, availableRoutes);
 		if (LIRPSolver.getStatus().equals(IloCplex.Status.Infeasible))
 			System.out.println("There is no solution");
 		else {
-			//===============================================
-			// SAVE THE OUTPUT OF THE SOLVER
 
 			System.out.println();
-			System.out.println("======== RESULTS  =================");
+			System.out.println("===========  RESULTS  ===========");
 			System.out.println();
 			System.out.print("Status of LIRPSolver :   ");
 			System.out.println(LIRPSolver.getStatus());
 			System.out.print("Objective function :   ");
 			System.out.println(LIRPSolver.getObjValue());
 
-			/**************************************
-			 *********** SOLUTION VALUES **********
-			 **************************************/
+			/*=======================
+			 *    SOLUTION VALUES
+			 ========================*/
 			//-----------------------------------------------------	
-			// Save the status of depots (open/closed)
+			/* Save the status of depots (open/closed) */
 			for (int dIter = 0; dIter < nbDepots; dIter++){
 				if (LIRPSolver.getValue(y[dIter])>0)
 					sol.setOpenDepot(dIter, 1);

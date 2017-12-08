@@ -92,7 +92,7 @@ public class RouteManager {
 	 * @return	an array containing of all Route objects in the route manager from the supplier to the depots
 	 */
 	public Route[] getSDRoutes() {
-		Route[] routesSD = new Route[this.directSD.size() + this.directDC.size() + this.loopSD.size() + this.loopDC.size()];
+		Route[] routesSD = new Route[this.directSD.size() + this.loopSD.size()];
 		
 		for(int directSDIter = 0; directSDIter < this.directSD.size(); directSDIter++) {
 			routesSD[directSDIter] = this.directSD.get(directSDIter);
@@ -110,7 +110,7 @@ public class RouteManager {
 	 * @return	an array containing of all Route objects in the route manager from depots to clients
 	 */
 	public Route[] getDCRoutes() {
-		Route[] routesDC = new Route[this.directDC.size() + this.directDC.size() + this.loopDC.size() + this.loopDC.size()];
+		Route[] routesDC = new Route[this.directDC.size() + this.loopDC.size()];
 		
 		for(int directDCIter = 0; directDCIter < this.directDC.size(); directDCIter++) {
 			routesDC[directDCIter] = this.directDC.get(directDCIter);
