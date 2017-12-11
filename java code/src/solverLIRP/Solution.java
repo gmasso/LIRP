@@ -5,217 +5,293 @@ import instanceManager.Instance;
 
 
 public class Solution {
-	// The instance to which the solution relates
-	private Instance instance;
-	// The set of route that can be used
-	private RouteManager routes;
 
-	// Variables related to depots
-	private int[] openDepots;       		// Binary indicating whether depot j is opened or not
-	private double[][][] deliveriesDepots;   // Quantity delivered to depot j in period t via route r
-	private double[] initialStockDepots; 	// Initial inventory on hand at depot j at the beginning of the planning horizon
+	/* ============================
+	 *         ATTRIBUTES
+	 ==============================*/
+	private Instance instanceLIRP;
+	private Route[] routesSD;
+	private Route[] routesDC;
+	
+	/* Depots */
+	private boolean[] openDepots;       			// Binary indicating whether a depot is opened or not
+	private double[][][] deliveriesDepots;   // Quantity delivered to the depots in period t via route r
 	private double[][] stockDepot;			// Stock at depot j in period t
 
-	// Variables related to the clients
-	private double[][][] deliveriesClients;	// Quantity delivered to client i in period t via route r
-	private double[] initialStockClients;	// Initial inventory on hand at client i at the beginning of the planning horizon
+	/* Clients */
+	private double[][][] deliveriesClients;	// Quantity delivered to the clients i in period t via route r
 	private double[][] stockClient;			// Stock at client i in period t
 
-	// Variables related to routes
-	private int[][] usedRoutes; 				// Binary indicating whether route r is used in period t
+	/* Routes */
+	private boolean[][] usedSDRoutes; 				// Binary indicating whether route r between the supplier and depots is used in period t
+	private boolean[][] usedDCRoutes;				// Binary indicating whether route r between the depots and clients is used in period t
 
-
-	//private double[][][] quantityDepotToClient; // quantity delivered from each depot to each client
-	//private int[][] listOfRoutes;		// list of route performed in each period
-	//private double[] coutRoute;  // cout de la route r le jour t. Vaut cout[r] si la route est faite, et 0 sinon.
-
-	/*****************************************
-	 *********** CONSTRUCTEUR ****************
-	 *****************************************/
+	/*==============================
+	 *        CONSTRUCTEUR  
+	 ===============================*/
 	public Solution(Instance instance, Route[] routesSD, Route[] routesDC){
-		this.instance = instance;
-		this.routes = availableRoutes;
 
-		// Initialization of all data
-		this.openDepots = new int[instance.getNbDepots()];
-		this.deliveriesDepots = new double[instance.getNbDepots()][instance.getNbPeriods()][availableRoutes.length];
+		/* Initialization of the attributes */
+		this.instanceLIRP = instance;
+		this.routesSD = routesSD;
+		this.routesDC = routesDC;
+		
+		/* Variables of the model */
+		this.openDepots = new boolean[instance.getNbDepots()];
+		this.deliveriesDepots = new double[instance.getNbDepots()][routesSD.length][instance.getNbPeriods()];
 		this.stockDepot = new double[instance.getNbDepots()][instance.getNbPeriods()];
-		this.deliveriesClients = new double[instance.getNbClients()][instance.getNbPeriods()][availableRoutes.length];
+		this.deliveriesClients = new double[instance.getNbClients()][routesDC.length][instance.getNbPeriods()];
 		this.stockClient = new double[instance.getNbClients()][instance.getNbPeriods()];
-		this.usedRoutes = new int[this.routes.length][instance.getNbPeriods()];
+		this.usedSDRoutes = new boolean[routesSD.length][instance.getNbPeriods()];
+		this.usedDCRoutes = new boolean[routesDC.length][instance.getNbPeriods()];
 
-		// Initialization of variables for the depots 
-		for (int j=0;j<instance.getNbDepots(); j++) {
-			this.openDepots[j] = 0;
-			this.initialStockDepots[j] = instance.getDepot(j).getInitialInventory();
-			for (int t=0;t<instance.getNbPeriods();t++){
-				this.stockDepot[j][t] = -1;
-				for(int r = 0; r < availableRoutes.length; r++) {
-					this.deliveriesDepots[j][t][r] = -1;
+		/* Initialization of the values of the variables for the depots */
+		for (int dIter = 0; dIter < instance.getNbDepots(); dIter++) {
+			this.openDepots[dIter] = false;
+			for (int t = 0; t < instance.getNbPeriods(); t++){
+				this.stockDepot[dIter][t] = 0;
+				for(int rIter = 0; rIter < routesSD.length; rIter++) {
+					this.deliveriesDepots[dIter][rIter][t] = 0;
 				}
 			}
 		}
 
-		// Initialization of variables for the clients
-		for (int i = 0; i < instance.getNbClients(); i++){
-			this.initialStockClients[i] =instance.getClient(i).getInitialInventory();
+		/* Initialization of the values of the variables for the clients */
+		for (int cIter = 0; cIter < instance.getNbClients(); cIter++){
 			for (int t = 0; t < instance.getNbPeriods(); t++) {
-				this.stockClient[i][t] = -1;
-				for(int r = 0; r < availableRoutes.length; r++) {
-					this.deliveriesClients[i][t][r] = -1;
+				this.stockClient[cIter][t] = 0;
+				for(int rIter = 0; rIter < routesDC.length; rIter++) {
+					this.deliveriesClients[cIter][rIter][t] = 0;
 				}
 			}
 		}
 
-		// Initialization of the routes
-		for (int r = 0; r < availableRoutes.length; r++){
+		/* Initialization of the boolean values for the depots-clients routes binary variables */
+		for (int rIter = 0; rIter < usedSDRoutes.length; rIter++){
 			for (int t = 0;t < instance.getNbPeriods(); t++){
-				usedRoutes[r][t] = 0;
+				usedSDRoutes[rIter][t] = false;
+			}
+		}
+		
+		/* Initialization of the boolean values for the supplier-depots routes binary variables */
+		for (int rIter = 0; rIter < usedDCRoutes.length; rIter++){
+			for (int t = 0;t < instance.getNbPeriods(); t++){
+				usedDCRoutes[rIter][t] = false;
 			}
 		}
 	}
 
-	/*****************************************
-	 ************* ACCESSORS *****************
-	 *****************************************/
-
-	public int getOpenDepots(int j){
-		return this.openDepots[j];	
+	/*==============================
+	 *          ACCESSORS  
+	 ===============================*/
+	/**
+	 * Get the value of the binary variable stating if the depot is opened or not
+	 * @param dIndex	the index of the depot of interest
+	 * @return		the value of the binary variable for the opening of the depot
+	 */
+	public boolean isOpenDepot(int dIndex){
+		return this.openDepots[dIndex];	
 	}
 
-	public double  getDeliveryDepot(int j, int t, int r){
-		return this.deliveriesDepots[j][t][r];
+	/**
+	 * 
+	 * @param dIndex	the index of the depot of interest
+	 * @param t		the period index
+	 * @param rIndex	the route index in the routesSD array
+	 * @return		the quantity delivered to depot dIndex by route rIndex in period t
+	 */
+	public double getDeliveryDepot(int dIndex, int rIndex, int t){
+		return this.deliveriesDepots[dIndex][rIndex][t];
 	}
 
-	public double getDeliveryClient(int i, int t, int r){
-		return this.deliveriesClients[i][t][r];
+	/**
+	 * 
+	 * @param cIndex	the index of the client of interest
+	 * @param t		the period index
+	 * @param rIndex	the route index in the routesSD array
+	 * @return		the quantity delivered to client cIndex by route rIndex in period t
+	 */
+	public double getDeliveryClient(int cIndex, int rIndex, int t){
+		return this.deliveriesClients[cIndex][rIndex][t];
 	}
 
-	public double getStockDepot(int j, int t){
-		return this.stockDepot[j][t];
+	/**
+	 * 
+	 * @param dIndex	the index of the depot of interest
+	 * @param t		the index of the period
+	 * @return		the inventory level at depot dIndex in period t
+	 */
+	public double getStockDepot(int dIndex, int t){
+		return this.stockDepot[dIndex][t];
 	}
 
-	public double getStockClient(int i, int t){
-		return this.stockClient[i][t];
+	/**
+	 * 
+	 * @param cIndex	the index of the client of interest
+	 * @param t		the index of the period
+	 * @return		the inventory level at depot cIndex in period t
+	 */
+	public double getStockClient(int cIndex, int t){
+		return this.stockClient[cIndex][t];
+	}
+	
+	/*==========================
+	 *         MUTATORS 
+	 ===========================*/
+	/**
+	 * Sets the value of the binary variable stating if a depot is opened or not
+	 * @param dIndex		the index of the depot to open or close
+	 * @param isOpened	the binary corresponding to the depot state
+	 */
+	public void setOpenDepot(int dIndex, boolean isOpened){
+		this.openDepots[dIndex] = isOpened;	
 	}
 
-	/*****************************************
-	 ************** MUTATORS *****************
-	 *****************************************/
-
-
-	public void setOpenDepot(int j, int isOpened){
-		this.openDepots[j] = isOpened;	
+	/**
+	 * Set the stock level of a depot
+	 * @param dIndex	the index of the depot
+	 * @param t		the period index
+	 * @param inv	the inventory value for depot dIndex in period t
+	 */
+	public void setStockDepot(int dIndex, int t, double inv){
+		this.stockDepot[dIndex][t] = inv;
 	}
 
-	public void setStockDepot(int j, int t, double v){
-		this.stockDepot[j][t] = v;
+	/**
+	 * 
+	 * @param dIndex
+	 * @param t
+	 * @param rIndex
+	 * @param q
+	 */
+	public void setDeliveryDepot(int dIndex, int rIndex, int t, double q){
+		this.deliveriesDepots[dIndex][rIndex][t] = q;
 	}
 
-	public void setDeliveryDepot(int j, int t, int r, double v){
-		this.deliveriesDepots[j][t][r] = v;
+	/**
+	 * 
+	 * @param cIndex
+	 * @param t
+	 * @param inv
+	 */
+	public void setStockClient(int cIndex, int t, double inv){
+		this.stockClient[cIndex][t] = inv;
 	}
 
-	public void setStockClient(int i, int t, double v){
-		this.stockClient[i][t] = v;
+	/**
+	 * 
+	 * @param cIndex
+	 * @param t
+	 * @param rIndex
+	 * @param q
+	 */
+	public void setDeliveryClient(int cIndex, int rIndex, int t, double q){
+		this.deliveriesClients[cIndex][rIndex][t] = q;
 	}
 
-	public void setDeliveryClient(int i, int t, int r, double q){
-		this.deliveriesClients[i][t][r] = q;
+	/**
+	 * 
+	 * @param rIndex
+	 * @param t
+	 * @param isUsed
+	 */
+	public void setusedSDRoutes(int rIndex, int t, boolean isUsed){
+		this.usedSDRoutes[rIndex][t] = isUsed;	
 	}
 
-	public void setusedRoutes(int r, int t, int value){
-		this.usedRoutes[r][t] = value;	
+	/**
+	 * 
+	 * @param rIndex
+	 * @param t
+	 * @param isUsed
+	 */
+	public void setusedDCRoutes(int rIndex, int t, boolean isUsed){
+		this.usedDCRoutes[rIndex][t] = isUsed;	
 	}
-
-	/*************************************
-	 *********** METHODES ****************
-	 *************************************/
-
-	// Print the open depots
+	
+	/*==========================
+	 *         METHODS
+	 ===========================*/
+	/**
+	 * Print the open depots
+	 * @param printStreamSol
+	 */
 	public void printOpenDepots(PrintStream printStreamSol){	
-
-		int nbDepots = instance.getNbDepots();  // number of depots
-
-		printStreamSol.println("----DEPOTS ----------------------  ");
+		
+		printStreamSol.println("----- DEPOTS -----");
 		printStreamSol.print("Open depots: \t");
-		for (int j = 0; j<nbDepots; j++){
-			if (openDepots[j]==1) 
-			{
-				printStreamSol.print(j+" \t  ");
-			}
-
+		for (int dIndex = 0; dIndex < this.openDepots.length; dIndex++){
+			if (openDepots[dIndex]) 
+				printStreamSol.print(dIndex+" \t  ");
 		}
 		printStreamSol.print("Depots not selected: \t");
-		for (int j = 0; j<nbDepots; j++){
-			if (openDepots[j]==0) 
-			{
-				printStreamSol.print(j+" \t  ");
-			}
-
+		for (int dIndex = 0; dIndex < this.openDepots.length; dIndex++){
+			if (!openDepots[dIndex]) 
+				printStreamSol.print(dIndex+" \t  ");
 		}
 		printStreamSol.println();
 	}
 
-
-	// Print the inventory at depot for every period
+	/**
+	 * Print the inventory at every depot for every period
+	 * @param printStreamSol
+	 */
 	public void printStockDepot(PrintStream printStreamSol){
-
-		printStreamSol.println("------ INVENTORY AT DEPOTS ---------");	
-
-		printStreamSol.print("Initial inventory :   ");
-		for (int j = 0; j < this.instance.getNbDepots(); j++){
-			if (openDepots[j]==0) {
+		printStreamSol.println("------  INVENTORY AT DEPOTS  -----");
+		printStreamSol.print("Initial inventory:   ");
+		for (int dIter = 0; dIter < this.openDepots.length; dIter++){
+			if (!openDepots[dIter]) {
 				printStreamSol.print(" -- \t");
 			}
 			else
-				printStreamSol.print(this.instance.getDepot(j).getInitialInventory()+"\t");	
+				printStreamSol.print(this.instanceLIRP.getDepot(dIter).getInitialInventory()+"\t");	
 		}
 		printStreamSol.println();
 
-		for (int t=0;t<instance.getNbPeriods();t++){
-			printStreamSol.print("Period "+t+":   ");
-			for (int j = 0; j < this.instance.getNbDepots(); j++){
-				if (openDepots[j]==0) {
+		for (int t = 0;t < this.instanceLIRP.getNbPeriods(); t++){
+			printStreamSol.print("Period "+ t +":   ");
+			for (int dIter = 0; dIter < this.instanceLIRP.getNbDepots(); dIter++){
+				if (!openDepots[dIter]) {
 					printStreamSol.print(" -- \t");
 				}
-				else	printStreamSol.print(stockDepot[j][t]+"\t");	
+				else	printStreamSol.print(stockDepot[dIter][t]+"\t");	
 			}
 			printStreamSol.println();
 		}
 	}
 
-
-	// Print the quantities delivered at depots at every period
+	/**
+	 * Print the quantities delivered at the depots in every period
+	 * @param printStreamSol
+	 */
 	public void printDeliveryDepot(PrintStream printStreamSol){
 
-		printStreamSol.println("------ QUANTITY DELIVERED TO DEPOTS ---------");	
-		for (int t = 0; t < instance.getNbPeriods(); t++){
+		printStreamSol.println("------  QUANTITY DELIVERED TO DEPOTS  -----");	
+		for (int t = 0; t < this.instanceLIRP.getNbPeriods(); t++){
 			printStreamSol.print("Period "+ t +":   ");
-			for (int j = 0; j < this.instance.getNbDepots(); j++) {
-				if (openDepots[j]==0) {
+			for (int dIter = 0; dIter < this.instanceLIRP.getNbDepots(); dIter++) {
+				if (!openDepots[dIter])
 					printStreamSol.print(" -- \t");
-				}
 				else {
 					double totalQuantity = 0;
-					for(int r = 0; r < this.routes.length; r++) 
-						totalQuantity += this.deliveriesDepots[j][t][r];
+					for(int rIter = 0; rIter < this.usedSDRoutes.length; rIter++) 
+						totalQuantity += this.deliveriesDepots[dIter][rIter][t];
 					printStreamSol.print(totalQuantity + "\t");	
 				}
 			}
 			printStreamSol.println();
 		}
 
-		printStreamSol.println("------ QUANTITY DELIVERED FROM DEPOTS to CLIENTS ---------");	
-		for (int t = 0; t < instance.getNbPeriods(); t++){
+		printStreamSol.println("------  QUANTITY DELIVERED FROM DEPOTS to CLIENTS  -----");	
+		for (int t = 0; t < this.instanceLIRP.getNbPeriods(); t++){
 			printStreamSol.println("Period "+t+":   ");
-			for (int j = 0; j < this.instance.getNbDepots(); j++){
-				if (this.openDepots[j] == 1) {
-					printStreamSol.print("Depot "+j+": \t  ");
-					for (int i = 0; i < this.instance.getNbClients(); i++){
+			for (int dIter = 0; dIter < this.instanceLIRP.getNbDepots(); dIter++){
+				if (this.openDepots[dIter]) {
+					printStreamSol.print("Depot "+ dIter +": \t  ");
+					for (int cIter = 0; cIter < this.instanceLIRP.getNbClients(); cIter++){
 						double totalQuantity = 0;
-						for(int r = 0; r < this.routes.length; r++) 
-							totalQuantity += this.deliveriesClients[i][t][r];
+						for(int rIter = 0; rIter < this.usedDCRoutes.length; rIter++) 
+							totalQuantity += this.deliveriesClients[cIter][rIter][t];
 						printStreamSol.print(totalQuantity + "\t");
 					}
 					printStreamSol.println();
@@ -225,62 +301,61 @@ public class Solution {
 		}
 	}
 
-
-	// Print the inventory at client for every period
+	/**
+	 * Print the inventory at every client in every period
+	 * @param printStreamSol
+	 */
 	public void printStockClient(PrintStream printStreamSol){
-
-		printStreamSol.println("------ INVENTORY AT CLIENTS ---------");	
+		printStreamSol.println("------ INVENTORY AT CLIENTS  -----");	
 		printStreamSol.print("Initial inventory :");
-		for (int i = 0; i < this.instance.getNbClients(); i++){
-			printStreamSol.print(this.instance.getClient(i).getInitialInventory()+"\t");	
+		for (int cIter = 0; cIter < this.instanceLIRP.getNbClients(); cIter++){
+			printStreamSol.print(this.instanceLIRP.getClient(cIter).getInitialInventory()+"\t");	
 		}
 		printStreamSol.println();
 
-
-		for (int t=0;t<instance.getNbPeriods();t++){
+		for (int t = 0; t < this.instanceLIRP.getNbPeriods(); t++){
 			printStreamSol.print("Period "+t+":   ");
-			for (int i = 0;i < this.instance.getNbClients(); i++){
+			for (int i = 0;i < this.instanceLIRP.getNbClients(); i++){
 				printStreamSol.print(stockClient[i][t]+"\t");	
 			}
 			printStreamSol.println();
 		}
 	}
 
-	// Print LIST AND SET OF ROUTES
-	public void printListOfRoutes(Instance instance, Route[] myRoutes, PrintStream printStreamSol){
-		printStreamSol.println("------  LIST OF ROUTES ---------");	
-		for (int t = 0; t < instance.getNbPeriods(); t++){
-			printStreamSol.println("Period "+t+":   ");
-			for (int r = 0; r < this.routes.length; r++){
-				if (this.usedRoutes[r][t] == 1) 
-				{
-					printStreamSol.print(" route " + r + " visiting clients : \t");
-					for (int i = 0; i < this.instance.getNbClients(); i++){
-						double qu = this.deliveriesClients[i][t][r]; 
-						if (qu > 0){
-							printStreamSol.print(i+" \t ");
-						}
+	/**
+	 * 
+	 * @param printStreamSol
+	 */
+	public void printListOfRoutes(PrintStream printStreamSol){
+		printStreamSol.println("------  LIST OF ROUTES  -----");	
+		for (int t = 0; t < this.instanceLIRP.getNbPeriods(); t++){
+			printStreamSol.println("Period "+ t +":   ");
+			for (int rIter = 0; rIter < this.usedDCRoutes.length; rIter++){
+				if (this.usedDCRoutes[rIter][t]) {
+					printStreamSol.print(" route " + rIter + " starting from depot " + this.instanceLIRP.getDepotIndex(this.routesDC[rIter].getStart()) + " and visiting clients : \t");
+					for (int cIter = 0; cIter < this.instanceLIRP.getNbClients(); cIter++){ 
+						if (this.deliveriesClients[cIter][rIter][t] > 0)
+							printStreamSol.print(cIter + " \t ");
 					}
-					printStreamSol.println(" (cost = " + this.routes[r].getCost() + ") \t");
+					printStreamSol.println(" (cost = " + this.routesDC[rIter].getCost() + ") \t");
 				}
 			}
 		}
 
-		printStreamSol.println("------  SET OF ROUTES ---------");
+		printStreamSol.println("------  SET OF ROUTES  -----");
 		printStreamSol.print("[");
 		boolean firstPeriod = true;
-		for(int t=0; t<instance.getNbPeriods();t++){
-			if(!firstPeriod){
+		for(int t = 0; t < this.instanceLIRP.getNbPeriods(); t++){
+			if(!firstPeriod)
 				printStreamSol.print(",");
-			}
 			printStreamSol.print("[");
 			boolean firstCustomer = true;
-			for(int  r= 0; r < this.routes.length; r++){
-				if(this.usedRoutes[r][t]==1){
+			for(int rIter = 0; rIter < this.routesSD.length; rIter++){
+				if(this.usedSDRoutes[rIter][t]){
 					if(!firstCustomer){
 						printStreamSol.print(",");
 					}
-					printStreamSol.print(r);
+					printStreamSol.print(rIter);
 					firstCustomer=false;
 				}
 			}
@@ -292,15 +367,16 @@ public class Solution {
 
 
 	// Print the detail of each route 
-	public void printDetailedRoutes(Route[] myRoutes, PrintStream printStreamSol){
+	// TO BE MODIFIED
+	public void printDetailedRoutes(PrintStream printStreamSol){
 
 		printStreamSol.println("----  DETAILED DELIVERIES AT CLIENTS -------------------------");
-		for (int i = 0; i < this.instance.getNbClients(); i++){
+		for (int i = 0; i < this.instanceLIRP.getNbClients(); i++){
 			printStreamSol.println(" Client " + i + ": \t");
-			for (int t = 0; t < this.instance.getNbPeriods(); t++){
+			for (int t = 0; t < this.instanceLIRP.getNbPeriods(); t++){
 				printStreamSol.print("Period "+t+": ");
-				for (int r = 0; r < myRoutes.length; r++){
-					double qu = this.deliveriesClients[i][t][r];
+				for (int r = 0; r < this.routesDC.length; r++){
+					double qu = this.deliveriesClients[i][r][t];
 					if (qu>0){
 						printStreamSol.print(" route " + r + "/ quantity = "+qu+ "\t");
 					}
@@ -311,70 +387,63 @@ public class Solution {
 		}
 	}	
 
-
-
-	// Method to recompute the objective function
-	public void evaluate(Route[] myRoutes, PrintStream printStreamSol){
-		printStreamSol.println("----------- RECALCULATION OF THE OBJECTIVE FUNCTION  ----- ");
+	/**
+	 * Recomputes the objective function from the Solution object attributes		
+	 * @param printStreamSol
+	 */
+	public void evaluate(PrintStream printStreamSol){
+		printStreamSol.println("-----  RECALCULATION OF THE OBJECTIVE FUNCTION  -----");
 		double objective1 = 0;
 		double objective2 = 0;
 		double objective3 = 0;
-		double objective4 = 0;
-		double objective5 = 0;
 
-		for (int j = 0; j < this.instance.getNbDepots(); j++) {
-			objective1 = objective1 + instance.getDepot(j).getFixedCost() * openDepots[j]; 
+		/* Fixed cost for opening the depots */
+		for (int dIter = 0; dIter < this.instanceLIRP.getNbDepots(); dIter++) {
+			if(this.openDepots[dIter])
+				objective1 += this.instanceLIRP.getDepot(dIter).getFixedCost(); 
 		}
 
-		for (int j = 0; j < this.instance.getNbDepots() ; j++) {
-			if (openDepots[j]==1) {
-				for (int t = 0; t < this.instance.getNbPeriods(); t++) {
-					objective2 = objective2 + instance.getDepot(j).getOrderingCost() * this.deliveriesDepots[j][t][r] * this.openDepots[j];
-				}
+		/* Transportation cost */
+		for (int t = 0; t < this.instanceLIRP.getNbPeriods(); t++) {
+			for (int rIter = 0; rIter < this.routesSD.length; rIter++) {
+				if(this.usedSDRoutes[rIter][t])
+					objective2 += this.routesSD[rIter].getCost();
+			}
+			for (int rIter = 0; rIter < this.routesDC.length; rIter++) {
+				if(this.usedDCRoutes[rIter][t])
+					objective2 += this.routesDC[rIter].getCost();
 			}
 		}
 
-		for (int t = 0; t < this.instance.getNbPeriods(); t++) {
-			for (int r = 0; r < this.routes.length; r++){
-				objective3 = objective3 + this.routes[r].getCost() * this.usedRoutes[r][t];   
+		for (int t = 0; t < this.instanceLIRP.getNbPeriods(); t++) {
+			for (int dIter = 0; dIter < this.instanceLIRP.getNbDepots(); dIter++) {
+				objective3 += this.instanceLIRP.getDepot(dIter).getHoldingCost() * this.stockDepot[dIter][t];   
 			}
-		}
-
-		for (int j = 0; j < this.instance.getNbDepots(); j++) {
-			if (openDepots[j]==1) {
-				for (int t = 0; t < this.instance.getNbPeriods(); t++) {
-					objective4 = objective4 + this.instance.getDepot(j).getHoldingCost() * this.stockDepot[j][t];   
-				}
-			}
-		}
-
-		for (int i = 0; i < this.instance.getNbClients(); i++) {
-			for (int t = 0; t < this.instance.getNbPeriods(); t++) {
-				objective5 = objective5 + this.instance.getClient(i).getHoldingCost() * this.stockClient[i][t];   
+			for (int cIter = 0; cIter < this.instanceLIRP.getNbClients(); cIter++) {
+				objective3 += this.instanceLIRP.getClient(cIter).getHoldingCost() * this.stockClient[cIter][t];   
 			}
 		}
 
 		printStreamSol.println("Fixed cost of opening depots: "+ objective1);
-		printStreamSol.println("Cost of delivering depots: "+ objective2);
-		printStreamSol.println("Cost of routes: "+ objective3);
-		printStreamSol.println("Inventory cost at depots: "+ objective4);
-		printStreamSol.println("Inventory cost at clients: "+ objective5);
+		printStreamSol.println("Cost of routes: "+ objective2);
+		printStreamSol.println("Inventory costs: "+ objective3);
 
-		double objective = objective1+objective2+objective3+objective4+objective5;
+		double objective = objective1 + objective2 + objective3;
 		printStreamSol.println("Objective function recalculated: "+ objective);
 	}
 
-
-
-	// PRINnbPeriods SOLUTION
-	public void print(Route[] myRoutes, PrintStream printStreamSol) { 
+	/**
+	 * 
+	 * @param printStreamSol
+	 */
+	public void print(PrintStream printStreamSol) { 
 		printOpenDepots(printStreamSol);
 		printDeliveryDepot(printStreamSol);
 		printStockDepot(printStreamSol);
 		printStockClient(printStreamSol);
-		printListOfRoutes(instance, myRoutes, printStreamSol);
-		printDetailedRoutes(myRoutes,printStreamSol);
-		evaluate(myRoutes, printStreamSol);
+		printListOfRoutes(printStreamSol);
+		// printDetailedRoutes(printStreamSol);
+		evaluate(printStreamSol);
 
 	}
 

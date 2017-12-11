@@ -1,8 +1,6 @@
 package solverLIRP;
 import java.io.PrintStream;
 
-import javax.swing.JFileChooser;
-
 import ilog.concert.IloException;
 import ilog.concert.IloIntVar;
 import ilog.concert.IloLinearIntExpr;
@@ -38,7 +36,12 @@ public class Solver{
 	
 	private boolean isSolved; // States if the MIP has been solved or not
 	
-	
+	/**
+	 * Creates a Solver object for the LIRP instance, setting the variables, available routes and the CPLEX model
+	 * @param LIRPInstance		the instance upon which is built the model	
+	 * @param availableRoutes	the direct and multi-stops routes that are available in this model
+	 * @throws IloException
+	 */
 	public Solver(Instance LIRPInstance, RouteManager availableRoutes) throws IloException {
 
 		/* Data */
@@ -109,7 +112,7 @@ public class Solver{
 			/* Constraints on the route for depots */
 			for(int dIter = 0; dIter < nbDepots; dIter++) {
 				/* Each depot is served by at most one route in every period (2) */
-				IloLinearNumExpr expr2 = this.LIRPSolver.linearNumExpr();
+				IloLinearIntExpr expr2 = this.LIRPSolver.linearIntExpr();
 				for (int rIter = 0; rIter < this.routesSD.length; rIter++) 
 					expr2.addTerm(Beta[dIter][rIter], this.x[rIter][t]);
 				this.LIRPSolver.addLe(expr2, 1);
@@ -117,7 +120,7 @@ public class Solver{
 
 			/* Each client is served by at most one route in every period (3)*/
 			for(int cIter = 0; cIter < nbClients; cIter++) {
-				IloLinearNumExpr expr3 = this.LIRPSolver.linearNumExpr();
+				IloLinearIntExpr expr3 = this.LIRPSolver.linearIntExpr();
 				for (int rIter = 0; rIter < this.routesDC.length; rIter++)
 					expr3.addTerm(Alpha[cIter][rIter], this.z[rIter][t]);
 				this.LIRPSolver.addLe(expr3, 1);
@@ -126,7 +129,7 @@ public class Solver{
 			for(int dIter = 0; dIter < nbDepots; dIter++) {
 				for (int rIter = 0; rIter < this.routesSD.length; rIter++) {
 					/* A supplier-depot route is used only if all depots on this route are opened (4)*/
-					IloLinearNumExpr expr4 = this.LIRPSolver.linearNumExpr();
+					IloLinearIntExpr expr4 = this.LIRPSolver.linearIntExpr();
 					expr4.addTerm(Gamma[dIter][rIter], this.x[rIter][t]);
 					expr4.addTerm(-1, this.y[dIter]);
 					this.LIRPSolver.addLe(expr4, 0);
@@ -135,7 +138,7 @@ public class Solver{
 
 			/* Each route delivering customers can only departs from an opened depot (5)*/
 			for (int rIter = 0; rIter < this.routesDC.length; rIter++) {
-				IloLinearNumExpr expr5 = this.LIRPSolver.linearNumExpr();
+				IloLinearIntExpr expr5 = this.LIRPSolver.linearIntExpr();
 				expr5.addTerm(1, this.z[rIter][t]);
 				for(int dIter = 0; dIter < nbDepots; dIter++) {
 					expr5.addTerm(-Beta[dIter][rIter], this.y[dIter]);
@@ -221,6 +224,10 @@ public class Solver{
 	/*=======================
 	 *  OBJECTIVE FUNCTION 
 		 ========================*/
+	/**
+	 * Solves the MIP related to the LIRP, setting the value of all the variables
+	 * @throws IloException
+	 */
 	private void solveMIP() throws IloException {
 
 		IloNumVar obj = this.LIRPSolver.numVar(0, Double.MAX_VALUE, "obj"); // objective function
@@ -262,7 +269,7 @@ public class Solver{
 	 * @param printStreamSol	the stream on which to print the solution
 	 * @return				the solution obtained from
 	 */
-	public Solution getSolution(PrintStream printStreamSol) {
+	public Solution getSolution(PrintStream printStreamSol) throws IloException {
 		
 		/*===============================
 		*     SAVE THE SOLVER OUTPUT
@@ -275,7 +282,6 @@ public class Solver{
 		if (this.LIRPSolver.getStatus().equals(IloCplex.Status.Infeasible))
 			System.out.println("There is no solution");
 		else {
-
 			System.out.println();
 			System.out.println("===========  RESULTS  ===========");
 			System.out.println();
@@ -291,89 +297,59 @@ public class Solver{
 			/* Save the status of depots (open/closed) */
 			for (int dIter = 0; dIter < this.LIRPInstance.getNbDepots(); dIter++){
 				if (this.LIRPSolver.getValue(this.y[dIter])>0)
-					sol.setOpenDepot(dIter, 1);
+					sol.setOpenDepot(dIter, true);
 				else
-					sol.setOpenDepot(dIter,0);
+					sol.setOpenDepot(dIter, false);
 			}
 
-			// Save the deliveries to depots (1 if the depot is delivered, 0 otherwise)
+			/* Save the deliveries to depots */
 			for (int t = 0; t < this.LIRPInstance.getNbPeriods(); t++){
 				for (int dIter = 0; dIter < this.LIRPInstance.getNbDepots(); dIter++){
-					if (this.LIRPSolver.getValue(this.x[dIter][t]) >0) {
-						sol.setDeliveryDepot(dIter,t,1);
-					}
-					else {sol.setDeliveryDepot(dIter,t, 0);	}
+					for(int rIter = 0; rIter < this.routesSD.length; rIter++)
+						if (this.LIRPSolver.getValue(this.x[rIter][t]) > 0) {
+							sol.setusedSDRoutes(rIter, t, true);
+							double vjrt = this.LIRPSolver.getValue(this.v[dIter][rIter][t]);
+							sol.setDeliveryDepot(dIter, rIter, t, vjrt);
+						}
+						else {
+							sol.setusedSDRoutes(rIter, t, false);
+							sol.setDeliveryDepot(dIter, rIter, t, 0);
+						}
 				}
 			}
 
-			// Save quantities delivered to depot
+			/* Save the inventory variables */
 			for (int t = 0; t < this.LIRPInstance.getNbPeriods(); t++){
 				for (int dIter = 0; dIter < this.LIRPInstance.getNbDepots(); dIter++){
-					double qjt = Math.round(this.LIRPSolver.getValue(q[dIter][t]));
-					sol.setDeliveryDepot(dIter,t,qjt);
+					sol.setStockDepot(dIter,t, Math.round(this.LIRPSolver.getValue(this.InvDepots[dIter][t])));
 				}
 			}
 
-			// Save the inventory variables
-			for (int t = 0; t < this.LIRPInstance.getNbPeriods(); t++){
-				for (int dIter = 0; dIter < this.LIRPInstance.getNbDepots(); dIter++){
-					sol.setStockDepot(dIter,t, this.LIRPSolver.getValue(this.InvDepots[dIter][t]));
-				}
-			}
-
-			// Save the quantity delivered to clients
+			/* Save the quantity delivered to clients */
 			for (int t = 0;t < this.LIRPInstance.getNbPeriods(); t++){
 				for (int cIter = 0;cIter < this.LIRPInstance.getNbClients(); cIter++){
-					for (int rIter = 0; rIter < nbRoutes; rIter++){
-						double uirt = Math.round(this.LIRPSolver.getValue(this.u[cIter][rIter][t]));
-						sol.setQuantityDeliveredToClient(cIter, rIter, t, uirt);			
-					}
-				}
-			}
-
-			// Save the quantity delivered from each depot to each client
-			for (int t=0; t < nbPeriods; t++){
-				for (int dIter = 0; dIter < nbDepots; dIter++){
-					for (int cIter = 0; cIter < nbClients; cIter++){
-						double flow = 0;
-						for (int rIter = 0; rIter < nbRoutes; rIter++){
-							//System.out.println("Route " +r+ " Brj = "+B[r][j]+" Ari= "+A[r][i]);
-							flow = flow + Beta[dIter][rIter] * Alpha[cIter][rIter] * this.LIRPSolver.getValue(this.u[cIter][rIter][t]); // See the sum in constraints (8)  
+					for (int rIter = 0; rIter < this.routesDC.length; rIter++){
+						if (this.LIRPSolver.getValue(this.x[rIter][t]) > 0) {
+							sol.setusedDCRoutes(rIter, t, true);
+							double uirt = Math.round(this.LIRPSolver.getValue(this.u[cIter][rIter][t]));
+							sol.setDeliveryClient(cIter, rIter, t, uirt);			
 						}
-						flow =  Math.round(flow);
-						sol.setQuantityDepotToClient(cIter, dIter, t, flow);
+						else {
+							sol.setusedDCRoutes(rIter, t, false);
+							sol.setDeliveryClient(cIter, rIter, t, 0);
+						}
 					}
 				}
 			}
 
-			//-------------------------------------------------
-			// Save inventory at clients for every period t>=1
-			for (int t = 0; t < nbPeriods; t++){
-				for (int cIter = 0; cIter < nbClients; cIter++){
-					double stcli =  this.LIRPSolver.getValue(this.InvClients[cIter][t]);
-					stcli = Math.round(stcli);
-					sol.setStockClient(cIter, t, stcli);
+			/* Save inventory at clients for every period t */
+			for (int t = 0; t < this.LIRPInstance.getNbPeriods(); t++){
+				for (int cIter = 0; cIter < this.LIRPInstance.getNbClients(); cIter++){
+					sol.setStockClient(cIter, t, Math.round(this.LIRPSolver.getValue(this.InvClients[cIter][t])));
 				}
 			}
 
-			// Save the routes performed in each period
-			for (int t = 0; t < nbPeriods; t++){
-				for (int rIter = 0; rIter < nbRoutes; rIter++){
-					if (this.LIRPSolver.getValue(this.z[rIter][t]) >0)
-						sol.setListOfRoutes(rIter, t, 1);
-					else 
-						sol.setListOfRoutes(rIter, t, 0);
-				}
-			}
-
-			// Save the route costs
-			for (int rIter = 0; rIter < nbRoutes; rIter++){
-				sol.setRouteCost(rIter, availableRoutes[rIter].getCost());
-			}
-			Checker checker = new Checker();
-			checker.check(sol, this.LIRPInstance, availableRoutes, printStreamSol);
-			//		MathHeuristic mathHeuristic = new MathHeuristic();
-			//		mathHeuristic.ArrayListofRoutes(myRoutes, printStreamSol);
+			Checker.check(sol, this.LIRPInstance, this.routesSD, this.routesDC, printStreamSol);
 			printStreamSol.println("--------------------------------------------");
 		}
 		return sol;

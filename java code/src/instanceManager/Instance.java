@@ -245,6 +245,20 @@ public class Instance {
 		return this.supplier;
 	}
 	
+	/**
+	 * Return the index of a depot 
+	 * @param depot	the Depot object of interest
+	 * @return		the index of this depot in the DepotsMap associated with the instance
+	 */
+	public int getDepotIndex(Location depot) {
+		for(int dIndex = 0; dIndex < this.depots.getNbSites(); dIndex++) {
+			if((Depot) this.depots.getSite(dIndex) == depot)
+				return dIndex;
+				
+		}
+		return -1;
+	}
+
 	/*
 	 * MUTATORS
 	 */

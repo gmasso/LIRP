@@ -34,8 +34,8 @@ public class RouteManager {
 	/**
 	 * Create a new RouteManager object from an existing one, changing the multi-stops routes
 	 * @param rm			the RouteManager object from which the new RouteManager is created
-	 * @param loopSD		the 
-	 * @param loopDC
+	 * @param loopSD		the multi-stops routes between the supplier and the depots to add to the manager
+	 * @param loopDC		the multi-stops routes between the depots and the clients to add to the manager
 	 */
 	public RouteManager(RouteManager rm, int[] loopSDIndices, int[] loopDCIndices) {
 		this.directSD = rm.getDirectSDRoutes();
@@ -43,11 +43,11 @@ public class RouteManager {
 		
 		this.loopSD = new ArrayList<Route>();
 		for(int routeSDIter = 0; routeSDIter < loopSDIndices.length; routeSDIter++) {
-			this.loopSD.add(rm.getLoopSDRoutes().get(routeSDIter));
+			this.loopSD.add(rm.getSDRoute(routeSDIter));
 		}
 		this.loopDC = new ArrayList<Route>();
 		for(int routeDCIter = 0; routeDCIter < loopDCIndices.length; routeDCIter++) {
-			this.loopDC.add(rm.getLoopDCRoutes().get(routeDCIter));
+			this.loopDC.add(rm.getDCRoute(routeDCIter));
 		}
 	}
 
@@ -123,6 +123,34 @@ public class RouteManager {
 		return routesDC;
 	}
 	
+	/**
+	 * 
+	 * @param rIndex		the index of the route of interest in the concatenation of directSD and loopSD
+	 * @return			the route between the supplier and a depot located at index rIndex
+	 */
+	public Route getSDRoute(int rIndex) {
+		if(rIndex < this.directSD.size())
+			return this.directSD.get(rIndex);
+		else if(rIndex < this.directSD.size() + this.loopSD.size())
+			return this.loopSD.get(rIndex - this.directSD.size());
+	
+		return null;
+	}
+
+	/**
+	 * 
+	 * @param rIndex		the index of the route of interest in the concatenation of directDC and loopDC
+	 * @return			the route between a depot and a client located at index rIndex
+	 */
+	public Route getDCRoute(int rIndex) {
+		if(rIndex < this.directDC.size())
+			return this.directDC.get(rIndex);
+		else if(rIndex < this.directDC.size() + this.loopDC.size())
+			return this.loopDC.get(rIndex - this.directDC.size());
+	
+		return null;
+	}
+
 	/*
 	 * METHODS
 	 */

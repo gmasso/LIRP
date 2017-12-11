@@ -5,44 +5,32 @@ import instanceManager.Instance;
 
 //import javax.print.attribute.standard.PrinterLocation;
 
-public class Checker {
-	public boolean check(Solution sol, Instance instance, Route[] availableRoutes, PrintStream printStreamSol) {
-		int I = instance.getNbClients();  // number of clients
-		int J = instance.getNbDepots();  // number of depots
-		int T = instance.getNbPeriods(); // number of periods
-		int R = myRoutes.getNbRoutes();  // number of routes
-		int[][] Alpha = new int[I][R]; // =1 if client i is in route r
-		int[][] Beta = new int[J][R]; // = 1 if depot j is in route r
+public final class Checker {
+	public static boolean check(Solution sol, Instance instance, Route[] routesSD, Route[] routesDC, PrintStream printStreamSol) {
+		
+		int[][] Alpha = new int[instance.getNbClients()][routesDC.length]; // =1 if client i is in route r
+		int[][] Beta = new int[instance.getNbDepots()][routesDC.length]; // = 1 if depot j is in route r
+		int[][] Gamma = new int[instance.getNbDepots()][routesSD.length]; // = 1 if depot j is in route r
 		int verbose=0;
 		int CMAX = 4;
 		
-		// loading the starting point of each route
-		int[] startRoute = new int[R];
-		for (int r = 0; r < R; r++) {
-			startRoute[r] = (int) myRoutes.getListRoutes(r, 1)-I;
+		/* Definition of parameters Alpha and Beta (for the depots-clients routes)*/
+		/* Fill the two arrays by checking for each route which clients and which depots it contains */
+		for(int rIter = 0; rIter < routesDC.length; rIter++) {
+			for(int cIter = 0; cIter < instance.getNbClients(); cIter++)
+				Alpha[cIter][rIter] = routesDC[rIter].containsLocation(instance.getClient(cIter)) ? 1 : 0;
+			for(int dIter = 0; dIter < instance.getNbDepots(); dIter++)
+				Beta[dIter][rIter] = routesDC[rIter].containsLocation(instance.getDepot(dIter)) ? 1 : 0;
 		}
-		
-		for (int r = 0; r < R; r++) {
-			for (int c = 0; c < CMAX ; c++) {
-				int cli; 
-				cli = (int) myRoutes.getListRoutes(r, c+2);
-					if (cli ==-1)
-					{
-						break;
-					}
-				Alpha[cli][r]= 1;
-			}
-		}
-		
 
-		for (int r = 0; r < R; r++) {
-			int depot = startRoute[r];
-			if (depot == -1) {
-				break;
-			}
-			Beta[depot][r] = 1;
+		/* Definition of parameters Gamma (for the supplier-depots routes) */
+		/* Fill the two arrays by checking for each route which clients and which depots it contains */
+		for(int rIter = 0; rIter < routesSD.length; rIter++) {
+			for(int dIter = 0; dIter < instance.getNbDepots(); dIter++)
+				Gamma[dIter][rIter] = routesSD[rIter].containsLocation(instance.getDepot(dIter)) ? 1 : 0;
 		}
 		
+		/* The return value of the checker */
 		boolean isFeasible = true;
 	
 		
@@ -80,7 +68,7 @@ public class Checker {
 				double leftTerm = 0;
 				for (int j = 0; j <J; j++)
 				{
-					leftTerm += sol.getQuantityDeliveredToDepot(j, t)-(instance.getCapacityVehicle()*sol.getDeliveryDepot(j, t));
+					leftTerm += sol.getQuantityDeliveryDepot(j, t)-(instance.getCapacityVehicle()*sol.getDeliveryDepot(j, t));
 				}
 				if(leftTerm > 0)
 				{
