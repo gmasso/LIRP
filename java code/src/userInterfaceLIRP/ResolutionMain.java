@@ -1,4 +1,4 @@
-package solverLIRP;
+package userInterfaceLIRP;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,6 +7,9 @@ import java.util.Arrays;
 
 import ilog.concert.IloException;
 import instanceManager.Instance;
+import solverLIRP.Route;
+import solverLIRP.Solution;
+import solverLIRP.Solver;
 
 public class ResolutionMain {
 	/**
