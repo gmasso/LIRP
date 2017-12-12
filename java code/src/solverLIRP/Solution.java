@@ -1,5 +1,6 @@
 package solverLIRP;
 import java.io.PrintStream;
+import java.util.ArrayList;
 
 import instanceManager.Instance;
 
@@ -147,11 +148,33 @@ public class Solution {
 	 * @param period
 	 * @return
 	 */
-	public int getSDRouteUse(int rIndex, int period) {
-		if(this.usedSDRoutes[rIndex][period])
-			return 1;
-		else
-			return 0;
+	public boolean isUsedSDRoute(int rIndex, int period) {
+		return this.usedSDRoutes[rIndex][period];
+	}
+	
+	/**
+	 * 
+	 * @return	the set of indices of loop routes used in the solution between the supplier and the depots that are used in the solution
+	 */
+	public ArrayList<Integer> getLoopSDRoutesUsed() {
+		ArrayList<Integer> loopUsed = new ArrayList<Integer>();
+		for(int rIter = 0; rIter < this.routesSD.length; rIter++) {
+			/* Restrict the search only to multi-stops routes */
+			if(this.routesSD[rIter].getNbStops() > 1) {
+				boolean notUsed = true;
+				int t = 0;
+				/* Check if the route is used in the solution in at least one period */
+				while(notUsed && t < this.instanceLIRP.getNbPeriods()) {
+					/* If the route is used in period t, add its index to the looopUsed list */
+					if(this.usedSDRoutes[rIter][t]) {
+						notUsed = false;
+						loopUsed.add(rIter);
+					}
+					t++;
+				}
+			}
+		}
+		return loopUsed;
 	}
 	
 	/**
@@ -160,11 +183,34 @@ public class Solution {
 	 * @param period
 	 * @return
 	 */
-	public boolean getDCRouteUse(int rIndex, int period) {
+	public boolean isUsedDCRoute(int rIndex, int period) {
 		return this.usedDCRoutes[rIndex][period];
 	}
 	
-	public Route[] getLoopDCRoutesUsed()
+	/**
+	 * 
+	 * @return	the set of indices of loop routes used in the solution between depots and clients that are used in the solution
+	 */
+	public ArrayList<Integer> getLoopDCRoutesUsed() {
+		ArrayList<Integer> loopUsed = new ArrayList<Integer>();
+		for(int rIter = 0; rIter < this.routesDC.length; rIter++) {
+			/* Restrict the search only to multi-stops routes */
+			if(this.routesDC[rIter].getNbStops() > 1) {
+				boolean notUsed = true;
+				int t = 0;
+				/* Check if the route is used in the solution in at least one period */
+				while(notUsed && t < this.instanceLIRP.getNbPeriods()) {
+					/* If the route is used in period t, add its index to the looopUsed list */
+					if(this.usedDCRoutes[rIter][t]) {
+						notUsed = false;
+						loopUsed.add(rIter);
+					}
+					t++;
+				}
+			}
+		}
+		return loopUsed;
+	}
 	
 	/*==========================
 	 *         MUTATORS 

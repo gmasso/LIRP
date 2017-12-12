@@ -41,7 +41,8 @@ public final class Checker {
 				/* Each depot is served by at most one route in every period (2) */
 				int routeDepotConst = 0;
 				for (int rIter = 0; rIter < routesDC.length; rIter++) 
-					routeDepotConst += Beta[dIter][rIter] * sol.getDCRouteUse(rIter, t);
+					if(sol.isUsedDCRoute(rIter, t))
+						routeDepotConst += Beta[dIter][rIter] ;
 				if(routeDepotConst > 1) {
 					System.out.println("ERROR, Constraint 2, depot " + dIter + ",  period "+t);
 					isFeasible = false;
@@ -56,7 +57,8 @@ public final class Checker {
 			for(int cIter = 0; cIter < instance.getNbClients(); cIter++) {
 				int routeClientConst = 0;
 				for (int rIter = 0; rIter < routesDC.length; rIter++)
-					routeClientConst += Alpha[cIter][rIter] * sol.getDCRouteUse(rIter, t);
+					if(sol.isUsedDCRoute(rIter, t))
+						routeClientConst += Alpha[cIter][rIter];
 				if(routeClientConst > 1) {
 					System.out.println("ERROR, Constraint 3, client " + cIter + ",  period "+ t);
 					isFeasible = false;
@@ -70,7 +72,9 @@ public final class Checker {
 			for(int dIter = 0; dIter < instance.getNbDepots(); dIter++) {
 				for (int rIter = 0; rIter < routesSD.length; rIter++) {
 					/* A supplier-depot route is used only if all depots on this route are opened (4)*/
-					int routeSupplierConst = Gamma[dIter][rIter] * sol.getSDRouteUse(rIter, t);
+					int routeSupplierConst = 0;
+					if(sol.isUsedSDRoute(rIter, t))
+						routeSupplierConst = Gamma[dIter][rIter];
 					if(routeSupplierConst > 0 && !sol.isOpenDepot(dIter)) {
 						System.out.println("ERROR, Constraint 4, depot " + dIter + ",  period "+ t);
 						isFeasible = false;
@@ -89,7 +93,7 @@ public final class Checker {
 					if(sol.isOpenDepot(dIter))
 						routeOpenDepot += Beta[dIter][rIter];
 				}
-				if(sol.getDCRouteUse(rIter, t) > routeOpenDepot) {
+				if(sol.isUsedDCRoute(rIter, t) && routeOpenDepot < 1) {
 					System.out.println("ERROR, Constraint 5,  period "+ t);
 					isFeasible = false;
 				}
@@ -105,24 +109,35 @@ public final class Checker {
 				for(int dIter = 0; dIter < instance.getNbDepots(); dIter++)
 					routeSumQDepots += sol.getDeliveryDepot(dIter, rIter, t);
 				// TO MODIFY IN THE FINAL VERSION
-				if(sol.getSDRouteUse(rIter, t) && routeSumQDepots < instance.getCapacityVehicle(0))
-				expr6.addTerm(-instance.getCapacityVehicle(0), this.x[rIter][t]);
-				this.LIRPSolver.addLe(expr6, 0);
+				if((!sol.isUsedSDRoute(rIter, t) && routeSumQDepots > 0) || (sol.isUsedSDRoute(rIter, t) && routeSumQDepots > instance.getCapacityVehicle(0))) {
+					System.out.println("ERROR, Constraint 6, period "+ t);
+					isFeasible = false;
+				}
+				else {
+					if (verbose < 0)
+						System.out.println("BINDING, Constraint 6,  period "+ t +"         " + routeSumQDepots );
+				}
 			}
 
 
 			/* Vehicle capacity on each delivery on each opened depot-client route (7)*/
 			for (int rIter = 0; rIter < routesDC.length; rIter++) {
-				IloLinearNumExpr expr7 = LIRPSolver.linearNumExpr();
+				double routeSumQClients = 0;
 				for(int cIter = 0; cIter < instance.getNbClients(); cIter++)
-					expr7.addTerm(1, this.u[cIter][rIter][t]);
+					routeSumQClients += sol.getDeliveryClient(cIter, rIter, t);
 				// TO MODIFY IN THE FINAL VERSION
-				expr7.addTerm(-this.LIRPInstance.getCapacityVehicle(0), this.x[rIter][t]);
-				this.LIRPSolver.addLe(expr7, 0);
+				if((!sol.isUsedDCRoute(rIter, t) && routeSumQClients > 0) || (sol.isUsedDCRoute(rIter, t) && routeSumQClients > instance.getCapacityVehicle(0))) {
+					System.out.println("ERROR, Constraint 7, period "+ t);
+					isFeasible = false;
+				}
+				else {
+					if (verbose < 0)
+						System.out.println("BINDING, Constraint 7,  period "+ t +"         " + routeSumQClients );
+				}
 			}
 
 			/* Flow conservation at the depots (8) */
-			for(int dIter = 0; dIter < nbDepots; dIter++) {
+			for(int dIter = 0; dIter < instance.getNbDepots(); dIter++) {
 				IloLinearNumExpr expr8 = this.LIRPSolver.linearNumExpr();
 				expr8.addTerm(1, this.InvDepots[dIter][t]);
 				double rhs8 = 0;

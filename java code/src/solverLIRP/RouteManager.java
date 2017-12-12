@@ -14,6 +14,7 @@ public class RouteManager {
 	/*
 	 * ATTRIBUTES
 	 */
+	private Instance instanceLIRP;		// The instance to which the routes apply
 	private ArrayList<Route> directSD;	// Direct routes between the supplier and the depots
 	private ArrayList<Route> loopSD;		// Multi-stops routes from the supplier to the depots
 	private ArrayList<Route> directDC;	// Direct routes between the depots and the clients (one set for each depot)
@@ -25,19 +26,24 @@ public class RouteManager {
 	 */
 	public RouteManager(Instance instLIRP) throws IOException {
 		/* Create direct routes for the instance */
+		this.instanceLIRP = instLIRP;
 		this.directSD = new ArrayList<Route>();
 		this.directDC = new ArrayList<Route>();
 		this.populateDirectRoutes(instLIRP);
+
+		this.loopSD = new ArrayList<Route>();
+		this.loopDC = new ArrayList<Route>();
 		this.populateLoops(instLIRP);
 	}
 	
 	/**
 	 * Create a new RouteManager object from an existing one, changing the multi-stops routes
 	 * @param rm			the RouteManager object from which the new RouteManager is created
-	 * @param loopSD		the multi-stops routes between the supplier and the depots to add to the manager
-	 * @param loopDC		the multi-stops routes between the depots and the clients to add to the manager
+	 * @param loopSD		the indices at which to collect multi-stops routes between the supplier and the depots from rm to add them to the new route manager
+	 * @param loopDC		the indices at which to collect multi-stops routes between the depots and the clients from rm to add them to the new route manager
 	 */
-	public RouteManager(RouteManager rm, int[] loopSDIndices, int[] loopDCIndices) {
+	private RouteManager(RouteManager rm, int[] loopSDIndices, int[] loopDCIndices) {
+		this.instanceLIRP = rm.getInstance();
 		this.directSD = rm.getDirectSDRoutes();
 		this.directDC = rm.getDirectDCRoutes();
 		
@@ -51,9 +57,32 @@ public class RouteManager {
 		}
 	}
 
+	/**
+	 * Creates a new RouteManager object using the direct routes of an existing one, but replacing its multi-stops routes with new ones
+	 * @param rm		the RouteManager object from which the new RouteManager is created
+	 * @param loopSD	the multi-stops routes between the supplier and the depots to add to the manager
+	 * @param loopDC	the multi-stops routes between the depots and the clients to add to the manager
+	 */
+	private RouteManager(RouteManager rm, ArrayList<Route> loopSD, ArrayList<Route> loopDC) {
+			this.instanceLIRP = rm.getInstance();
+			this.directSD = rm.getDirectSDRoutes();
+			this.directDC = rm.getDirectDCRoutes();
+
+			this.loopSD = loopSD;
+			this.loopDC = loopDC;
+	}
+	
 	/*
 	 * ACCESSORS
 	 */
+	/**
+	 * 
+	 * @return	the instance to which the routes in the RouteManager object relate
+	 */
+	public Instance getInstance() {
+		return this.instanceLIRP;
+	}
+	
 	/**
 	 * 
 	 * @return	the ArrayList of direct routes from the supplier to the depots
@@ -193,9 +222,6 @@ public class RouteManager {
 
 		/* Get an upper bound on the maximum number of stops in a route */
 		int maxNbStops = (int) Math.floor(Parameters.max_time_route/Parameters.stopping_time);
-
-		this.loopSD = new ArrayList<Route>();
-		this.loopDC = new ArrayList<Route>();
 
 		/* If the stopping time is small enough, build the multi-stops routes for this instance */
 		if(maxNbStops > 1){
