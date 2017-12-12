@@ -21,11 +21,10 @@ public class DepotsMap extends Layer {
 	 */
 	public DepotsMap(double gridSize, double fc, double[] oc, double initInv, double capa, Location supplier) throws IOException{
 		super(gridSize, oc.length);
-
 		// Start by assigning virtual coordinates to all sites, out of the grid
-        for(int sIndex = 0; sIndex < this.nbSites; sIndex++) {
-        		this.sites[sIndex] = new Depot(new Point2D.Double(this.gridSize * 2, this.gridSize * 2), fc, 1, oc[sIndex], initInv, capa, supplier);
-        }
+		for(int sIndex = 0; sIndex < this.nbSites; sIndex++) {
+			this.sites[sIndex] = new Depot(new Point2D.Double(this.gridSize * 2, this.gridSize * 2), fc, 1, oc[sIndex], initInv, capa, supplier);
+		}
         // The minimum distance between two sites must be at least half of the radius of a disk whose area is equal to the average area per site.
         double minDist = this.gridSize / Math.sqrt(this.nbSites * Math.PI * 2);
         // Compute the coordinates of all the sites

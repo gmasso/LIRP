@@ -31,7 +31,7 @@ public final class Parameters {
 	public static double grid_size = 100;
 	
 	// Granularity for the demand map (split into demand boxes of size nbSteps x nbSteps)
-	public static int nbSteps = 1000;
+	public static int nbSteps = 100;
 	
 	// Routes parameters
 	public static double avg_speed = 50; // In km/h

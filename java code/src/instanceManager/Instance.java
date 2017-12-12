@@ -47,7 +47,6 @@ public class Instance {
 	 * @throws NullPointerException
 	 */
 	public Instance(double gridSize, int planningHorizon, int nbDepots, double fc, double[] oc, int nbClients, double[] citiesSizes, double urbanRatio, double holdingRatio, int period, boolean uniformDistrib, double minD, double maxD, double[] vCapacities) throws IOException, NullPointerException {
-		System.out.println("Creating instance...");
 		try {
 			this.gridSize = gridSize;
 			this.supplier = new Location(new Point2D.Double(gridSize/2, gridSize/2));
@@ -63,10 +62,15 @@ public class Instance {
 		catch(IOException ioe) {
 			System.out.println("Problem while generating the instance");
 			System.out.println(ioe);
+			System.exit(1);
 		}
 		catch(NullPointerException npe) {
 			System.out.println("Problem while generating the instance");
+			System.out.println("supplier:" + this.supplier);
+			System.out.println("depots:" + this.depots);
+			System.out.println("clients:" + this.clients);
 			System.out.println(npe);
+			System.exit(1);
 		}
 	}
 	

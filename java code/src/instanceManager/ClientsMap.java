@@ -48,12 +48,17 @@ public class ClientsMap extends Layer {
 		this.sites = new Client[this.nbSites];
 		// Compute the location of each client on the map
 		Point2D[] clientsCoords = this.generateClientsMap(citiesSizes, urbanRatio);
+		
+		// Fill the clients array with their respective coordinates
+		for(int sIndex = 0; sIndex < this.nbSites; sIndex++) {
+			this.sites[sIndex] = new Client(clientsCoords[sIndex], holdingCost, 0, -1);
+		}
 		// We set the average demand per box as the total demand (avgD/site * nbSites) divided among the number of demand boxes on the map
 		double[][] clientsDemands = this.generateDemands(planningHorizon, period, uniformDistrib, ((maxD + minD) / 2) * nbSites / (Parameters.nbSteps * Parameters.nbSteps));
-	
-		// Fill the clients array with their respective coordinates and demand sequences
+
+		// Set the clients demands
 		for(int sIndex = 0; sIndex < this.nbSites; sIndex++) {
-			this.sites[sIndex] = new Client(clientsCoords[sIndex], holdingCost, clientsDemands[sIndex], 0, -1);
+			((Client) this.sites[sIndex]).setDemands(clientsDemands[sIndex]);
 		}
 	}
 
@@ -108,11 +113,9 @@ public class ClientsMap extends Layer {
 	 * @throws IOException
 	 */
 	private Point2D[] generateClientsMap(double[] citiesSizes, double urbanRatio) throws IOException {
-		System.out.println("Creating a client with "+ citiesSizes.length + " cities and ur=" + urbanRatio + "...");
 		this.citiesMap = new CitiesMap(this.gridSize, citiesSizes);
 		this.urbanRatio = urbanRatio;
 		Point2D[] cCoords = new Point2D[this.nbSites];  
-		System.out.println("OK");
 
 		// If there are no cities, draw the coordinates of the clients at random on the map
 		if(citiesSizes.length == 0) {
@@ -191,7 +194,6 @@ public class ClientsMap extends Layer {
 		// For each city of the map, create an array storing the probability to link to each square
 		// A ratio of the demand corresponding to the urban ratio of the area is kept and 
 		double baseIntensity = 1 -  this.urbanRatio;
-
 		// Determine the intensity of each box of demand depending on how close they are to urban areas
 		for(int x = 0; x < Parameters.nbSteps; x++) {
 			for(int y = 0; y < Parameters.nbSteps; y++) {
@@ -204,7 +206,6 @@ public class ClientsMap extends Layer {
 					// The weight of each client to collect the demand at coords (x, y) is proportional to the inverse of the square of the distance 
 					clientsWeights[clientsIndex] = 1 / Math.pow(demandLoc.distance(this.sites[clientsIndex].getCoordinates()), 2);
 				}
-
 				double[] dSeq = generateDemandSequence(nbPeriods, period, uniformDistrib);
 				// Allocate the box demand to the clients randomly, period by period, according to their respective weights
 				for(int periodIter = 0; periodIter < nbPeriods; periodIter++)

@@ -29,15 +29,14 @@ public class ResolutionMain {
 
 	public static void main(String[] args) throws IOException, IloException {
 
-		String instDir = "../../../Instances/Complete/";
+		String instDir = "../Instances/Complete/";
 		if (create_inst) {
-
 			for(int nbClients : nb_clients) {
 				/* Create instances with 0 or 2 cities */
 				for(int nbCities = 0; nbCities < 3; nbCities += 2) {
 					/* Create 5 instances of each type */
 					for(int i = 0; i < 5; i++) {
-						Instance inst = new Instance(Parameters.grid_size, 10, 3, 100, oc_depots, nbClients, selectCitiesSizes(nbCities), 0.75, 0.5, 0, true, 0, 10, capa_vehicles);
+						Instance inst = new Instance(Parameters.grid_size, 10, 3, 100, oc_depots, nbClients, selectCitiesSizes(nbCities), 1.5, 0.5, 0, true, 0, 10, capa_vehicles);
 						inst.writeToJSONFile(instDir + "lirp" + nbClients + "cl" + nbCities + "ci_" + i + ".json");
 					}
 				}
@@ -68,7 +67,7 @@ public class ResolutionMain {
 					System.setOut(printStreamLog);
 					System.setErr(printStreamLog);
 					File fileSol = new File(fichierSol);
-					// Stream pour la solution
+					// Stream for the solution
 					PrintStream printStreamSol = new PrintStream(fileSol);
 
 					RouteManager rm = new RouteManager(instLIRP);

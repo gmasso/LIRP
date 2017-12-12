@@ -24,6 +24,7 @@ public abstract class Layer {
 	public Layer(double gridSize, int nbSites) throws IOException {
 		this.gridSize = gridSize;
 		this.nbSites = nbSites;
+		this.sites = new Location[this.nbSites];
 	}
 
 	/**

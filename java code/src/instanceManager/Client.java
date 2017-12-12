@@ -28,6 +28,19 @@ public class Client extends Location{
 	 * @param capacity			the inventory capacity
 	 * @throws IOException
 	 */
+	public Client(Point2D coordClient, double holdingCost, double initialInventory, double capacity) throws IOException{
+		super(coordClient, holdingCost, initialInventory, capacity);
+	}	
+	
+	/**
+	 * Creates a Client object from all its attributes
+	 * @param coordClient		the coordinates at which the client is located
+	 * @param holdingCost		the holding cost at the client
+	 * @param demands			the sequence of customers' demands faced by the client
+	 * @param initialInventory	the initial on-hand inventory at the beginning of the planning horizon
+	 * @param capacity			the inventory capacity
+	 * @throws IOException
+	 */
 	public Client(Point2D coordClient, double holdingCost, double[] demands, double initialInventory, double capacity) throws IOException{
 		super(coordClient, holdingCost, initialInventory, capacity);
 		this.demands = demands;
@@ -59,6 +72,14 @@ public class Client extends Location{
 	/*
 	 * MUTATORS
 	 */
+	/**
+	 * Set the value of the demands for the entire planning horizon
+	 * @param demands	the demands sequence for the client
+	 */
+	public void setDemands(double[] demands){
+		this.demands = demands;
+	}
+	
 	/**
 	 * Set the value of the demand for a specific period
 	 * @param period	the period to which the demand is associated
