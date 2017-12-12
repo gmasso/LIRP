@@ -29,6 +29,12 @@ public class Solution {
 	/*==============================
 	 *        CONSTRUCTEUR  
 	 ===============================*/
+	/**
+	 * 
+	 * @param instance
+	 * @param routesSD
+	 * @param routesDC
+	 */
 	public Solution(Instance instance, Route[] routesSD, Route[] routesDC){
 
 		/* Initialization of the attributes */
@@ -134,6 +140,31 @@ public class Solution {
 	public double getStockClient(int cIndex, int t){
 		return this.stockClient[cIndex][t];
 	}
+	
+	/**
+	 * 
+	 * @param rIndex
+	 * @param period
+	 * @return
+	 */
+	public int getSDRouteUse(int rIndex, int period) {
+		if(this.usedSDRoutes[rIndex][period])
+			return 1;
+		else
+			return 0;
+	}
+	
+	/**
+	 * 
+	 * @param rIndex
+	 * @param period
+	 * @return
+	 */
+	public boolean getDCRouteUse(int rIndex, int period) {
+		return this.usedDCRoutes[rIndex][period];
+	}
+	
+	public Route[] getLoopDCRoutesUsed()
 	
 	/*==========================
 	 *         MUTATORS 

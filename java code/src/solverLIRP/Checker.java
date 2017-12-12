@@ -1,19 +1,21 @@
 package solverLIRP;
 import java.io.PrintStream;
 
+import ilog.concert.IloLinearIntExpr;
+import ilog.concert.IloLinearNumExpr;
 import instanceManager.Instance;
 
 //import javax.print.attribute.standard.PrinterLocation;
 
 public final class Checker {
 	public static boolean check(Solution sol, Instance instance, Route[] routesSD, Route[] routesDC, PrintStream printStreamSol) {
-		
+
 		int[][] Alpha = new int[instance.getNbClients()][routesDC.length]; // =1 if client i is in route r
 		int[][] Beta = new int[instance.getNbDepots()][routesDC.length]; // = 1 if depot j is in route r
 		int[][] Gamma = new int[instance.getNbDepots()][routesSD.length]; // = 1 if depot j is in route r
 		int verbose=0;
 		int CMAX = 4;
-		
+
 		/* Definition of parameters Alpha and Beta (for the depots-clients routes)*/
 		/* Fill the two arrays by checking for each route which clients and which depots it contains */
 		for(int rIter = 0; rIter < routesDC.length; rIter++) {
@@ -29,357 +31,150 @@ public final class Checker {
 			for(int dIter = 0; dIter < instance.getNbDepots(); dIter++)
 				Gamma[dIter][rIter] = routesSD[rIter].containsLocation(instance.getDepot(dIter)) ? 1 : 0;
 		}
-		
+
 		/* The return value of the checker */
 		boolean isFeasible = true;
-	
-		
-		/*CHECK CONSTRAINT 2 */
-		for(int i = 0; i < I; i++ )
-		{
-			for(int t = 0; t < T; t++)
-			{
-				double leftTerm = 0;
-				for (int r = 0; r < R; r++)
-				{
-						leftTerm += sol.getListOfRoutes(r, t)*Alpha[i][r];
-				}
-				if(leftTerm > 1)
-				{
-					System.out.println("ERROR, Constraint 2, client"+i+",  period "+t);
+
+		for (int t = 0; t < instance.getNbPeriods(); t++) {
+			/* Check constraints on the route for depots */
+			for(int dIter = 0; dIter < instance.getNbDepots(); dIter++) {
+				/* Each depot is served by at most one route in every period (2) */
+				int routeDepotConst = 0;
+				for (int rIter = 0; rIter < routesDC.length; rIter++) 
+					routeDepotConst += Beta[dIter][rIter] * sol.getDCRouteUse(rIter, t);
+				if(routeDepotConst > 1) {
+					System.out.println("ERROR, Constraint 2, depot " + dIter + ",  period "+t);
 					isFeasible = false;
 				}
+				else {
+					if (verbose < 0)
+						System.out.println("BINDING, Constraint 2, depot " + dIter + ",  period "+ t +"         " + routeDepotConst );
+				}
+			}
+
+			/* Each client is served by at most one route in every period (3)*/
+			for(int cIter = 0; cIter < instance.getNbClients(); cIter++) {
+				int routeClientConst = 0;
+				for (int rIter = 0; rIter < routesDC.length; rIter++)
+					routeClientConst += Alpha[cIter][rIter] * sol.getDCRouteUse(rIter, t);
+				if(routeClientConst > 1) {
+					System.out.println("ERROR, Constraint 3, client " + cIter + ",  period "+ t);
+					isFeasible = false;
+				}
+				else {
+					if (verbose < 0)
+						System.out.println("BINDING, Constraint 3, client" + cIter + ",  period "+ t +"         " + routeClientConst );
+				}
+			}
+
+			for(int dIter = 0; dIter < instance.getNbDepots(); dIter++) {
+				for (int rIter = 0; rIter < routesSD.length; rIter++) {
+					/* A supplier-depot route is used only if all depots on this route are opened (4)*/
+					int routeSupplierConst = Gamma[dIter][rIter] * sol.getSDRouteUse(rIter, t);
+					if(routeSupplierConst > 0 && !sol.isOpenDepot(dIter)) {
+						System.out.println("ERROR, Constraint 4, depot " + dIter + ",  period "+ t);
+						isFeasible = false;
+					}
+					else {
+						if (verbose < 0)
+							System.out.println("BINDING, Constraint 4, depot " + dIter + ",  period "+ t +"         " + routeSupplierConst );
+					}
+				}
+			}
+
+			/* Each route delivering customers can only departs from an opened depot (5)*/
+			for (int rIter = 0; rIter < routesDC.length; rIter++) {
+				int routeOpenDepot = 0;
+				for(int dIter = 0; dIter < instance.getNbDepots(); dIter++) {
+					if(sol.isOpenDepot(dIter))
+						routeOpenDepot += Beta[dIter][rIter];
+				}
+				if(sol.getDCRouteUse(rIter, t) > routeOpenDepot) {
+					System.out.println("ERROR, Constraint 5,  period "+ t);
+					isFeasible = false;
+				}
+				else {
+					if (verbose < 0)
+						System.out.println("BINDING, Constraint 5,  period "+ t +"         " + routeOpenDepot );
+				}
+			}
+
+			/* Vehicle capacity on each delivery on each opened supplier-depot route (6)*/
+			for (int rIter = 0; rIter < routesSD.length; rIter++) {
+				double routeSumQDepots = 0;
+				for(int dIter = 0; dIter < instance.getNbDepots(); dIter++)
+					routeSumQDepots += sol.getDeliveryDepot(dIter, rIter, t);
+				// TO MODIFY IN THE FINAL VERSION
+				if(sol.getSDRouteUse(rIter, t) && routeSumQDepots < instance.getCapacityVehicle(0))
+				expr6.addTerm(-instance.getCapacityVehicle(0), this.x[rIter][t]);
+				this.LIRPSolver.addLe(expr6, 0);
+			}
+
+
+			/* Vehicle capacity on each delivery on each opened depot-client route (7)*/
+			for (int rIter = 0; rIter < routesDC.length; rIter++) {
+				IloLinearNumExpr expr7 = LIRPSolver.linearNumExpr();
+				for(int cIter = 0; cIter < instance.getNbClients(); cIter++)
+					expr7.addTerm(1, this.u[cIter][rIter][t]);
+				// TO MODIFY IN THE FINAL VERSION
+				expr7.addTerm(-this.LIRPInstance.getCapacityVehicle(0), this.x[rIter][t]);
+				this.LIRPSolver.addLe(expr7, 0);
+			}
+
+			/* Flow conservation at the depots (8) */
+			for(int dIter = 0; dIter < nbDepots; dIter++) {
+				IloLinearNumExpr expr8 = this.LIRPSolver.linearNumExpr();
+				expr8.addTerm(1, this.InvDepots[dIter][t]);
+				double rhs8 = 0;
+				if(t == 0)
+					rhs8 = this.LIRPInstance.getDepot(dIter).getInitialInventory();
 				else
-				{
-					if (verbose < 0)
-					{
-					System.out.println("BINDING, Constraint 2, client"+i+",  period "+t+"         "+leftTerm );
-					}
+					expr8.addTerm(-1, this.InvDepots[dIter][t-1]);
+				for(int rSDIter = 0; rSDIter < this.routesSD.length; rSDIter++)
+					expr8.addTerm(-1, this.v[dIter][rSDIter][t]);
+				for (int rIter = 0; rIter < this.routesDC.length; rIter++) {
+					for (int cIter = 0; cIter < nbClients; cIter++)
+						expr8.addTerm(Beta[dIter][rIter], this.u[cIter][rIter][t]);
 				}
+				this.LIRPSolver.addEq(expr8, rhs8);
 			}
 			
-		}
-		
-		/*CHECK CONSTRAINT 3 */
-		for(int r = 0; r < R; r++ ) 
-		{
-			for(int t = 0; t < T; t++)
-			{
-				double leftTerm = 0;
-				for (int j = 0; j <J; j++)
-				{
-					leftTerm += sol.getQuantityDeliveryDepot(j, t)-(instance.getCapacityVehicle()*sol.getDeliveryDepot(j, t));
+			/* Flow conservation at the clients (9) */
+			for (int cIter = 0; cIter < nbClients; cIter++){
+				IloLinearNumExpr expr9 = this.LIRPSolver.linearNumExpr();
+				expr9.addTerm(1, this.InvClients[cIter][t]);
+				double rhs9 = -this.LIRPInstance.getClient(cIter).getDemand(t);
+				if (t==0)
+					rhs9 += this.LIRPInstance.getClient(cIter).getInitialInventory();
+				else
+					expr9.addTerm(-1, this.InvClients[cIter][t - 1]);
+				for (int rIter = 0; rIter < this.routesDC.length; rIter++) {
+					expr9.addTerm(-1, this.u[cIter][rIter][t]);
 				}
-				if(leftTerm > 0)
-				{
-					System.out.println("ERROR, Constraint 3, route "+r+", period "+t);
-					isFeasible = false;
-				}
-				else 
-				{
-					if (verbose < 0)
-					{
-					System.out.println("BINDING, Constraint 3, route"+r+",  period "+t);
-					}
-				}		
+				this.LIRPSolver.addEq(expr9, rhs9);
 			}
-		}
 
-		/*CHECK CONSTRAINT 4 */
-		for(int j = 0; j < J; j++ )
-		{
-			double leftTerm = 0;
-			for(int t = 0;t < T; t++)
-			{					leftTerm +=sol.getDeliveryDepot(j, t)-sol.getOpenDepots(j); 
-				
-				if(leftTerm > 0)
-				{
-					System.out.println("ERROR, Constraint 4, depot "+j+", period "+t);
-					isFeasible = false;
-				}
-				else 
-				{
-					if (verbose>1)
-					{
-					System.out.println("BINDING, Constraint 4, depot"+j+", period "+t);
-					}
-				}
+			/* Stock capacity at the client or ensuring that the inventory is not greater than the sum of remaining demands (10) */
+			// IS THIS LAST ASPECT OF THE CONSTRAINT REALLY USEFUL? 
+			for (int cIter = 0; cIter < nbClients; cIter++) {
+				double remainingDemand = this.LIRPInstance.getClient(cIter).getCumulDemands(t+1, nbPeriods);
+				IloLinearNumExpr expr10 = this.LIRPSolver.linearNumExpr();
+				expr10.addTerm(1, this.InvClients[cIter][t]);
+				if(remainingDemand < this.LIRPInstance.getClient(cIter).getCapacity())
+					this.LIRPSolver.addLe(expr10, remainingDemand);
+				else
+					this.LIRPSolver.addLe(expr10, this.LIRPInstance.getClient(cIter).getCapacity());
 			}
-		}
-		
-		/*CHECK CONSTRAINT 5 */
-		for(int i = 0; i < I; i++ )
-		{
-			for(int t = 0; t < T; t++)
-			{
-				double leftTerm = 0;
-				for (int r = 0; r < R; r++)
-				{
-					leftTerm += sol.getQuantityDeliveredToClient(i, r, t)-(instance.getCapacityVehicle()*sol.getListOfRoutes(r, t));
-				}
-				if(leftTerm > 0)
-				{
-				System.out.println("ERROR, Constraint 5, client "+i+", period "+t);
-				isFeasible = false;
-				}
-				else 
-				{
-					if (verbose>1)
-					{
-					System.out.println("BINDING, Constraint 5, client"+i+", period "+t);
-					}
-				}		
+
+			/* Capacity constraints at depots (11) */
+			for (int dIter = 0; dIter < nbDepots; dIter++) {
+				IloLinearNumExpr expr11 = this.LIRPSolver.linearNumExpr();
+				expr11.addTerm(1, this.InvDepots[dIter][t]);
+				this.LIRPSolver.addLe(expr11, this.LIRPInstance.getDepot(dIter).getCapacity());
 			}
-		}
-	
-		/*CHECK CONSTRAINT 6 */
-		for(int t = 0; t < T; t++)
-		{
-			double leftTerm = 0;
-			for (int r = 0; r < R; r++)
-			{
-				leftTerm += sol.getListOfRoutes(r, t)-instance.getNbVehicles();
-			
-			if(leftTerm > 0)
-			{
-				System.out.println("ERROR, Constraint 6, period "+t+", route "+r);
-				isFeasible = false;
-			}
-			else 
-			{
-				if (verbose>1)
-				{
-				System.out.println("BINDING, Constraint 6, period "+t+", route "+r);
-				}
-			}
-			}
-		}
-	
-	/*CHECK CONSTRAINT 7 */
-		for(int r = 0; r < R; r++ )
-		{
-			for(int t = 0; t < T; t++)
-			{
-				double leftTerm = sol.getListOfRoutes(r, t);
-				double rightTerm = 0;	
-				for (int j = 0; j < J; j++)
-			{
-				rightTerm += Beta[j][r]*sol.getOpenDepots(j);	
-			}
-				System.out.println();
-				if(leftTerm > rightTerm)
-				{
-					System.out.println("ERROR, Constraint 7, route "+r+", period "+t);
-					isFeasible= false;
-				}
-				else if (verbose>1)
-				{
-					System.out.println("BINDING, Constraint 7, route "+r+", period "+t);
-						
-				}	
-			}
-		}
-		
-		
-		/*CHECK CONSTRAINT 8bis : for period zero */
-		for(int j = 0; j < J; j++ )
-		{
-			double leftTerm = 0;
-			double rightTerm = 0;
-				for(int r = 0; r < R; r++)
-				{
-					for (int i = 0; i < I; i++)
-					{
-						rightTerm += Alpha[i][r] * Beta[j][r] * sol.getQuantityDeliveredToClient(i, r, 0);
-					}
-				}	
-				rightTerm += sol.getStockDepot(j, 0) ;
-				
-				leftTerm += sol.getQuantityDeliveredToDepot(j, 0) + instance.getInventoryInitialDepot(j) ;
-				
-			if(Math.abs(leftTerm-rightTerm)>ResolutionMain.epsilon)
-			{
-				System.out.println("ERROR, Constraint 8b, depot "+j+" period 0");
-			}		
-		}
-	
-	/*CHECK CONSTRAINT 8*/
-	for(int t = 1; t < T; t++ )
-	{
-		
-		for(int j = 0; j < J; j++)
-		{
-			double leftTerm = 0;
-			leftTerm +=   sol.getStockDepot(j, t-1) + sol.getQuantityDeliveredToDepot(j, t);
-			double rightTerm = 0;
-			for (int r = 0; r < R; r++)	{
-				for (int i = 0; i < I; i++) 
-					rightTerm += (Alpha[i][r] * Beta[j][r] * sol.getQuantityDeliveredToClient(i, r, t));
-			}
-			rightTerm+=	sol.getStockDepot(j, t);
-			if(Math.abs(leftTerm-rightTerm)>ResolutionMain.epsilon)
-			{
-				System.out.println("ERROR, Constraint 8, period "+t+", depot "+j);
-			}		
 		}
 	}
-		
 
-
-	/*CHECK CONSTRAINT 9bis : period zero */
-	for(int i = 0; i < I; i++ )
-	{
-			double leftTerm = sol.getStockClient(i, 0);
-			double rightTerm = 0;
-			for (int r = 0; r < R; r++)
-			{
-			rightTerm += (Alpha[i][r]*sol.getQuantityDeliveredToClient(i, r, 0));
-			}
-			
-			rightTerm += instance.getInventoryInitialClient(i)-instance.getDemand(i, 0);
-			if(Math.abs(leftTerm-rightTerm)>ResolutionMain.epsilon)
-			{ 
-				System.out.println("ERROR, Constraint 9b, client "+i+", period 0");
-			}
-	}
-			
-	/*CHECK CONSTRAINT 9*/
-		for(int i = 0; i < I; i++ )
-		{
-			for (int t = 1; t < T; t++) {
-				double leftTerm = sol.getStockClient(i, t);
-				double rightTerm =sol.getStockClient(i, t-1) - instance.getDemand(i, t);
-				for (int r = 0; r < R; r++) {
-					rightTerm += (Alpha[i][r]*sol.getQuantityDeliveredToClient(i, r, t));
-				}
-				if(Math.abs(leftTerm-rightTerm)>ResolutionMain.epsilon)
-				{
-					System.out.println("ERROR, Constraint 9, client "+i+", period "+t);
-					//System.out.println(leftTerm +" > " + rightTerm);
-				}
-			}
-		}
-	/*CHECK CONSTRAINT 10*/		
-		for (int i = 0; i < I; i++) {
-			for (int t = 0; t < T; t++) {
-				double leftTerm = sol.getStockClient(i, t); ;
-				double rightTerm = 0;
-					for (int t2 = t+1; t2 < T; t2++) {
-						rightTerm += instance.getDemand(i, t2);
-					}
-					if(leftTerm > rightTerm)
-					{
-					System.out.println("ERROR, Constraint 10, client "+i+", period "+t);
-					isFeasible = false;
-					}
-					else 
-					{
-						if (verbose>0)
-						{
-						System.out.println("BINDING, Constraint 10, client "+i+", period "+t);
-						}
-					}
-			}
-	}	
-	
-	/*CHECK CONSTRAINT 10b*/	
-		for (int t = 0; t < T; t++) {
-			double leftTerm = 0;
-			for (int i = 0; i < I; i++) {
-				leftTerm += sol.getStockClient(i, t)-instance.getCapacityClient();
-			
-			if(leftTerm > 0)
-			{
-			System.out.println("ERROR, Constraint 10b, period "+t+", client "+i);
-			isFeasible = false;
-			}
-			else 
-			{
-				if (verbose>0)
-				{
-				System.out.println("BINDING, Constraint 10b, period "+t+", client "+i);
-				}
-			}
-			}
-		}
-		
-	/*CHECK CONSTRAINT 11bis*/	
-		for (int j = 0; j < J; j++) {
-			double rightTerm = instance.getInventoryInitialDepot(j);
-			for (int r = 0; r < R; r++) {
-				double leftTerm = 0; 
-					for (int i = 0; i < I; i++) {
-						leftTerm += Beta[j][r]*sol.getQuantityDeliveredToClient(i, r, 0)-sol.getQuantityDeliveredToDepot(j, 0);	
-					}		
-			if(leftTerm > rightTerm)	
-			{
-				System.out.println("ERROR, Constraint 11b, depot "+j+" period 0");
-				isFeasible = false;
-			}
-			else 
-			{
-				if (verbose > 0)
-				{
-				System.out.println("BINDING, Constraint 11b, depot "+j+" period 0");
-				}
-			}
-			}
-		}		
-			
-	/*CHECK CONSTRAINT 11*/	
-		for (int t = 1; t < T; t++) { 
-			double rightTerm = 0;// for all t
-			for (int j = 0; j < J; j++)// for all j	
-			{
-				rightTerm += sol.getStockDepot(j, t-1)+ sol.getQuantityDeliveredToDepot(j, t);	
-				for (int r = 0; r < R; r++) {
-					double leftTerm = 0;
-					for (int i = 0; i < I; i++) 
-					{
-						leftTerm += Beta[j][r]*sol.getQuantityDeliveredToClient(i, r, t);	
-					}
-					if(leftTerm > rightTerm)	
-					{
-						System.out.println("ERROR, Constraint 11, depot "+j+", period "+t);
-						isFeasible = false;
-					}	
-					else 
-					{
-						if (verbose>0)
-						{
-							System.out.println("BINDING, Constraint 11b, depot "+j+", period "+t);
-						}
-					}
-				}
-			}
-		}
-	
-	/*CHECK CONSTRAINT 12*/
-		 for (int i = 0; i < I; i++)
-		 {
-			 for (int t = 1; t < T; t++) 
-			 {
-				 
-			 	 for (int r = 0; r < R; r++) {
-			 		 double leftTerm = sol.getQuantityDeliveredToClient(i, r, t);
-			 		 double rightTerm = instance.getCapacityVehicle()*Alpha[i][r]; 
-			 		 if(leftTerm > rightTerm)
-			 		 {
-						System.out.println("ERROR, Constraint 12, client "+i+" period "+t);
-						System.out.println(+leftTerm+ "and" +rightTerm);
-						isFeasible = false;
-			 		 }
-						else 
-						{
-							if (verbose > 0) 
-							{
-							System.out.println("BINDING, Constraint 12, client "+i+" period "+t);
-							}
-						}
-			 	}
-			 }
-		 }
-		 
 		return isFeasible;
 	}
 }

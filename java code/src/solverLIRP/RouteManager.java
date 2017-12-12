@@ -257,7 +257,7 @@ public class RouteManager {
 	 * @return			an array of RouteManager objects with no more than splitParam routes in each loop arrays
 	 */
 	public RouteManager[] sampleRoutes(int splitParam){
-		int nbManagers = (int) Math.ceil(this.loopSD.size() / splitParam);
+		int nbManagers = (int) Math.ceil((this.loopSD.size() + this.loopDC.size()) / splitParam);
 		RouteManager[] resultRManagers = new RouteManager[nbManagers];
 		
 		return resultRManagers;
