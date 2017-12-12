@@ -1,9 +1,8 @@
 package solverLIRP;
 import java.io.PrintStream;
 
-import ilog.concert.IloLinearIntExpr;
-import ilog.concert.IloLinearNumExpr;
 import instanceManager.Instance;
+import instanceManager.Parameters;
 
 //import javax.print.attribute.standard.PrinterLocation;
 
@@ -14,7 +13,6 @@ public final class Checker {
 		int[][] Beta = new int[instance.getNbDepots()][routesDC.length]; // = 1 if depot j is in route r
 		int[][] Gamma = new int[instance.getNbDepots()][routesSD.length]; // = 1 if depot j is in route r
 		int verbose=0;
-		int CMAX = 4;
 
 		/* Definition of parameters Alpha and Beta (for the depots-clients routes)*/
 		/* Fill the two arrays by checking for each route which clients and which depots it contains */
@@ -138,58 +136,68 @@ public final class Checker {
 
 			/* Flow conservation at the depots (8) */
 			for(int dIter = 0; dIter < instance.getNbDepots(); dIter++) {
-				IloLinearNumExpr expr8 = this.LIRPSolver.linearNumExpr();
-				expr8.addTerm(1, this.InvDepots[dIter][t]);
-				double rhs8 = 0;
-				if(t == 0)
-					rhs8 = this.LIRPInstance.getDepot(dIter).getInitialInventory();
-				else
-					expr8.addTerm(-1, this.InvDepots[dIter][t-1]);
-				for(int rSDIter = 0; rSDIter < this.routesSD.length; rSDIter++)
-					expr8.addTerm(-1, this.v[dIter][rSDIter][t]);
-				for (int rIter = 0; rIter < this.routesDC.length; rIter++) {
-					for (int cIter = 0; cIter < nbClients; cIter++)
-						expr8.addTerm(Beta[dIter][rIter], this.u[cIter][rIter][t]);
+				double lastInvDepot = instance.getDepot(dIter).getInitialInventory();
+				for(int rSDIter = 0; rSDIter < routesSD.length; rSDIter++)
+					lastInvDepot += sol.getDeliveryDepot(dIter, rSDIter, t);
+				double newInvDepot = sol.getStockDepot(dIter, t);
+				for (int rDCIter = 0; rDCIter < routesDC.length; rDCIter++) {
+					for (int cIter = 0; cIter < instance.getNbClients(); cIter++)
+						newInvDepot += Beta[dIter][rDCIter] + sol.getDeliveryClient(cIter,  rDCIter,  t);
 				}
-				this.LIRPSolver.addEq(expr8, rhs8);
+				if((lastInvDepot > newInvDepot + Parameters.epsilon) || (lastInvDepot < newInvDepot - Parameters.epsilon)) {
+					System.out.println("ERROR, Constraint 8, period "+ t);
+					isFeasible = false;
+				}
+				else {
+					if (verbose < 0)
+						System.out.println("BINDING, Constraint 8,  period "+ t +"         " + (newInvDepot - lastInvDepot));
+				}
 			}
-			
+
 			/* Flow conservation at the clients (9) */
-			for (int cIter = 0; cIter < nbClients; cIter++){
-				IloLinearNumExpr expr9 = this.LIRPSolver.linearNumExpr();
-				expr9.addTerm(1, this.InvClients[cIter][t]);
-				double rhs9 = -this.LIRPInstance.getClient(cIter).getDemand(t);
-				if (t==0)
-					rhs9 += this.LIRPInstance.getClient(cIter).getInitialInventory();
-				else
-					expr9.addTerm(-1, this.InvClients[cIter][t - 1]);
-				for (int rIter = 0; rIter < this.routesDC.length; rIter++) {
-					expr9.addTerm(-1, this.u[cIter][rIter][t]);
+			for(int cIter = 0; cIter < instance.getNbClients(); cIter++) {
+				double lastInvClient = instance.getClient(cIter).getInitialInventory();
+				for(int rIter = 0; rIter < routesDC.length; rIter++)
+					lastInvClient += sol.getDeliveryClient(cIter, rIter, t);
+				double newInvClient = sol.getStockClient(cIter, t) + instance.getClient(cIter).getDemand(t);
+				if((lastInvClient > newInvClient + Parameters.epsilon) || (lastInvClient < newInvClient - Parameters.epsilon)) {
+					System.out.println("ERROR, Constraint 9, period "+ t);
+					isFeasible = false;
 				}
-				this.LIRPSolver.addEq(expr9, rhs9);
+				else {
+					if (verbose < 0)
+						System.out.println("BINDING, Constraint 9,  period "+ t +"         " + (newInvClient - lastInvClient));
+				}
 			}
 
 			/* Stock capacity at the client or ensuring that the inventory is not greater than the sum of remaining demands (10) */
 			// IS THIS LAST ASPECT OF THE CONSTRAINT REALLY USEFUL? 
-			for (int cIter = 0; cIter < nbClients; cIter++) {
-				double remainingDemand = this.LIRPInstance.getClient(cIter).getCumulDemands(t+1, nbPeriods);
-				IloLinearNumExpr expr10 = this.LIRPSolver.linearNumExpr();
-				expr10.addTerm(1, this.InvClients[cIter][t]);
-				if(remainingDemand < this.LIRPInstance.getClient(cIter).getCapacity())
-					this.LIRPSolver.addLe(expr10, remainingDemand);
-				else
-					this.LIRPSolver.addLe(expr10, this.LIRPInstance.getClient(cIter).getCapacity());
+			for (int cIter = 0; cIter < instance.getNbClients(); cIter++) {
+				double ub = Math.min(instance.getClient(cIter).getCumulDemands(t+1, instance.getNbPeriods()), instance.getClient(cIter).getCapacity());
+				double currentInvClient = sol.getStockClient(cIter, t);
+				if(currentInvClient > ub + Parameters.epsilon) {
+					System.out.println("ERROR, Constraint 10, client " + cIter + " in period "+ t);
+					isFeasible = false;
+				}
+				else {
+					if (verbose < 0)
+						System.out.println("BINDING, Constraint 10, client " + cIter + " in  period " + t + "         " + currentInvClient);
+				}
 			}
 
 			/* Capacity constraints at depots (11) */
-			for (int dIter = 0; dIter < nbDepots; dIter++) {
-				IloLinearNumExpr expr11 = this.LIRPSolver.linearNumExpr();
-				expr11.addTerm(1, this.InvDepots[dIter][t]);
-				this.LIRPSolver.addLe(expr11, this.LIRPInstance.getDepot(dIter).getCapacity());
+			for (int dIter = 0; dIter < instance.getNbDepots(); dIter++) {
+				double currentInvDepot = sol.getStockDepot(dIter,  t);
+				if(currentInvDepot > instance.getDepot(dIter).getCapacity() + Parameters.epsilon) {
+					System.out.println("ERROR, Constraint 11, depot " + dIter + " in period "+ t);
+					isFeasible = false;
+				}
+				else {
+					if (verbose < 0)
+						System.out.println("BINDING, Constraint 10, depot " + dIter + " in  period " + t + "         " + currentInvDepot);
+				}
 			}
 		}
-	}
-
 		return isFeasible;
 	}
 }
