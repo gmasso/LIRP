@@ -114,7 +114,7 @@ public class Solver{
 				/* Each depot is served by at most one route in every period (2) */
 				IloLinearIntExpr expr2 = this.LIRPSolver.linearIntExpr();
 				for (int rIter = 0; rIter < this.routesSD.length; rIter++) 
-					expr2.addTerm(Beta[dIter][rIter], this.x[rIter][t]);
+					expr2.addTerm(Gamma[dIter][rIter], this.x[rIter][t]);
 				this.LIRPSolver.addLe(expr2, 1);
 			}
 
