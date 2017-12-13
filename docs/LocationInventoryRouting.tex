@@ -53,6 +53,8 @@ Throughout the paper, we use the following notations:
         $f_j$ & Fixed cost of opening distribution center $j\in\dc$\\ 
         $\kd$ & Capacity of vehicles delivering distribution centers\\ 
         $\kc$ & Capacity of vehicles delivering customers\\ 
+        $\nu_{\dc}$ & fleet size for vehicles delivering distribution centers\\ 
+        $\nu_{\cu}$ & fleet size for vehicles delivering customers\\ 
         $d^t_i$ & Demand faced by customer $i\in\cu$ in period $t=1,\ldots,T$\\
         $h^t_i$ & Per-unit, per-period holding cost of location $i\in\cu\cup\dc$ in period $t=1,\ldots, T$\\
         $I_{i0}$ & Initial inventory of location $i\in \cu\cup\dc$ at the beginning of the planning horizon\\
@@ -84,6 +86,8 @@ Throughout the paper, we use the following notations:
                  &&\sum_{r\in \rc} \alpha_{ir} z^t_r &\leq 1 															&\forall i&\in \cu, \forall t=1,\ldots,T  \label{const:singleroutecustomers}\\
                  &&\gamma_{jr}z^t_r 					&\leq y_j 													&\forall j&\in\dc, \forall r\in \rd, \forall t=1,\ldots,T\label{const:serveopendepots}\\
                  &&z^t_r 					&\leq \sum_{j\in\dc}\beta_{jr}y_j 													&\forall r&\in \rc, \forall t=1,\ldots,T\label{const:startfromopendepots}\\
+                 &&\sum_{r\in \rd} z^t_r &\leq 	\nu_{\dc}													&\forall t&=1,\ldots,T  \label{const:fleetcapadepots}\\
+                 &&\sum_{r\in \rc} z^t_r &\leq 	\nu_{\cu}													&\forall t&=1,\ldots,T  \label{const:fleetcapaclients}\\
                  &&\sum_{j\in \dc} v^t_{jr}   		&\leq \kd z^t_r 														&\forall r&\in \rd, t=1,\ldots,T\label{const:deliveryUBdepots}\\
                  &&\sum_{i\in \cu} u^t_{ir}   		&\leq \kc z^t_r 														&\forall r&\in \rc, t=1,\ldots,T\label{const:deliveryUBcustomers}\\
                  &&I^{t-1}_j + \sum_{r\in\rd} v^t_{jr}   			&=I^t_j +\sum_{r\in \rc}\beta_{jr} \left(\sum_{i\in \cu}u^t_{ir}\right) 			&\forall j&\in \dc, \forall t=1,\ldots,T \label{const:invflowdepots}\\
@@ -92,6 +96,8 @@ Throughout the paper, we use the following notations:
                  &&I^t_i 					&\leq \min\left(I_i^{\max}, \sum_{t'\geq t}d^{t'}_i\right)											&\forall i&\in \cu, \forall t=1,\ldots,T\label{const:invcustUB}\\
                  &&u^t_{ir}			&\geq 0 															&\forall i &\in \cu, \forall r\in \rc,\forall t=1,\ldots, T\label{const:upos}	\\
                  &&v^t_{jr}			&\geq 0 															&\forall j &\in \dc, \forall r\in \rd,\forall t=1,\ldots, T\label{const:vpos}	\\
+                 &&I^t_{i}			&\geq 0 															&\forall i &\in \cu, \forall t=1,\ldots, T\label{const:invCpos}	\\
+                 &&I^t_{j}			&\geq 0 															&\forall j &\in \dc, \forall t=1,\ldots, T\label{const:invDpos}	\\
                  &&y_{j}					& \in \{0,1\} 														&\forall j&\in \dc\label{const:ybool}\\	
                  &&z^t_r					&\in \{0,1\} 														&\forall r&\in \rc\cup\rd, \forall t=1,\ldots,T\label{const:zbool}
 \end{alignat}
@@ -99,7 +105,8 @@ Throughout the paper, we use the following notations:
 The objective function~\eqref{objfunct} aims at minimizing the total cost incurred by the system. 
 Constraints~\eqref{const:singleroutedepots} and~\eqref{const:singleroutecustomers} state that every depot and every customer is served by at most one route $r\in\rd$ and $r\in\rc$ in every period, respectively. 
 Constraint~\eqref{const:serveopendepots} ensure that the routes used in period $t$ only pass through open depots, while constraint~\eqref{const:startfromopendepots} ensures that routes start only from opened depots. 
-Constraints~\eqref{const:deliveryUBdepots} and~\eqref{const:deliveryUBcustomers} constraint the sum of the quantities deliverd through a given route in a given period is lower than the capacity of a vehicle. 
+Constraints~\eqref{const:fleetcapadepots} and~\eqref{const:fleetcapaclients} states that the number of routes used to serve clients and depots in period $t$ does not exceed the fleet size allocated to the corresponding routes, respectively.
+Constraints~\eqref{const:deliveryUBdepots} and~\eqref{const:deliveryUBcustomers} ensures that the sum of the quantities deliverd through a given route in a given period is lower than the capacity of a vehicle. 
 Constraints~\eqref{const:invflowdepots} and~\eqref{const:invflowcustomers} define the units flow through the depots and customers, respectively.
 Finally, constraints~\eqref{const:invdepotUB} and~\eqref{const:invcustUB} ensure that the capacity constraint on the inventory at the depots and the customers are satisfied in any period. 
 
