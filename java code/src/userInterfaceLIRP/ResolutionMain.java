@@ -20,7 +20,7 @@ public class ResolutionMain {
 
 	public static int CMAX = 4;     // max number of clients on a route
 	public static int LMAX = 50;   // max length of a route
-	private static boolean create_inst = true;
+	private static boolean create_inst = false;
 	private static int[] nb_clients = {5, 10, 20};
 	private static double[] capa_vehicles = {50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50};
 	private static double[] oc_depots = {5, 5, 5};
@@ -54,7 +54,7 @@ public class ResolutionMain {
 			for (String fileName : listSol.list() ) 
 			{ 
 				// Create the instance from the json file
-				Instance instLIRP = new Instance(new File(instDir + fileName));
+				Instance instLIRP = new Instance(instDir + fileName);
 				System.out.print("Solving instance " + fileName + "...");
 
 				// Create the log file and solution file to store the results and the trace of the program

@@ -1,7 +1,9 @@
 package instanceManager;
 import java.io.IOException;
-import java.io.File;
-import java.io.FileReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -113,12 +115,15 @@ public class Instance {
 	 * @throws IOException
 	 * @throws NullPointerException
 	 */
-	public Instance(File jsonFile) throws IOException, NullPointerException {
-		System.out.println("Getting data from the JSON file " + jsonFile.getName() + "...");
-		try {
-			// Get the JSON object contained in the file
-			JSONObject jsonInstanceObject = new JSONObject(new FileReader(jsonFile));
-			
+	public Instance(String fileName) throws IOException, NullPointerException {
+		System.out.println("Getting data from the JSON file " + fileName + "...");
+		// Get the JSON object contained in the file
+		try (Stream<String> jsonStream = Files.lines(Paths.get(fileName))){
+			StringBuilder jsonSB = new StringBuilder();
+			jsonStream.forEach(l -> jsonSB.append(l));
+			System.out.println(jsonSB.toString());
+			JSONObject jsonInstanceObject = new JSONObject(jsonSB.toString());
+			System.out.println(jsonInstanceObject.names());
 			// Set the planning horizon
 			this.planningHorizon = jsonInstanceObject.getInt("planning horizon");
 			// Get the capacity of each vehicle
@@ -130,19 +135,19 @@ public class Instance {
 			}
 			// Get the supplier coordinates
 			JSONObject jsonSupplier = jsonInstanceObject.isNull("supplier") ? null : jsonInstanceObject.getJSONObject("supplier");
-			
+
 			// If no coordinates are given for the supplier, set its coordinates to the center of the grid
 			double supplier_x = (jsonSupplier==null || jsonSupplier.isNull("x")) ? Math.floor(this.gridSize/2) : jsonSupplier.getDouble("x"); // Coordinate of the depot on the x-axis
 			double supplier_y = (jsonSupplier==null || jsonSupplier.isNull("y")) ? Math.floor(this.gridSize/2) : jsonSupplier.getDouble("y"); // Coordinate of the depot on the y-axis
-			
+
 			this.supplier = new Location(new Point2D.Double(supplier_x, supplier_y));
-			
+
 			// Create a map for the depots by extracting data from the corresponding JSONArray in the JSON file
 			this.depots = new DepotsMap(jsonInstanceObject.getJSONObject("depots"));
-	
+
 			// Extract data from the JSONArrays containing data for the clients
 			this.clients = new ClientsMap(jsonInstanceObject.getJSONObject("clients"), this.planningHorizon);
-			
+
 			this.gridSize = Math.max(this.depots.getGridSize(), this.clients.getGridSize());
 			System.out.print("Instance created successfully.");
 		}
