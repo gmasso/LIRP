@@ -114,6 +114,7 @@ public abstract class Layer {
 	protected JSONObject getJSONLayer() throws IOException {
 		// Create a JSON Object to describe the depots map
 		JSONObject jsonMap = this.getJSONLayerSpec();
+		jsonMap.put("map size", this.gridSize);
 		JSONArray jsonSites = new JSONArray();
 
 		// Loop through the sites and add their coordinates to the JSON Object

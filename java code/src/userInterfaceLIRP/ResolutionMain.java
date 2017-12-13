@@ -36,85 +36,88 @@ public class ResolutionMain {
 				for(int nbCities = 0; nbCities < 3; nbCities += 2) {
 					/* Create 5 instances of each type */
 					for(int i = 0; i < 5; i++) {
-						Instance inst = new Instance(Parameters.grid_size, 10, 3, 100, oc_depots, nbClients, selectCitiesSizes(nbCities), 1.5, 0.5, 0, true, 0, 10, capa_vehicles);
+						Instance inst = new Instance(Parameters.grid_size, 10, 3, 100, oc_depots, nbClients, selectCitiesSizes(nbCities), 0.75, 1.5, 0, true, 0, 10, capa_vehicles);
 						inst.writeToJSONFile(instDir + "lirp" + nbClients + "cl" + nbCities + "ci_" + i + ".json");
 					}
 				}
 			}
+		}
 
-			/* Solve all instances in the directory */
-			File listSol = new File(instDir);
+		/* Solve all instances in the directory */
+		File listSol = new File(instDir);
 
-			//------------------------------------------------------------------------------------
-			// PARAMETERS
+		//------------------------------------------------------------------------------------
+		// PARAMETERS
 
-			try {
-				//IN THE DIRECTORY FOR EVERY FILE, YOU SOLVE AND SAVE
-				for (String fileName : listSol.list() ) 
-				{ 
-					// Create the instance from the json file
-					Instance instLIRP = new Instance(new File(instDir + fileName));
-					System.out.print("Solving instance " + fileName + "...");
+		try {
+			//IN THE DIRECTORY FOR EVERY FILE, YOU SOLVE AND SAVE
+			for (String fileName : listSol.list() ) 
+			{ 
+				// Create the instance from the json file
+				Instance instLIRP = new Instance(new File(instDir + fileName));
+				System.out.print("Solving instance " + fileName + "...");
 
-					// Create the log file and solution file to store the results and the trace of the program
-					String fichierLog = "./log/" + fileName.replace(".json", ".log");
-					String fichierSol = "./Solutions/" + fileName.replace(".json", ".sol");
+				// Create the log file and solution file to store the results and the trace of the program
+				String fichierLog = "./log/" + fileName.replace(".json", ".log");
+				String fichierSol = "./Solutions/" + fileName.replace(".json", ".sol");
 
-					File fileLog = new File(fichierLog);
-					PrintStream printStreamLog = new PrintStream(fileLog);
-					// Outputs out and err are redirected to the log file
-					PrintStream original = System.out;
-					System.setOut(printStreamLog);
-					System.setErr(printStreamLog);
-					File fileSol = new File(fichierSol);
-					// Stream for the solution
-					PrintStream printStreamSol = new PrintStream(fileSol);
+				File fileLog = new File(fichierLog);
+				PrintStream printStreamLog = new PrintStream(fileLog);
+				// Outputs out and err are redirected to the log file
+				PrintStream original = System.out;
+				System.setOut(printStreamLog);
+				System.setErr(printStreamLog);
+				File fileSol = new File(fichierSol);
+				// Stream for the solution
+				PrintStream printStreamSol = new PrintStream(fileSol);
 
-					RouteManager rm = new RouteManager(instLIRP);
-					Solver solverLIRP = new Solver(instLIRP, rm);
+				System.out.println("Creating the RouteManager...");
+				RouteManager rm = new RouteManager(instLIRP);
+				System.out.println("OK. Solving...");
+				Solver solverLIRP = new Solver(instLIRP, rm);
+				System.out.println("done!");
 
-					// Route[][] subsetOfRoutes = routesSelection(availableRoutes)
-					// for each subset (subsetOfRoutes[i]) :
-					// 1/ solve the problem using CPLEX
-					// 2/ Get the routes used in the solution
-					// 3/ redefine available routes
-					// 4/ Resolve, etc.
-
-
-					// Call the method from the solver
-					long startChrono = System.currentTimeMillis();
-					Solution sol = solverLIRP.getSolution(printStreamSol);
-					long stopChrono = System.currentTimeMillis();
-					long duration = (stopChrono-startChrono);
-					System.out.println("Time to solve the instance: "+duration+" milliseconds");
-
-					System.out.println("================================");
-					System.out.println();
+				// Route[][] subsetOfRoutes = routesSelection(availableRoutes)
+				// for each subset (subsetOfRoutes[i]) :
+				// 1/ solve the problem using CPLEX
+				// 2/ Get the routes used in the solution
+				// 3/ redefine available routes
+				// 4/ Resolve, etc.
 
 
+				// Call the method from the solver
+				long startChrono = System.currentTimeMillis();
+				Solution sol = solverLIRP.getSolution(printStreamSol);
+				long stopChrono = System.currentTimeMillis();
+				long duration = (stopChrono-startChrono);
+				System.out.println("Time to solve the instance: "+duration+" milliseconds");
 
-					if (sol != null){
+				System.out.println("================================");
+				System.out.println();
 
-						sol.print(printStreamSol);
-					}
-					else
-					{
-						System.out.println("Error on this instance");
-					}
 
-					System.setOut(original);
-					System.out.println("Instance solved.");
 
+				if (sol != null){
+
+					sol.print(printStreamSol);
+				}
+				else
+				{
+					System.out.println("Error on this instance");
 				}
 
-				System.out.println("All Instances solved. FINISHED :-)");
-
+				System.setOut(original);
+				System.out.println("Instance solved.");
 
 			}
 
-			catch (IOException ioe) {
-				System.out.println("Error: " + ioe.getMessage());
-			}
+			System.out.println("All Instances solved. FINISHED :-)");
+
+
+		}
+
+		catch (IOException ioe) {
+			System.out.println("Error: " + ioe.getMessage());
 		}
 	}
 

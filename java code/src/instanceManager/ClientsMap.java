@@ -68,10 +68,12 @@ public class ClientsMap extends Layer {
 	 * @param planningHorizon	the number of periods that we consider (must be greater than the length of the demands sequences of the clients)
 	 * @throws IOException
 	 */
-	public ClientsMap(JSONArray jsonClientsArray, int planningHorizon) throws IOException {
-		super(jsonClientsArray.length());
+	public ClientsMap(JSONObject jsonClients, int planningHorizon) throws IOException {
+		super(jsonClients.getDouble("map size"), jsonClients.getJSONArray("sites").length());
+		
+		JSONArray jsonClientsArray = jsonClients.getJSONArray("sites");
 		// Loop through the depots and get the different parameters
-		for(int clientIndex=0; clientIndex<jsonClientsArray.length(); clientIndex++) {
+		for(int clientIndex=0; clientIndex < jsonClientsArray.length(); clientIndex++) {
 			this.sites[clientIndex] = new Client((JSONObject) jsonClientsArray.get(clientIndex), planningHorizon);
 		}
 	}
@@ -138,7 +140,6 @@ public class ClientsMap extends Layer {
 			// Normalize the cdf with respect to the total urban area of the grid
 			for(int cityIter = 0; cityIter < citiesSizes.length; cityIter++) {
 				cityCumRatio[cityIter] /= cumSum;
-				System.out.print("city " + cityIter + ": " + cityCumRatio[cityIter] +", ");
 			}
 			// Fill the coordinates of the clients at random according to the position of urban areas
 			for(int clientIndex = 0; clientIndex < this.nbSites; clientIndex++) {
@@ -212,6 +213,16 @@ public class ClientsMap extends Layer {
 					clientsDemands[selectIndex(clientsWeights)][periodIter] += demandIntensity * dSeq[periodIter];
 			}
 		}
+		
+		/* Clean the demands sequences by replacing every negative demand by 0 */
+		for (int cIter = 0; cIter < this.nbSites; cIter++) {
+			for(int t = 0; t < nbPeriods; t++) {
+				if(clientsDemands[cIter][t] < 0) {
+					clientsDemands[cIter][t] = 0;
+				}
+			}
+		}
+			
 		return clientsDemands;
 	}
 	

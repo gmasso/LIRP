@@ -23,9 +23,7 @@ public class CitiesMap extends Layer {
 		boolean cityOK = true;
 		// Draw their location at random, such that their coordinates are at least 2 * city sizes away from the limits of the grid 
 		int cityIndex = 0;
-		while(cityOK && cityIndex < this.nbSites) {
-			System.out.println("Positioning city " + cityIndex +"...");
-			
+		while(cityOK && cityIndex < this.nbSites) {		
 			Point2D cityCandidate = drawLocation(this.sizes[cityIndex]);
 			// Check that two urban areas are at least separated by the sum of their city sizes
 			int cityIter = 0;

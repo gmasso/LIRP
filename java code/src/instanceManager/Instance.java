@@ -119,10 +119,8 @@ public class Instance {
 			// Get the JSON object contained in the file
 			JSONObject jsonInstanceObject = new JSONObject(new FileReader(jsonFile));
 			
-			this.gridSize = jsonInstanceObject.getInt("map size");
-			
 			// Set the planning horizon
-			this.planningHorizon = jsonInstanceObject.getInt("horizon");
+			this.planningHorizon = jsonInstanceObject.getInt("planning horizon");
 			// Get the capacity of each vehicle
 			JSONArray jsonCapaVehicles = jsonInstanceObject.getJSONArray("vehicles capacities");
 			// Fill the corresponding attribute
@@ -140,11 +138,12 @@ public class Instance {
 			this.supplier = new Location(new Point2D.Double(supplier_x, supplier_y));
 			
 			// Create a map for the depots by extracting data from the corresponding JSONArray in the JSON file
-			this.depots = new DepotsMap(jsonInstanceObject.getJSONArray("depots"));
+			this.depots = new DepotsMap(jsonInstanceObject.getJSONObject("depots"));
 	
 			// Extract data from the JSONArrays containing data for the clients
-			this.clients = new ClientsMap(jsonInstanceObject.getJSONArray("clients"), this.planningHorizon);
+			this.clients = new ClientsMap(jsonInstanceObject.getJSONObject("clients"), this.planningHorizon);
 			
+			this.gridSize = Math.max(this.depots.getGridSize(), this.clients.getGridSize());
 			System.out.print("Instance created successfully.");
 		}
 		catch(IOException ioe) {

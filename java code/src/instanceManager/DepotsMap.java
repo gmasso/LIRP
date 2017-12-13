@@ -44,9 +44,10 @@ public class DepotsMap extends Layer {
 	 * @param jsonDepotsArray	the JSON array containing data about the location and attributes of the depots
 	 * @throws IOException
 	 */
-	public DepotsMap(JSONArray jsonDepotsArray) throws IOException {
-		super(jsonDepotsArray.length());
+	public DepotsMap(JSONObject jsonDepots) throws IOException {
+		super(jsonDepots.getDouble("map size"), jsonDepots.getJSONArray("sites").length());
 		
+		JSONArray jsonDepotsArray = jsonDepots.getJSONArray("sites");
 		// Loop through the depots and get the different parameters
 		for(int depotIndex=0; depotIndex<jsonDepotsArray.length(); depotIndex++) {
 			// Create a new depot with the corresponding features
