@@ -58,8 +58,8 @@ public class ResolutionMain {
 				System.out.print("Solving instance " + fileName + "...");
 
 				// Create the log file and solution file to store the results and the trace of the program
-				String fichierLog = "./log/" + fileName.replace(".json", ".log");
-				String fichierSol = "./Solutions/" + fileName.replace(".json", ".sol");
+				String fichierLog = "../Log files/" + fileName.replace(".json", ".log");
+				String fichierSol = "../Solutions/" + fileName.replace(".json", ".sol");
 
 				File fileLog = new File(fichierLog);
 				PrintStream printStreamLog = new PrintStream(fileLog);
@@ -95,8 +95,6 @@ public class ResolutionMain {
 				System.out.println("================================");
 				System.out.println();
 
-
-
 				if (sol != null){
 
 					sol.print(printStreamSol);
@@ -112,8 +110,6 @@ public class ResolutionMain {
 			}
 
 			System.out.println("All Instances solved. FINISHED :-)");
-
-
 		}
 
 		catch (IOException ioe) {

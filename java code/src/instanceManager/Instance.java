@@ -68,9 +68,6 @@ public class Instance {
 		}
 		catch(NullPointerException npe) {
 			System.out.println("Problem while generating the instance");
-			System.out.println("supplier:" + this.supplier);
-			System.out.println("depots:" + this.depots);
-			System.out.println("clients:" + this.clients);
 			System.out.println(npe);
 			System.exit(1);
 		}
@@ -121,9 +118,7 @@ public class Instance {
 		try (Stream<String> jsonStream = Files.lines(Paths.get(fileName))){
 			StringBuilder jsonSB = new StringBuilder();
 			jsonStream.forEach(l -> jsonSB.append(l));
-			System.out.println(jsonSB.toString());
 			JSONObject jsonInstanceObject = new JSONObject(jsonSB.toString());
-			System.out.println(jsonInstanceObject.names());
 			// Set the planning horizon
 			this.planningHorizon = jsonInstanceObject.getInt("planning horizon");
 			// Get the capacity of each vehicle
@@ -296,7 +291,7 @@ public class Instance {
 		jsonInstance.put("supplier", this.supplier.getJSONLoc());
 		jsonInstance.put("depots", this.depots.getJSONLayer());
 		jsonInstance.put("clients", this.clients.getJSONLayer());
-		jsonInstance.put("fleet", new JSONArray(this.vehiclesCapacity));
+		jsonInstance.put("vehicles capacities", new JSONArray(this.vehiclesCapacity));
 
 		return jsonInstance;
 	}
