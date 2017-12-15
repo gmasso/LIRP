@@ -163,7 +163,7 @@ public class Solver{
 				for(int cIter = 0; cIter < nbClients; cIter++)
 					expr7.addTerm(1, this.u[cIter][rIter][t]);
 				// TO MODIFY IN THE FINAL VERSION
-				expr7.addTerm(-this.LIRPInstance.getCapacityVehicle(0), this.x[rIter][t]);
+				expr7.addTerm(-this.LIRPInstance.getCapacityVehicle(0), this.z[rIter][t]);
 				this.LIRPSolver.addLe(expr7, 0);
 			}
 
