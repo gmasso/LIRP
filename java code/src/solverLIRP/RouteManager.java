@@ -131,7 +131,7 @@ public class RouteManager {
 		}
 
 		for(int loopSDIter = 0; loopSDIter < this.loopSD.size(); loopSDIter++) {
-			routesSD[this.loopSD.size() + loopSDIter] = this.loopSD.get(loopSDIter);
+			routesSD[this.directSD.size() + loopSDIter] = this.loopSD.get(loopSDIter);
 		}
 		return routesSD;
 	}
@@ -148,7 +148,7 @@ public class RouteManager {
 		}
 
 		for(int loopDCIter = 0; loopDCIter < this.loopDC.size(); loopDCIter++) {
-			routesDC[this.loopDC.size() + loopDCIter] = this.loopDC.get(loopDCIter);
+			routesDC[this.directDC.size() + loopDCIter] = this.loopDC.get(loopDCIter);
 		}
 
 		return routesDC;
@@ -266,7 +266,6 @@ public class RouteManager {
 				Route routeCandidate = currentRoute.extend(stopCandidates.get(stopIter));
 				/* If it is valid, add it to the set of routes to add and call recursively */
 				if(routeCandidate.isValid()) {
-					System.out.println("valid ");
 					routesToAdd.add(routeCandidate);
 					/* If the stop currently added is not the last of the list, call recursively with the remaining candidates */
 					if(stopIter < stopCandidates.size() - 1) {

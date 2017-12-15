@@ -40,7 +40,6 @@ public class Route {
 
 		this.travelTime = computeDuration(this.stopsPermutation);
 		this.stopTime = Parameters.stopping_time * this.stops.length;
-		System.out.println(this.stopTime + ", " + this.travelTime);
 		this.cost = Parameters.fixed_cost_route + Parameters.cost_km * Parameters.avg_speed * this.travelTime;
 	}
 
