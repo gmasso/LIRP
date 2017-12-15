@@ -2,8 +2,11 @@
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="lib/cplex.jar"/>
-	<classpathentry kind="lib" path="Libraries/cplex.jar"/>
-	<classpathentry kind="lib" path="Libraries/json-20170516.jar"/>
+	<classpathentry kind="lib" path="/Users/gmas/Documents/GitHub/LIRP/java code/Useful libraries/json-20170516.jar"/>
+	<classpathentry kind="lib" path="/Users/gmas/Documents/GitHub/LIRP/java code/Useful libraries/cplex.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/Users/gmas/Applications/IBM/ILOG/CPLEX_Studio1271/cplex/bin/x86-64_osx"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -133,7 +133,6 @@ public class RouteManager {
 		for(int loopSDIter = 0; loopSDIter < this.loopSD.size(); loopSDIter++) {
 			routesSD[this.loopSD.size() + loopSDIter] = this.loopSD.get(loopSDIter);
 		}
-
 		return routesSD;
 	}
 	
@@ -235,7 +234,6 @@ public class RouteManager {
 			for(int dIndex = 0; dIndex < stopDCandidates.size() - 1; dIndex++) {
 				Route initSDRoute = new Route(instLIRP.getSupplier(), stopDCandidates.get(dIndex));
 				this.loopSD.addAll(computeAllRoutes(initSDRoute, new ArrayList<Location>(stopDCandidates.subList(dIndex + 1, stopDCandidates.size())), maxNbStops - 1));
-
 			}
 
 			ArrayList<Client> stopCCandidates = new ArrayList<Client>();
@@ -245,7 +243,7 @@ public class RouteManager {
 			for(int dIter = 0; dIter < nbDepots; dIter++) {
 				for(int cIndex = 0; cIndex < stopCCandidates.size() - 1; cIndex++) {
 					Route initDCRoute = new Route(instLIRP.getDepot(dIter), stopCCandidates.get(cIndex));
-					this.loopSD.addAll(computeAllRoutes(initDCRoute, new ArrayList<Location>(stopCCandidates.subList(cIndex + 1, stopCCandidates.size())), maxNbStops - 1));
+					this.loopDC.addAll(computeAllRoutes(initDCRoute, new ArrayList<Location>(stopCCandidates.subList(cIndex + 1, stopCCandidates.size())), maxNbStops - 1));
 				}
 			}
 		}
@@ -260,14 +258,17 @@ public class RouteManager {
 	 * @throws IOException
 	 */
 	private ArrayList<Route> computeAllRoutes(Route currentRoute, ArrayList<Location> stopCandidates, int nbRemainingStops) throws IOException {
+		System.out.println(stopCandidates.size() + " remaining " + nbRemainingStops);
 		ArrayList<Route> routesToAdd = new ArrayList<Route>();
 		/* If some stop candidates remain to extend the route, try to add them to the route */
 		if(nbRemainingStops > 0 && !stopCandidates.isEmpty()) {
 			for(int stopIter = 0; stopIter < stopCandidates.size(); stopIter++) {
+				System.out.println("stop " + stopIter);
 				/* Create a new Route object by adding one stop among the candidates to currentRoute */
 				Route routeCandidate = currentRoute.extend(stopCandidates.get(stopIter));
 				/* If it is valid, add it to the set of routes to add and call recursively */
 				if(routeCandidate.isValid()) {
+					System.out.println("valid ");
 					routesToAdd.add(routeCandidate);
 					/* If the stop currently added is not the last of the list, call recursively with the remaining candidates */
 					if(stopIter < stopCandidates.size() - 1) {

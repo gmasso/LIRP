@@ -144,7 +144,6 @@ public class Instance {
 			this.clients = new ClientsMap(jsonInstanceObject.getJSONObject("clients"), this.planningHorizon);
 
 			this.gridSize = Math.max(this.depots.getGridSize(), this.clients.getGridSize());
-			System.out.print("Instance created successfully.");
 		}
 		catch(IOException ioe) {
 			System.out.println("Problem while reading the JSON file");

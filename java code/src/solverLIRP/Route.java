@@ -52,6 +52,7 @@ public class Route {
 		this.start = start;
 		this.stops = new Location[1];
 		this.stops[0] = stop;
+		this.stopsPermutation = new ArrayList<Integer>();
 		this.stopsPermutation.add(0); 
 		this.travelTime = computeDuration(this.stopsPermutation);
 		this.stopTime = Parameters.stopping_time * this.stops.length;
@@ -67,6 +68,7 @@ public class Route {
 		this.start = start;
 		this.stops = new Location[1];
 		this.stops[0] = stop;
+		this.stopsPermutation = new ArrayList<Integer>();
 		this.stopsPermutation.add(0); 
 		this.travelTime = computeDuration(this.stopsPermutation);
 		this.stopTime = Parameters.stopping_time * this.stops.length;
@@ -159,6 +161,7 @@ public class Route {
 		// Loop through the stops and update inRoute if one corresponds to loc
 		while(!inRoute && stopsIter < stops.length) {
 			inRoute = (loc == stops[stopsIter]);
+			stopsIter++;
 		}
 		return inRoute;
 	}

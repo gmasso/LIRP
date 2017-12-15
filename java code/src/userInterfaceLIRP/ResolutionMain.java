@@ -77,14 +77,6 @@ public class ResolutionMain {
 				Solver solverLIRP = new Solver(instLIRP, rm);
 				System.out.println("done!");
 
-				// Route[][] subsetOfRoutes = routesSelection(availableRoutes)
-				// for each subset (subsetOfRoutes[i]) :
-				// 1/ solve the problem using CPLEX
-				// 2/ Get the routes used in the solution
-				// 3/ redefine available routes
-				// 4/ Resolve, etc.
-
-
 				// Call the method from the solver
 				long startChrono = System.currentTimeMillis();
 				Solution sol = solverLIRP.getSolution(printStreamSol);
@@ -99,14 +91,12 @@ public class ResolutionMain {
 
 					sol.print(printStreamSol);
 				}
-				else
-				{
+				else {
 					System.out.println("Error on this instance");
 				}
 
 				System.setOut(original);
 				System.out.println("Instance solved.");
-
 			}
 
 			System.out.println("All Instances solved. FINISHED :-)");
