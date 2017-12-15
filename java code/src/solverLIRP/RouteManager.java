@@ -38,7 +38,7 @@ public class RouteManager {
 		this.loopDC = new ArrayList<Route>();
 		this.populateLoops(instLIRP);
 	}
-	
+
 	/**
 	 * Create a new RouteManager object from an existing one, changing the multi-stops routes
 	 * @param rm			the RouteManager object from which the new RouteManager is created
@@ -49,7 +49,7 @@ public class RouteManager {
 		this.instanceLIRP = rm.getInstance();
 		this.directSD = rm.getDirectSDRoutes();
 		this.directDC = rm.getDirectDCRoutes();
-		
+
 		this.loopSD = new ArrayList<Route>();
 		for(int routeSDIter = 0; routeSDIter < loopSDIndices.length; routeSDIter++) {
 			this.loopSD.add(rm.getSDRoute(routeSDIter));
@@ -67,14 +67,14 @@ public class RouteManager {
 	 * @param loopDC	the multi-stops routes between the depots and the clients to add to the manager
 	 */
 	private RouteManager(RouteManager rm, ArrayList<Route> loopSD, ArrayList<Route> loopDC) {
-			this.instanceLIRP = rm.getInstance();
-			this.directSD = rm.getDirectSDRoutes();
-			this.directDC = rm.getDirectDCRoutes();
+		this.instanceLIRP = rm.getInstance();
+		this.directSD = rm.getDirectSDRoutes();
+		this.directDC = rm.getDirectDCRoutes();
 
-			this.loopSD = loopSD;
-			this.loopDC = loopDC;
+		this.loopSD = loopSD;
+		this.loopDC = loopDC;
 	}
-	
+
 	/*
 	 * ACCESSORS
 	 */
@@ -85,7 +85,7 @@ public class RouteManager {
 	public Instance getInstance() {
 		return this.instanceLIRP;
 	}
-	
+
 	/**
 	 * 
 	 * @return	the ArrayList of direct routes from the supplier to the depots
@@ -93,7 +93,7 @@ public class RouteManager {
 	public ArrayList<Route> getDirectSDRoutes() {
 		return this.directSD;
 	}
-	
+
 	/**
 	 * 
 	 * @return	the ArrayList of direct routes from the depots to the clients
@@ -101,16 +101,16 @@ public class RouteManager {
 	public ArrayList<Route> getDirectDCRoutes() {
 		return this.directDC;
 	}
-	
+
 	/**
 	 * 
 	 * @return	the ArrayList of multi-stops routes from the supplier to the depots
 	 */
 	public ArrayList<Route> getLoopSDRoutes(){
-		
+
 		return this.loopSD;
 	}
-	
+
 	/**
 	 * 
 	 * @return	the ArrayList of multi-stops routes from the supplier to the depots
@@ -125,7 +125,7 @@ public class RouteManager {
 	 */
 	public Route[] getSDRoutes() {
 		Route[] routesSD = new Route[this.directSD.size() + this.loopSD.size()];
-		
+
 		for(int directSDIter = 0; directSDIter < this.directSD.size(); directSDIter++) {
 			routesSD[directSDIter] = this.directSD.get(directSDIter);
 		}
@@ -135,14 +135,14 @@ public class RouteManager {
 		}
 		return routesSD;
 	}
-	
+
 	/**
 	 * 
 	 * @return	an array containing of all Route objects in the route manager from depots to clients
 	 */
 	public Route[] getDCRoutes() {
 		Route[] routesDC = new Route[this.directDC.size() + this.loopDC.size()];
-		
+
 		for(int directDCIter = 0; directDCIter < this.directDC.size(); directDCIter++) {
 			routesDC[directDCIter] = this.directDC.get(directDCIter);
 		}
@@ -153,7 +153,7 @@ public class RouteManager {
 
 		return routesDC;
 	}
-	
+
 	/**
 	 * 
 	 * @param rIndex		the index of the route of interest in the concatenation of directSD and loopSD
@@ -164,7 +164,7 @@ public class RouteManager {
 			return this.directSD.get(rIndex);
 		else if(rIndex < this.directSD.size() + this.loopSD.size())
 			return this.loopSD.get(rIndex - this.directSD.size());
-	
+
 		return null;
 	}
 
@@ -178,7 +178,7 @@ public class RouteManager {
 			return this.directDC.get(rIndex);
 		else if(rIndex < this.directDC.size() + this.loopDC.size())
 			return this.loopDC.get(rIndex - this.directDC.size());
-	
+
 		return null;
 	}
 
@@ -194,7 +194,7 @@ public class RouteManager {
 		/* Get the number of depots and the number of clients from the instance */
 		int nbDepots = instLIRP.getNbDepots();
 		int nbClients = instLIRP.getNbClients();
-		
+
 		for(int dIndex = 0; dIndex < nbDepots; dIndex++) {
 			/* Create a new direct route from the supplier to the depot */
 			Route dRoute = new Route(instLIRP.getSupplier(), instLIRP.getDepot(dIndex));
@@ -211,7 +211,7 @@ public class RouteManager {
 			}
 		}
 	}
-	
+
 	/**
 	 * Fill the loop ArrayList of Route objects with multi-stops routes for the instance considered
 	 * @param instLIRP		the LIRP instance
@@ -287,7 +287,7 @@ public class RouteManager {
 	public RouteManager[] sampleRoutes(int splitParam){
 		int nbManagers = (int) Math.ceil((this.loopSD.size() + this.loopDC.size()) / splitParam);
 		RouteManager[] resultRManagers = new RouteManager[nbManagers];
-		
+
 		return resultRManagers;
 	}
 

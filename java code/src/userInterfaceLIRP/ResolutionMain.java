@@ -51,8 +51,7 @@ public class ResolutionMain {
 
 		try {
 			//IN THE DIRECTORY FOR EVERY FILE, YOU SOLVE AND SAVE
-			for (String fileName : listSol.list() ) 
-			{ 
+			for (String fileName : listSol.list() ) { 
 				// Create the instance from the json file
 				Instance instLIRP = new Instance(instDir + fileName);
 				System.out.print("Solving instance " + fileName + "...");
@@ -107,26 +106,26 @@ public class ResolutionMain {
 		}
 	}
 
-		private static double[] selectCitiesSizes(int nbCities) {
-			// Array to store the different cities sizes
-			double[] citiesSizes = new double[nbCities];
+	private static double[] selectCitiesSizes(int nbCities) {
+		// Array to store the different cities sizes
+		double[] citiesSizes = new double[nbCities];
 
-			// Loop through the different cities to select their sizes
-			for(int cIndex = 0; cIndex < citiesSizes.length; cIndex++) {
-				int sizeIndex = 0;
-				double cdf = proba_sizes[0];
-				// Draw a random number
-				double proba = Parameters.rand.nextDouble();
-				// Determine to which size it corresponds
-				while(proba > cdf) {
-					sizeIndex++;
-					cdf += proba_sizes[sizeIndex];
-				}
-				// Set its size accordingly
-				citiesSizes[cIndex] = cities_sizes[sizeIndex];
+		// Loop through the different cities to select their sizes
+		for(int cIndex = 0; cIndex < citiesSizes.length; cIndex++) {
+			int sizeIndex = 0;
+			double cdf = proba_sizes[0];
+			// Draw a random number
+			double proba = Parameters.rand.nextDouble();
+			// Determine to which size it corresponds
+			while(proba > cdf) {
+				sizeIndex++;
+				cdf += proba_sizes[sizeIndex];
 			}
-			return citiesSizes;
+			// Set its size accordingly
+			citiesSizes[cIndex] = cities_sizes[sizeIndex];
 		}
-
+		return citiesSizes;
 	}
+
+}
 

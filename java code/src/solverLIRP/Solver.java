@@ -19,7 +19,7 @@ public class Solver{
 	private Instance LIRPInstance;
 	private Route[] routesSD;
 	private Route[] routesDC;
-	
+
 	/*===============
 	 *   VARIABLES 
 	 ================*/
@@ -33,9 +33,9 @@ public class Solver{
 	private IloNumVar[][][] v; // quantity delivered by route r to depot j on period t
 	private IloNumVar[][] InvClients; // inventory  at clients
 	private IloNumVar[][] InvDepots; // inventory at depots
-	
+
 	private boolean isSolved; // States if the MIP has been solved or not
-	
+
 	/**
 	 * Creates a Solver object for the LIRP instance, setting the variables, available routes and the CPLEX model
 	 * @param LIRPInstance		the instance upon which is built the model	
@@ -48,7 +48,7 @@ public class Solver{
 		this.LIRPInstance = LIRPInstance;
 		this.routesSD = availableRoutes.getSDRoutes(); // array of routes from the supplier to the depot
 		this.routesDC = availableRoutes.getDCRoutes(); // array of available routes from the depots to the clients
-		
+
 		int nbClients = this.LIRPInstance.getNbClients();  // number of clients
 		int nbDepots = this.LIRPInstance.getNbDepots();  // number of depots
 		int nbPeriods = this.LIRPInstance.getNbPeriods(); // number of periods
@@ -71,9 +71,9 @@ public class Solver{
 			for(int dIter = 0; dIter < nbDepots; dIter++)
 				Gamma[dIter][rIter] = this.routesSD[rIter].containsLocation(this.LIRPInstance.getDepot(dIter)) ? 1 : 0;
 		}
-		
+
 		this.isSolved = false;
-		
+
 		/* CPLEX solver */
 		this.LIRPSolver = new IloCplex();
 		// Set the time limit
@@ -184,7 +184,7 @@ public class Solver{
 				}
 				this.LIRPSolver.addEq(expr8, rhs8);
 			}
-			
+
 			/* Flow conservation at the clients (9) */
 			for (int cIter = 0; cIter < nbClients; cIter++){
 				IloLinearNumExpr expr9 = this.LIRPSolver.linearNumExpr();
@@ -260,25 +260,25 @@ public class Solver{
 		this.LIRPSolver.addLe(objExpr, obj);
 		this.LIRPSolver.addObjective(IloObjectiveSense.Minimize, obj);
 		this.LIRPSolver.solve();
-		
+
 		this.isSolved = true;
 	}
-	
+
 	/**
 	 * Creates a Solution object from the results of the solver on the LIRP problem considered
 	 * @param printStreamSol	the stream on which to print the solution
 	 * @return				the solution obtained from
 	 */
 	public Solution getSolution(PrintStream printStreamSol) throws IloException {
-		
+
 		/*===============================
-		*     SAVE THE SOLVER OUTPUT
+		 *     SAVE THE SOLVER OUTPUT
 		=================================*/
 		Solution sol  = new Solution(this.LIRPInstance, this.routesSD, this.routesDC);
-		
+
 		if(!this.isSolved)
 			this.solveMIP();
-		
+
 		if (this.LIRPSolver.getStatus().equals(IloCplex.Status.Infeasible))
 			System.out.println("There is no solution");
 		else {

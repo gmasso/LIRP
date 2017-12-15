@@ -26,35 +26,35 @@ import java.util.Random;
 public final class Parameters {
 	// Random object to generate distributions
 	public static Random rand = new Random(System.currentTimeMillis());
-	
+
 	// Grid size
 	public static double grid_size = 100;
-	
+
 	// Granularity for the demand map (split into demand boxes of size nbSteps x nbSteps)
 	public static int nbSteps = 100;
-	
+
 	// Routes parameters
 	public static double avg_speed = 50; // In km/h
 	public static double stopping_time = 0.25; // In hours
 	public static double max_time_route = 4; // In hours
 	public static double fixed_cost_route = 100; // In euros
 	public static double cost_km = 2; // Cost per km, in euros
-	
+
 	// Maximum number of locations to open depots on a map
 	public static int max_nb_depots = 10;
-	
+
 	// The "bigM" if no capacity is given
 	public static double bigM = 1000;
-	
+
 	//Solver parameters
 	public static int max_nb_routes = 1000;  // Maximum number of routes in the mathematical model
 	public static double epsilon = 0.000001; // Precision for the constraints
 	public static final double TimeLimit = 1000;  // Time limit for the solver in seconds
-	
+
 	public enum typeModel {
-			direct_direct,
-			direct_loop,
-			loop_direct,
-			loop_loop	
-		}
+		direct_direct,
+		direct_loop,
+		loop_direct,
+		loop_loop	
+	}
 }

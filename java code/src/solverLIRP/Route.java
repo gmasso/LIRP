@@ -32,7 +32,7 @@ public class Route {
 		ArrayList<Integer> startingPermutation = new ArrayList<Integer>();
 		for(int i=0; i < stops.length; i++)
 			startingPermutation.add(i);
-		
+
 		if(this.getLB() > Parameters.max_time_route)
 			this.stopsPermutation = startingPermutation;
 		else
@@ -40,7 +40,8 @@ public class Route {
 
 		this.travelTime = computeDuration(this.stopsPermutation);
 		this.stopTime = Parameters.stopping_time * this.stops.length;
-		this.cost = Parameters.fixed_cost_route + (Parameters.cost_km / Parameters.avg_speed) * this.travelTime;
+		System.out.println(this.stopTime + ", " + this.travelTime);
+		this.cost = Parameters.fixed_cost_route + Parameters.cost_km * Parameters.avg_speed * this.travelTime;
 	}
 
 	/**
@@ -56,9 +57,9 @@ public class Route {
 		this.stopsPermutation.add(0); 
 		this.travelTime = computeDuration(this.stopsPermutation);
 		this.stopTime = Parameters.stopping_time * this.stops.length;
-		this.cost = stop.getOrderingCost() + Parameters.fixed_cost_route + (Parameters.cost_km / Parameters.avg_speed) * this.travelTime;
+		this.cost = stop.getOrderingCost() + Parameters.fixed_cost_route + Parameters.cost_km * Parameters.avg_speed * this.travelTime;
 	}
-	
+
 	/**
 	 * Create a Route object from the coordinates of a start point and a stop point (direct route only)
 	 * @param start, stop
@@ -72,7 +73,7 @@ public class Route {
 		this.stopsPermutation.add(0); 
 		this.travelTime = computeDuration(this.stopsPermutation);
 		this.stopTime = Parameters.stopping_time * this.stops.length;
-		this.cost = Parameters.fixed_cost_route + (Parameters.cost_km / Parameters.avg_speed) * this.travelTime;
+		this.cost = Parameters.fixed_cost_route + Parameters.cost_km * Parameters.avg_speed * this.travelTime;
 	}
 
 	/*
@@ -110,7 +111,7 @@ public class Route {
 	public int getPositionInRoute(int stopIndex) {
 		return stopsPermutation.indexOf(stopIndex);
 	}
-	
+
 	/**
 	 * 
 	 * @return	the cost of the route given its stops sequence
@@ -118,7 +119,7 @@ public class Route {
 	public double getCost() {
 		return this.cost;
 	}
-	
+
 	/**
 	 * 
 	 * @return	the duration of the route given its stops sequence
@@ -126,7 +127,7 @@ public class Route {
 	public double getDuration() {
 		return this.travelTime + this.stopTime;
 	}
-	
+
 	/*
 	 * MUTATORS
 	 */
@@ -146,9 +147,10 @@ public class Route {
 	 * @return	True if the duration of the route is less than the maximum time allowed 
 	 */
 	public boolean isValid() {
-		return this.getDuration() < Parameters.max_time_route;
+
+		return (this.travelTime + this.stopTime) < Parameters.max_time_route;
 	}
-	
+
 	/**
 	 * Check if the contains a given location
 	 * @param loc	the location of interest
@@ -165,7 +167,7 @@ public class Route {
 		}
 		return inRoute;
 	}
-	
+
 	/**
 	 * Create a new Route object by adding a new stop to this route
 	 * @param stop	the new stop to be added
@@ -205,7 +207,7 @@ public class Route {
 		// stop computations and return the current candidate
 		if(computeDuration(partialPermutation) + Parameters.stopping_time * partialPermutation.size() > Parameters.max_time_route)
 			return bestRoute;
-		
+
 		// If there are stops that are not included in the route, try to add them one by one
 		if(!indicesNotInRoute.isEmpty())
 		{
@@ -230,7 +232,7 @@ public class Route {
 		}
 		return bestRoute;
 	}
-	
+
 	/**
 	 * 
 	 * @return	the lower bound on the duration of the road (longest triangle route between the start and two stops, plus the stop durations)
@@ -238,17 +240,17 @@ public class Route {
 	private double getLB() {
 		/* Initialize the lower bound to the cumulative duration of the stops */
 		double stopsTime = this.stops.length * Parameters.stopping_time;
-		double travelTime = 0;
-				
+		double travelDist = 0;
+
 		for(int stop1 = 0; stop1 < this.stops.length - 1; stop1++)
 			for(int stop2 = stop1 + 1; stop2 < this.stops.length; stop2++) {
-				double tt = this.start.getDistance(this.stops[stop1]) + this.start.getDistance(this.stops[stop2]) + this.stops[stop1].getDistance(this.stops[stop2]);
-				travelTime = (tt > travelTime) ? tt : travelTime;
+				double td = this.start.getDistance(this.stops[stop1]) + this.start.getDistance(this.stops[stop2]) + this.stops[stop1].getDistance(this.stops[stop2]);
+				travelDist = Math.max(td, travelDist);
 			}
-				
-		return stopsTime + travelTime;
+
+		return stopsTime + travelDist / Parameters.avg_speed;
 	}
-	
+
 	/**
 	 * Compute the cost of the route associated with a given permutation
 	 * @param stopsIndices	the permutation of the stops
@@ -268,11 +270,13 @@ public class Route {
 		while (travelTime + stopsTime < Parameters.max_time_route && indexIterator.hasNext()) {
 			nextIndex = indexIterator.next();
 			nextStop = this.stops[nextIndex];
-			travelTime += Parameters.avg_speed * currentStop.getDistance(nextStop);
+			travelTime += currentStop.getDistance(nextStop) / Parameters.avg_speed;
 			currentStop = nextStop;
 		}
 		// Add the time to return to the starting point of the route
-		travelTime += Parameters.avg_speed * currentStop.getDistance(this.start);
+		travelTime += currentStop.getDistance(this.start) / Parameters.avg_speed;
+
+
 		return travelTime;
 	}
 }
