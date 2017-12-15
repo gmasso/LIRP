@@ -258,12 +258,10 @@ public class RouteManager {
 	 * @throws IOException
 	 */
 	private ArrayList<Route> computeAllRoutes(Route currentRoute, ArrayList<Location> stopCandidates, int nbRemainingStops) throws IOException {
-		System.out.println(stopCandidates.size() + " remaining " + nbRemainingStops);
 		ArrayList<Route> routesToAdd = new ArrayList<Route>();
 		/* If some stop candidates remain to extend the route, try to add them to the route */
 		if(nbRemainingStops > 0 && !stopCandidates.isEmpty()) {
 			for(int stopIter = 0; stopIter < stopCandidates.size(); stopIter++) {
-				System.out.println("stop " + stopIter);
 				/* Create a new Route object by adding one stop among the candidates to currentRoute */
 				Route routeCandidate = currentRoute.extend(stopCandidates.get(stopIter));
 				/* If it is valid, add it to the set of routes to add and call recursively */
