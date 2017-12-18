@@ -31,16 +31,16 @@ Root relaxation solution time = 0.01 sec. (4.96 ticks)
 *     0+    0                         5967.5232      358.7211            93.99%
 *     0+    0                         1101.4973      358.7211            67.43%
 *     0     0      integral     0      781.4980      781.4980      421    0.00%
-Elapsed time = 0.03 sec. (20.35 ticks, tree = 0.00 MB, solutions = 3)
+Elapsed time = 0.04 sec. (20.35 ticks, tree = 0.00 MB, solutions = 3)
 
 Root node processing (before b&c):
-  Real time             =    0.03 sec. (20.45 ticks)
+  Real time             =    0.04 sec. (20.45 ticks)
 Parallel b&c, 4 threads:
   Real time             =    0.00 sec. (0.00 ticks)
   Sync time (average)   =    0.00 sec.
   Wait time (average)   =    0.00 sec.
                           ------------
-Total (root+branch&cut) =    0.03 sec. (20.45 ticks)
+Total (root+branch&cut) =    0.04 sec. (20.45 ticks)
 
 ===========  RESULTS  ===========
 
@@ -150,6 +150,6 @@ ERROR, Constraint 9, period 9
 ERROR, Constraint 9, period 9
 ERROR, Constraint 9, period 9
 ERROR, Constraint 9, period 9
-Time to solve the instance: 39 milliseconds
+Time to solve the instance: 45 milliseconds
 ================================
 

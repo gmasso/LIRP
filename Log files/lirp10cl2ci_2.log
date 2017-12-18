@@ -14,7 +14,7 @@ Tried aggregator 1 time.
 Reduced MIP has 2030 rows, 16203 columns, and 52247 nonzeros.
 Reduced MIP has 1503 binaries, 0 generals, 0 SOSs, and 0 indicators.
 Presolve time = 0.03 sec. (26.04 ticks)
-Probing time = 0.04 sec. (9.85 ticks)
+Probing time = 0.03 sec. (9.85 ticks)
 Clique table members: 400.
 MIP emphasis: balance optimality and feasibility.
 MIP search method: dynamic search.
@@ -46,14 +46,14 @@ Tried aggregator 1 time.
 Reduced MIP has 1491 rows, 11335 columns, and 36477 nonzeros.
 Reduced MIP has 1041 binaries, 0 generals, 0 SOSs, and 0 indicators.
 Presolve time = 0.02 sec. (17.97 ticks)
-Represolve time = 0.07 sec. (58.29 ticks)
+Represolve time = 0.09 sec. (58.29 ticks)
 Probing fixed 0 vars, tightened 1 bounds.
-Probing time = 0.02 sec. (9.26 ticks)
+Probing time = 0.03 sec. (9.26 ticks)
 Clique table members: 326.
 MIP emphasis: balance optimality and feasibility.
 MIP search method: dynamic search.
 Parallel mode: deterministic, using up to 4 threads.
-Root relaxation solution time = 0.15 sec. (148.61 ticks)
+Root relaxation solution time = 0.43 sec. (148.61 ticks)
 
         Nodes                                         Cuts/
    Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
@@ -66,7 +66,7 @@ Root relaxation solution time = 0.15 sec. (148.61 ticks)
       0     0     1101.4294    15     1102.5145     Cuts: 101     9165    0.10%
       0     0     1102.3034    16     1102.5145      Cuts: 76     9212    0.02%
       0     0        cutoff           1102.5145                   9214    0.00%
-Elapsed time = 2.40 sec. (1437.85 ticks, tree = 0.01 MB, solutions = 4)
+Elapsed time = 2.76 sec. (1437.85 ticks, tree = 0.01 MB, solutions = 4)
 
 GUB cover cuts applied:  1
 Cover cuts applied:  1
@@ -76,13 +76,13 @@ Mixed integer rounding cuts applied:  71
 Gomory fractional cuts applied:  2
 
 Root node processing (before b&c):
-  Real time             =    2.40 sec. (1438.86 ticks)
+  Real time             =    2.76 sec. (1438.86 ticks)
 Parallel b&c, 4 threads:
   Real time             =    0.00 sec. (0.00 ticks)
   Sync time (average)   =    0.00 sec.
   Wait time (average)   =    0.00 sec.
                           ------------
-Total (root+branch&cut) =    2.40 sec. (1438.86 ticks)
+Total (root+branch&cut) =    2.76 sec. (1438.86 ticks)
 
 ===========  RESULTS  ===========
 
@@ -231,6 +231,6 @@ ERROR, Constraint 9, period 9
 ERROR, Constraint 9, period 9
 ERROR, Constraint 9, period 9
 ERROR, Constraint 9, period 9
-Time to solve the instance: 2416 milliseconds
+Time to solve the instance: 2776 milliseconds
 ================================
 

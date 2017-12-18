@@ -34,7 +34,7 @@ Root relaxation solution time = 0.01 sec. (5.53 ticks)
       0     0      678.4261     6     1153.2087      Cuts: 66      660   41.17%
 *     0+    0                          746.3330      678.4261             9.10%
       0     0        cutoff            746.3330                    717    0.00%
-Elapsed time = 0.32 sec. (65.79 ticks, tree = 0.01 MB, solutions = 4)
+Elapsed time = 0.18 sec. (65.79 ticks, tree = 0.01 MB, solutions = 4)
 
 GUB cover cuts applied:  1
 Cover cuts applied:  2
@@ -45,13 +45,13 @@ Lift and project cuts applied:  1
 Gomory fractional cuts applied:  3
 
 Root node processing (before b&c):
-  Real time             =    0.33 sec. (65.90 ticks)
+  Real time             =    0.18 sec. (65.90 ticks)
 Parallel b&c, 4 threads:
   Real time             =    0.00 sec. (0.00 ticks)
   Sync time (average)   =    0.00 sec.
   Wait time (average)   =    0.00 sec.
                           ------------
-Total (root+branch&cut) =    0.33 sec. (65.90 ticks)
+Total (root+branch&cut) =    0.18 sec. (65.90 ticks)
 
 ===========  RESULTS  ===========
 
@@ -158,6 +158,6 @@ ERROR, Constraint 9, period 9
 ERROR, Constraint 9, period 9
 ERROR, Constraint 9, period 9
 ERROR, Constraint 9, period 9
-Time to solve the instance: 331 milliseconds
+Time to solve the instance: 181 milliseconds
 ================================
 

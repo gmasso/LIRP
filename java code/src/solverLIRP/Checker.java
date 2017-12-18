@@ -38,7 +38,7 @@ public final class Checker {
 			for(int dIter = 0; dIter < instance.getNbDepots(); dIter++) {
 				/* Each depot is served by at most one route in every period (2) */
 				int routeDepotConst = 0;
-				for (int rIter = 0; rIter < routesDC.length; rIter++) 
+				for (int rIter = 0; rIter < routesSD.length; rIter++) 
 					if(sol.isUsedDCRoute(rIter, t))
 						routeDepotConst += Gamma[dIter][rIter] ;
 				if(routeDepotConst > 1) {
@@ -141,15 +141,17 @@ public final class Checker {
 					lastInvDepot = instance.getDepot(dIter).getInitialInventory();
 				else
 					lastInvDepot = sol.getStockDepot(dIter, t - 1);
+				
 				for(int rSDIter = 0; rSDIter < routesSD.length; rSDIter++)
 					lastInvDepot += sol.getDeliveryDepot(dIter, rSDIter, t);
+				
 				double newInvDepot = sol.getStockDepot(dIter, t);
 				for (int rDCIter = 0; rDCIter < routesDC.length; rDCIter++) {
 					for (int cIter = 0; cIter < instance.getNbClients(); cIter++)
 						newInvDepot += Beta[dIter][rDCIter] + sol.getDeliveryClient(cIter,  rDCIter,  t);
 				}
 				if((lastInvDepot > newInvDepot + Parameters.epsilon) || (lastInvDepot < newInvDepot - Parameters.epsilon)) {
-					System.out.println("ERROR, Constraint 8, period "+ t);
+					System.out.println("ERROR, Constraint 8, period "+ t + ": diff " + (newInvDepot - lastInvDepot));
 					isFeasible = false;
 				}
 				else {
@@ -169,7 +171,7 @@ public final class Checker {
 					lastInvClient += sol.getDeliveryClient(cIter, rIter, t);
 				double newInvClient = sol.getStockClient(cIter, t) + instance.getClient(cIter).getDemand(t);
 				if((lastInvClient > newInvClient + Parameters.epsilon) || (lastInvClient < newInvClient - Parameters.epsilon)) {
-					System.out.println("ERROR, Constraint 9, period "+ t);
+					System.out.println("ERROR, Constraint 9, period "+ t+ ": diff " + (newInvClient - lastInvClient));
 					isFeasible = false;
 				}
 				else {

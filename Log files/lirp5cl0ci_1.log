@@ -8,15 +8,15 @@ MIP Presolve eliminated 331 rows and 6 columns.
 MIP Presolve modified 240 coefficients.
 Reduced MIP has 630 rows, 1998 columns, and 6307 nonzeros.
 Reduced MIP has 333 binaries, 0 generals, 0 SOSs, and 0 indicators.
-Presolve time = 0.01 sec. (3.46 ticks)
+Presolve time = 0.00 sec. (3.46 ticks)
 Probing fixed 0 vars, tightened 114 bounds.
-Probing time = 0.01 sec. (3.02 ticks)
+Probing time = 0.00 sec. (3.02 ticks)
 Tried aggregator 1 time.
 Reduced MIP has 630 rows, 1998 columns, and 6307 nonzeros.
 Reduced MIP has 333 binaries, 0 generals, 0 SOSs, and 0 indicators.
-Presolve time = 0.01 sec. (3.37 ticks)
+Presolve time = 0.00 sec. (3.37 ticks)
 Probing fixed 0 vars, tightened 36 bounds.
-Probing time = 0.01 sec. (2.78 ticks)
+Probing time = 0.00 sec. (2.78 ticks)
 Clique table members: 220.
 MIP emphasis: balance optimality and feasibility.
 MIP search method: dynamic search.
@@ -48,7 +48,7 @@ Root relaxation solution time = 0.01 sec. (6.46 ticks)
       0     0     1709.7520    24     1845.9432      Cuts: 16     1298    7.38%
       0     0     1709.7972    27     1845.9432      Cuts: 31     1314    7.38%
       0     2     1709.7972    27     1845.9432     1709.7972     1314    7.38%
-Elapsed time = 1.18 sec. (390.18 ticks, tree = 0.01 MB, solutions = 2)
+Elapsed time = 0.81 sec. (390.18 ticks, tree = 0.01 MB, solutions = 2)
 
 GUB cover cuts applied:  1
 Cover cuts applied:  3
@@ -59,13 +59,13 @@ Zero-half cuts applied:  2
 Lift and project cuts applied:  1
 
 Root node processing (before b&c):
-  Real time             =    1.18 sec. (389.44 ticks)
+  Real time             =    0.81 sec. (389.44 ticks)
 Parallel b&c, 4 threads:
-  Real time             =    0.33 sec. (176.77 ticks)
-  Sync time (average)   =    0.09 sec.
+  Real time             =    0.30 sec. (176.77 ticks)
+  Sync time (average)   =    0.07 sec.
   Wait time (average)   =    0.00 sec.
                           ------------
-Total (root+branch&cut) =    1.52 sec. (566.21 ticks)
+Total (root+branch&cut) =    1.11 sec. (566.21 ticks)
 
 ===========  RESULTS  ===========
 
@@ -156,6 +156,6 @@ ERROR, Constraint 9, period 9
 ERROR, Constraint 9, period 9
 ERROR, Constraint 9, period 9
 ERROR, Constraint 9, period 9
-Time to solve the instance: 1519 milliseconds
+Time to solve the instance: 1115 milliseconds
 ================================
 

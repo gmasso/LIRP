@@ -15,7 +15,7 @@ Tried aggregator 1 time.
 Reduced MIP has 810 rows, 2958 columns, and 9597 nonzeros.
 Reduced MIP has 503 binaries, 0 generals, 0 SOSs, and 0 indicators.
 Presolve time = 0.01 sec. (5.34 ticks)
-Probing time = 0.00 sec. (3.67 ticks)
+Probing time = 0.01 sec. (3.67 ticks)
 Clique table members: 230.
 MIP emphasis: balance optimality and feasibility.
 MIP search method: dynamic search.
@@ -32,7 +32,7 @@ Root relaxation solution time = 0.02 sec. (16.10 ticks)
 *     0+    0                          823.7589      691.4991            16.06%
       0     0      772.4816     1      823.7589      Cuts: 20     2069    6.22%
       0     0        cutoff            823.7589      823.7589     2096    0.00%
-Elapsed time = 0.22 sec. (185.09 ticks, tree = 0.01 MB, solutions = 3)
+Elapsed time = 0.27 sec. (185.09 ticks, tree = 0.01 MB, solutions = 3)
 
 GUB cover cuts applied:  1
 Implied bound cuts applied:  26
@@ -42,13 +42,13 @@ Zero-half cuts applied:  2
 Gomory fractional cuts applied:  2
 
 Root node processing (before b&c):
-  Real time             =    0.22 sec. (185.28 ticks)
+  Real time             =    0.27 sec. (185.28 ticks)
 Parallel b&c, 4 threads:
   Real time             =    0.00 sec. (0.00 ticks)
   Sync time (average)   =    0.00 sec.
   Wait time (average)   =    0.00 sec.
                           ------------
-Total (root+branch&cut) =    0.22 sec. (185.28 ticks)
+Total (root+branch&cut) =    0.27 sec. (185.28 ticks)
 
 ===========  RESULTS  ===========
 
@@ -158,6 +158,6 @@ ERROR, Constraint 9, period 9
 ERROR, Constraint 9, period 9
 ERROR, Constraint 9, period 9
 ERROR, Constraint 9, period 9
-Time to solve the instance: 224 milliseconds
+Time to solve the instance: 274 milliseconds
 ================================
 
