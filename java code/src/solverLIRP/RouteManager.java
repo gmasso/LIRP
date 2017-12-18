@@ -287,7 +287,20 @@ public class RouteManager {
 		int nbManagers = (int) Math.ceil((this.loopSD.size() + this.loopDC.size()) / splitParam);
 		RouteManager[] resultRManagers = new RouteManager[nbManagers];
 
-		return resultRManagers;
-	}
-
+		for (int i=0;i<nbManagers;i++)
+		{
+			int  [] subset =new int [splitParam-1];// subset creation to fill routes with split parameter size 
+			
+			int x=0;
+			for (int j=i*(splitParam);j<=Math.min(this.loopSD.size(),i*splitParam-1);j++)
+			{
+				
+				subset[x]=j;
+				x++;
+			}
+			
+		}
+		
+		
+      return resultRManagers;
 }
