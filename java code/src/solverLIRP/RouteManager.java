@@ -196,11 +196,11 @@ public class RouteManager {
 		int nbClients = instLIRP.getNbClients();
 
 		for(int dIndex = 0; dIndex < nbDepots; dIndex++) {
-			/* Create a new direct route from the supplier to the depot */
-			Route dRoute = new Route(instLIRP.getSupplier(), instLIRP.getDepot(dIndex));
-			/* If its duration is lower than the maximum time allowed, add it to the list */
-			if(dRoute.isValid())
-				this.directSD.add(dRoute);
+//			/* Create a new direct route from the supplier to the depot */
+//			Route dRoute = new Route(instLIRP.getSupplier(), instLIRP.getDepot(dIndex));
+//			/* If its duration is lower than the maximum time allowed, add it to the list */
+//			if(dRoute.isValid())
+//				this.directSD.add(dRoute);
 
 			for(int cIndex = 0; cIndex < nbClients; cIndex++) {
 				/* Create a new direct Route object between the current depot and client */
@@ -284,23 +284,39 @@ public class RouteManager {
 	 * @return			an array of RouteManager objects with no more than splitParam routes in each loop arrays
 	 */
 	public RouteManager[] sampleRoutes(int splitParam){
-		int nbManagers = (int) Math.ceil((this.loopSD.size() + this.loopDC.size()) / splitParam);
+		int nbManagers = (int) Math.ceil(this.loopDC.size() / splitParam);
 		RouteManager[] resultRManagers = new RouteManager[nbManagers];
 
-		for (int i=0;i<nbManagers;i++)
-		{
-			int  [] subset =new int [splitParam-1];// subset creation to fill routes with split parameter size 
-			
-			int x=0;
-			for (int j=i*(splitParam);j<=Math.min(this.loopSD.size(),i*splitParam-1);j++)
-			{
-				
-				subset[x]=j;
-				x++;
+		for (int i = 0; i < nbManagers - 1; i++){
+			// The array containing the indices of the loop DC routes to add to the subset
+			int[] routeDCSubset = new int[splitParam];// subset creation to fill routes with split parameter size 
+			// Create an empty array for the index of SD loop routes to use
+			int[] SDRouteSubset = new int[0];
+
+			for (int j = 0; j < splitParam; j++){
+				routeDCSubset[j] = i * splitParam + j;
 			}
-			
+			resultRManagers[i] = new RouteManager(this, SDRouteSubset, routeDCSubset);
 		}
-		
-		
-      return resultRManagers;
+
+		int diff = this.loopDC.size() - nbManagers * splitParam;
+		if(diff ==  0) {
+			int[] routeDCSubset = new int[splitParam];
+			for (int j = 0; j < splitParam; j++){
+				routeDCSubset[j] = (nbManagers - 1) * splitParam + j;
+			}
+			resultRManagers[nbManagers-1] = new RouteManager(this, new int[0], routeDCSubset);
+		}
+		else {
+			int[] routeDCSubset = new int[splitParam];
+			for (int j = 0; j < diff; j++){
+				routeDCSubset[j] = (nbManagers - 1) * splitParam + j;
+			}
+			for(int j = 0; j < splitParam - diff; j++) {
+				routeDCSubset[diff + j] = j;
+			}
+			resultRManagers[nbManagers-1] = new RouteManager(this, new int[0], routeDCSubset);
+		}
+		return resultRManagers;
+	}
 }
