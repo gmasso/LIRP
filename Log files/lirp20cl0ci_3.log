@@ -3,18 +3,35 @@ OK. Solving...
 done!
 CPXPARAM_TimeLimit                               1000
 CPXPARAM_Read_APIEncoding                        "UTF8"
-Bound infeasibility column 'x53271'.
-Presolve time = 0.12 sec. (60.54 ticks)
+Tried aggregator 1 time.
+MIP Presolve eliminated 25111 rows and 21 columns.
+MIP Presolve modified 540 coefficients.
+Reduced MIP has 26380 rows, 532853 columns, and 1729987 nonzeros.
+Reduced MIP has 25383 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 1.25 sec. (1410.39 ticks)
+Tried aggregator 1 time.
+Reduced MIP has 26380 rows, 532853 columns, and 1729987 nonzeros.
+Reduced MIP has 25383 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 1.36 sec. (760.11 ticks)
+Probing time = 0.88 sec. (274.43 ticks)
+Clique table members: 770.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 4 threads.
+Root relaxation solution time = 20.30 sec. (11260.66 ticks)
 
-Root node processing (before b&c):
-  Real time             =    0.27 sec. (158.66 ticks)
-Parallel b&c, 4 threads:
-  Real time             =    0.00 sec. (0.00 ticks)
-  Sync time (average)   =    0.00 sec.
-  Wait time (average)   =    0.00 sec.
-                          ------------
-Total (root+branch&cut) =    0.27 sec. (158.66 ticks)
-There is no solution
-Time to solve the instance: 402 milliseconds
-================================
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
 
+*     0+    0                         5600.1808        0.0000           100.00%
+      0     0     3245.3642    36     5600.1808     3245.3642       36   42.05%
+*     0+    0                         4143.5035     3245.3642            21.68%
+      0     0     3612.0798    16     4143.5035      Cuts: 34    70718   12.83%
+      0     0     3612.3905    12     4143.5035      Cuts: 96    90458   12.82%
+      0     0     3612.4261     9     4143.5035      Cuts: 45    93763   12.82%
+*     0+    0                         3867.4212     3612.4261             6.59%
+      0     0     3612.4261     9     3867.4212      Cuts: 33   105858    6.59%
+      0     0     3612.4261     9     3867.4212      Cuts: 12   106593    6.59%
+Heuristic still looking.
+      0     2     3612.4261     9     3867.4212     3612.4261   106593    6.59%
+Elapsed time = 351.57 sec. (253756.38 ticks, tree = 0.01 MB, solutions = 3)

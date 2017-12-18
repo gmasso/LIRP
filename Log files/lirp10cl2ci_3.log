@@ -3,18 +3,18 @@ OK. Solving...
 done!
 CPXPARAM_TimeLimit                               1000
 CPXPARAM_Read_APIEncoding                        "UTF8"
-Bound infeasibility column 'x25614'.
-Presolve time = 0.05 sec. (28.87 ticks)
+Bound infeasibility column 'x5962'.
+Presolve time = 0.01 sec. (7.18 ticks)
 
 Root node processing (before b&c):
-  Real time             =    0.13 sec. (75.79 ticks)
+  Real time             =    0.03 sec. (18.61 ticks)
 Parallel b&c, 4 threads:
   Real time             =    0.00 sec. (0.00 ticks)
   Sync time (average)   =    0.00 sec.
   Wait time (average)   =    0.00 sec.
                           ------------
-Total (root+branch&cut) =    0.13 sec. (75.79 ticks)
+Total (root+branch&cut) =    0.03 sec. (18.61 ticks)
 There is no solution
-Time to solve the instance: 183 milliseconds
+Time to solve the instance: 43 milliseconds
 ================================
 

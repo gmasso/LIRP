@@ -7,14 +7,14 @@ Bound infeasibility column 'x4008'.
 Presolve time = 0.01 sec. (4.74 ticks)
 
 Root node processing (before b&c):
-  Real time             =    0.03 sec. (12.26 ticks)
+  Real time             =    0.02 sec. (12.26 ticks)
 Parallel b&c, 4 threads:
   Real time             =    0.00 sec. (0.00 ticks)
   Sync time (average)   =    0.00 sec.
   Wait time (average)   =    0.00 sec.
                           ------------
-Total (root+branch&cut) =    0.03 sec. (12.26 ticks)
+Total (root+branch&cut) =    0.02 sec. (12.26 ticks)
 There is no solution
-Time to solve the instance: 47 milliseconds
+Time to solve the instance: 38 milliseconds
 ================================
 

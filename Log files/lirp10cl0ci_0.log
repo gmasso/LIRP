@@ -7,14 +7,14 @@ Bound infeasibility column 'x5134'.
 Presolve time = 0.01 sec. (6.09 ticks)
 
 Root node processing (before b&c):
-  Real time             =    0.04 sec. (15.75 ticks)
+  Real time             =    0.02 sec. (15.75 ticks)
 Parallel b&c, 4 threads:
   Real time             =    0.00 sec. (0.00 ticks)
   Sync time (average)   =    0.00 sec.
   Wait time (average)   =    0.00 sec.
                           ------------
-Total (root+branch&cut) =    0.04 sec. (15.75 ticks)
+Total (root+branch&cut) =    0.02 sec. (15.75 ticks)
 There is no solution
-Time to solve the instance: 56 milliseconds
+Time to solve the instance: 35 milliseconds
 ================================
 

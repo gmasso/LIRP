@@ -1,5 +1,6 @@
 package solverLIRP;
 import java.io.PrintStream;
+import java.util.Arrays;
 
 import ilog.concert.IloException;
 import ilog.concert.IloIntVar;
@@ -62,6 +63,7 @@ public class Solver{
 				Alpha[cIter][rIter] = this.routesDC[rIter].containsLocation(this.LIRPInstance.getClient(cIter)) ? 1 : 0;
 			for(int dIter = 0; dIter < nbDepots; dIter++)
 				Beta[dIter][rIter] = this.routesDC[rIter].containsLocation(this.LIRPInstance.getDepot(dIter)) ? 1 : 0;
+
 		}
 
 		/* Definition of parameters Gamma (for the supplier-depots routes) */
@@ -329,7 +331,7 @@ public class Solver{
 			for (int t = 0;t < this.LIRPInstance.getNbPeriods(); t++){
 				for (int cIter = 0;cIter < this.LIRPInstance.getNbClients(); cIter++){
 					for (int rIter = 0; rIter < this.routesDC.length; rIter++){
-						if (this.LIRPSolver.getValue(this.x[rIter][t]) > 0) {
+						if (this.LIRPSolver.getValue(this.z[rIter][t]) > 0) {
 							sol.setusedDCRoutes(rIter, t, true);
 							double uirt = Math.round(this.LIRPSolver.getValue(this.u[cIter][rIter][t]));
 							sol.setDeliveryClient(cIter, rIter, t, uirt);			

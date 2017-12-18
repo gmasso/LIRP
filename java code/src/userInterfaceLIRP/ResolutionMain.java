@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 import ilog.concert.IloException;
+import ilog.concert.IloLinearNumExpr;
 import instanceManager.Instance;
 import instanceManager.Parameters;
 import solverLIRP.RouteManager;
@@ -52,52 +53,65 @@ public class ResolutionMain {
 		try {
 			//IN THE DIRECTORY FOR EVERY FILE, YOU SOLVE AND SAVE
 			for (String fileName : listSol.list() ) { 
-				// Create the instance from the json file
-				Instance instLIRP = new Instance(instDir + fileName);
-				System.out.print("Solving instance " + fileName + "...");
+				int i = fileName.lastIndexOf('.');
+				if (i > 0 &&  i < fileName.length() - 1) {
+					String extension = fileName.substring(i+1).toLowerCase();
+					if(extension!= null && extension.equals("json")) {
+						// Create the instance from the json file
+						Instance instLIRP = new Instance(instDir + fileName);
+//						System.out.println("Capa clients: ");						
+//						for (int cIter = 0; cIter < instLIRP.getNbClients(); cIter++) {
+//							System.out.println(instLIRP.getClient(cIter).getCapacity());
+//						}
+//						System.out.println("Capa depots: ");						
+//						for (int dIter = 0; dIter < instLIRP.getNbDepots(); dIter++) {
+//							System.out.println(instLIRP.getDepot(dIter).getCapacity());
+//						}
+						System.out.print("Solving instance " + fileName + "...");
 
-				// Create the log file and solution file to store the results and the trace of the program
-				String fichierLog = "../Log files/" + fileName.replace(".json", ".log");
-				String fichierSol = "../Solutions/" + fileName.replace(".json", ".sol");
+						// Create the log file and solution file to store the results and the trace of the program
+						String fichierLog = "../Log files/" + fileName.replace(".json", ".log");
+						String fichierSol = "../Solutions/" + fileName.replace(".json", ".sol");
 
-				File fileLog = new File(fichierLog);
-				PrintStream printStreamLog = new PrintStream(fileLog);
-				// Outputs out and err are redirected to the log file
-				PrintStream original = System.out;
-				System.setOut(printStreamLog);
-				System.setErr(printStreamLog);
-				File fileSol = new File(fichierSol);
-				// Stream for the solution
-				PrintStream printStreamSol = new PrintStream(fileSol);
+						File fileLog = new File(fichierLog);
+						PrintStream printStreamLog = new PrintStream(fileLog);
+						// Outputs out and err are redirected to the log file
+						PrintStream original = System.out;
+						System.setOut(printStreamLog);
+						System.setErr(printStreamLog);
+						File fileSol = new File(fichierSol);
+						// Stream for the solution
+						PrintStream printStreamSol = new PrintStream(fileSol);
 
-				System.out.println("Creating the RouteManager...");
-				RouteManager rm = new RouteManager(instLIRP);
-				System.out.println("OK. Solving...");
-				Solver solverLIRP = new Solver(instLIRP, rm);
-				System.out.println("done!");
+						System.out.println("Creating the RouteManager...");
+						RouteManager rm = new RouteManager(instLIRP);
+						System.out.println("OK. Solving...");
+						Solver solverLIRP = new Solver(instLIRP, rm);
+						System.out.println("done!");
 
-				// Call the method from the solver
-				long startChrono = System.currentTimeMillis();
-				Solution sol = solverLIRP.getSolution(printStreamSol);
-				long stopChrono = System.currentTimeMillis();
-				long duration = (stopChrono-startChrono);
-				System.out.println("Time to solve the instance: "+duration+" milliseconds");
+						// Call the method from the solver
+						long startChrono = System.currentTimeMillis();
+						Solution sol = solverLIRP.getSolution(printStreamSol);
+						long stopChrono = System.currentTimeMillis();
+						long duration = (stopChrono-startChrono);
+						System.out.println("Time to solve the instance: "+duration+" milliseconds");
 
-				System.out.println("================================");
-				System.out.println();
+						System.out.println("================================");
+						System.out.println();
 
-				if (sol != null){
+						if (sol != null){
 
-					sol.print(printStreamSol);
+							sol.print(printStreamSol);
+						}
+						else {
+							System.out.println("Error on this instance");
+						}
+
+						System.setOut(original);
+						System.out.println("Instance solved.");
+					}
 				}
-				else {
-					System.out.println("Error on this instance");
-				}
-
-				System.setOut(original);
-				System.out.println("Instance solved.");
 			}
-
 			System.out.println("All Instances solved. FINISHED :-)");
 		}
 
@@ -126,6 +140,5 @@ public class ResolutionMain {
 		}
 		return citiesSizes;
 	}
-
 }
 

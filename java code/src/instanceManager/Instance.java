@@ -58,7 +58,7 @@ public class Instance {
 			this.planningHorizon = planningHorizon;
 			// Fill the corresponding attribute
 			this.vehiclesCapacity = vCapacities; 
-			
+
 			System.out.println("Instance created successfully.");
 		}
 		catch(IOException ioe) {
@@ -72,7 +72,7 @@ public class Instance {
 			System.exit(1);
 		}
 	}
-	
+
 	/**
 	 * Create a new Instance object directly from its own attributes, the depots and clients maps and information on the fleet of vehicles
 	 * @param planningHorizon	the number of periods
@@ -93,7 +93,7 @@ public class Instance {
 			// Fill the corresponding attribute
 			this.vehiclesCapacity = vCapacities; 
 			this.supplier = new Location(new Point2D.Double(gridSize/2, gridSize/2));
-			
+
 			System.out.println("Instance created successfully.");
 		}
 		catch(IOException ioe) {
@@ -105,7 +105,7 @@ public class Instance {
 			System.out.println(npe);
 		}
 	}
-	
+
 	/**
 	 * Create a new Instance object from data in JSON file
 	 * @param jsonFile	the file containing the JSON string
@@ -153,6 +153,7 @@ public class Instance {
 			System.out.println("Problem while reading the JSON file");
 			System.out.println(npe);
 		}
+
 	}
 
 	/*
@@ -198,7 +199,7 @@ public class Instance {
 	public Depot getDepot(int d) {
 		return (Depot) this.depots.getSite(d);
 	}
-	
+
 	/**
 	 * Get a specific client
 	 * @param c	the index of the client of interest
@@ -222,7 +223,7 @@ public class Instance {
 		else
 			throw new IndexOutOfBoundsException("Error: Vehicle " + v + "does not exist");
 	}
-	
+
 	/**
 	 * 
 	 * @return	the number of vehicles in the fleet
@@ -238,7 +239,7 @@ public class Instance {
 	public Route[] getRoutes() {
 		return this.routes;
 	}
-	
+
 	/**
 	 * 
 	 * @return the Location object corresponding to the supplier in this instance
@@ -246,7 +247,7 @@ public class Instance {
 	public Location getSupplier() {
 		return this.supplier;
 	}
-	
+
 	/**
 	 * Return the index of a depot 
 	 * @param depot	the Depot object of interest
@@ -256,7 +257,7 @@ public class Instance {
 		for(int dIndex = 0; dIndex < this.depots.getNbSites(); dIndex++) {
 			if((Depot) this.depots.getSite(dIndex) == depot)
 				return dIndex;
-				
+
 		}
 		return -1;
 	}
@@ -274,7 +275,7 @@ public class Instance {
 		else
 			this.planningHorizon = nbPeriods;
 	}
-	
+
 	/*
 	 * METHODS
 	 */
@@ -294,7 +295,7 @@ public class Instance {
 
 		return jsonInstance;
 	}
-	
+
 	/**
 	 * Write a JSON string with all characteristics of the instance into a file
 	 * @param filename	the destination file

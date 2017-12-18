@@ -15,23 +15,6 @@ Parallel b&c, 4 threads:
                           ------------
 Total (root+branch&cut) =    0.00 sec. (0.63 ticks)
 There is no solution
-Time to solve the instance: 5 milliseconds
+Time to solve the instance: 3 milliseconds
 ================================
 
-Exception in thread "main" java.io.UncheckedIOException: java.nio.charset.MalformedInputException: Input length = 1
-	at java.io.BufferedReader$1.hasNext(BufferedReader.java:574)
-	at java.util.Iterator.forEachRemaining(Iterator.java:115)
-	at java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1801)
-	at java.util.stream.ReferencePipeline$Head.forEach(ReferencePipeline.java:580)
-	at instanceManager.Instance.<init>(Instance.java:120)
-	at userInterfaceLIRP.ResolutionMain.main(ResolutionMain.java:56)
-Caused by: java.nio.charset.MalformedInputException: Input length = 1
-	at java.nio.charset.CoderResult.throwException(CoderResult.java:281)
-	at sun.nio.cs.StreamDecoder.implRead(StreamDecoder.java:339)
-	at sun.nio.cs.StreamDecoder.read(StreamDecoder.java:178)
-	at java.io.InputStreamReader.read(InputStreamReader.java:184)
-	at java.io.BufferedReader.fill(BufferedReader.java:161)
-	at java.io.BufferedReader.readLine(BufferedReader.java:324)
-	at java.io.BufferedReader.readLine(BufferedReader.java:389)
-	at java.io.BufferedReader$1.hasNext(BufferedReader.java:571)
-	... 5 more

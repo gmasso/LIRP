@@ -3,18 +3,168 @@ OK. Solving...
 done!
 CPXPARAM_TimeLimit                               1000
 CPXPARAM_Read_APIEncoding                        "UTF8"
-Bound infeasibility column 'x347'.
-Presolve time = 0.00 sec. (0.44 ticks)
+Tried aggregator 1 time.
+MIP Presolve eliminated 591 rows and 6 columns.
+MIP Presolve modified 386 coefficients.
+Reduced MIP has 890 rows, 3478 columns, and 11397 nonzeros.
+Reduced MIP has 583 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.04 sec. (6.47 ticks)
+Probing fixed 0 vars, tightened 57 bounds.
+Probing time = 0.08 sec. (2.88 ticks)
+Tried aggregator 1 time.
+Reduced MIP has 890 rows, 3478 columns, and 11397 nonzeros.
+Reduced MIP has 583 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.01 sec. (6.23 ticks)
+Probing fixed 0 vars, tightened 30 bounds.
+Probing time = 0.02 sec. (3.59 ticks)
+Clique table members: 230.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 4 threads.
+Root relaxation solution time = 0.02 sec. (12.67 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                         8863.4706        0.0000           100.00%
+      0     0     1360.8531    27     8863.4706     1360.8531     1316   84.65%
+      0     0     1519.7698    32     8863.4706     Cuts: 119     1470   82.85%
+      0     0     1529.6989    30     8863.4706     Cuts: 111     1591   82.74%
+      0     0     1547.4704    31     8863.4706     Cuts: 102     1713   82.54%
+      0     0     1595.3905    31     8863.4706     Cuts: 114     1820   82.00%
+*     0+    0                         1787.1909     1595.3905            10.73%
+      0     0     1601.7151    32     1787.1909     Cuts: 115     1912   10.38%
+      0     0     1607.0803    33     1787.1909     Cuts: 110     2006   10.08%
+      0     0     1616.1754    34     1787.1909     Cuts: 121     2095    9.57%
+      0     0     1621.3970    36     1787.1909     Cuts: 121     2175    9.28%
+      0     0     1626.3591    36     1787.1909     Cuts: 114     2237    9.00%
+      0     0     1630.9521    35     1787.1909     Cuts: 102     2291    8.74%
+      0     0     1634.4716    37     1787.1909     Cuts: 127     2363    8.55%
+      0     0     1640.2362    32     1787.1909      Cuts: 87     2492    8.22%
+      0     0     1641.6822    33     1787.1909     Cuts: 108     2571    8.14%
+      0     0     1643.5681    35     1787.1909     Cuts: 103     2614    8.04%
+      0     0     1644.9928    35     1787.1909      Cuts: 52     2653    7.96%
+      0     0     1647.2109    35     1787.1909      Cuts: 43     2708    7.83%
+      0     0     1648.0518    34     1787.1909      Cuts: 38     2729    7.79%
+      0     0     1653.5560    33     1787.1909      Cuts: 54     2782    7.48%
+      0     0     1657.6994    34     1787.1909     Cuts: 108     2831    7.25%
+      0     0     1661.4128    35     1787.1909      Cuts: 97     2894    7.04%
+      0     0     1663.6071    24     1787.1909      Cuts: 75     2950    6.37%
+      0     0     1663.7788     9     1787.1909      Cuts: 90     2965    6.37%
+      0     0     1663.9736    32     1787.1909      Cuts: 25     3004    4.62%
+      0     2     1663.9736    32     1787.1909     1754.0647     3004    1.85%
+Elapsed time = 2.43 sec. (1152.87 ticks, tree = 0.01 MB, solutions = 2)
+    143     3     1786.0460    17     1787.1909     1754.0647     7068    1.85%
+
+Cover cuts applied:  2
+Implied bound cuts applied:  56
+Flow cuts applied:  35
+Mixed integer rounding cuts applied:  28
+Zero-half cuts applied:  1
 
 Root node processing (before b&c):
-  Real time             =    0.00 sec. (1.10 ticks)
+  Real time             =    2.40 sec. (1142.29 ticks)
 Parallel b&c, 4 threads:
-  Real time             =    0.00 sec. (0.00 ticks)
-  Sync time (average)   =    0.00 sec.
+  Real time             =    0.38 sec. (255.22 ticks)
+  Sync time (average)   =    0.10 sec.
   Wait time (average)   =    0.00 sec.
                           ------------
-Total (root+branch&cut) =    0.00 sec. (1.10 ticks)
-There is no solution
-Time to solve the instance: 4 milliseconds
+Total (root+branch&cut) =    2.79 sec. (1397.51 ticks)
+
+===========  RESULTS  ===========
+
+Status of this.LIRPSolver :   Optimal
+Objective function :   1787.1908712535933
+ERROR, Constraint 8, period 0
+ERROR, Constraint 8, period 0
+ERROR, Constraint 8, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 8, period 1
+ERROR, Constraint 8, period 1
+ERROR, Constraint 8, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 8, period 2
+ERROR, Constraint 8, period 2
+ERROR, Constraint 8, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 8, period 3
+ERROR, Constraint 8, period 3
+ERROR, Constraint 8, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 8, period 4
+ERROR, Constraint 8, period 4
+ERROR, Constraint 8, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 8, period 5
+ERROR, Constraint 8, period 5
+ERROR, Constraint 8, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 8, period 6
+ERROR, Constraint 8, period 6
+ERROR, Constraint 8, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 10, client 0 in period 6
+ERROR, Constraint 10, client 3 in period 6
+ERROR, Constraint 10, client 4 in period 6
+ERROR, Constraint 8, period 7
+ERROR, Constraint 8, period 7
+ERROR, Constraint 8, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 10, client 0 in period 7
+ERROR, Constraint 10, client 2 in period 7
+ERROR, Constraint 10, client 3 in period 7
+ERROR, Constraint 8, period 8
+ERROR, Constraint 8, period 8
+ERROR, Constraint 8, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 10, client 0 in period 8
+ERROR, Constraint 10, client 1 in period 8
+ERROR, Constraint 10, client 2 in period 8
+ERROR, Constraint 10, client 3 in period 8
+ERROR, Constraint 8, period 9
+ERROR, Constraint 8, period 9
+ERROR, Constraint 8, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+Time to solve the instance: 2797 milliseconds
 ================================
 

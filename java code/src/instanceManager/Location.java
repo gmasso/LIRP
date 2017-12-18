@@ -66,6 +66,10 @@ public class Location {
 		this.holdingCost = jsonLoc.isNull("hc") ? 0 : jsonLoc.getDouble("hc"); // Holding cost for this client
 		this.initialInventory = jsonLoc.isNull("is") ? 0 : jsonLoc.getDouble("is"); // Initial inventory at the client at the beginning of the planning horizon
 		this.capacity = jsonLoc.isNull("cap") ? -1 : jsonLoc.getDouble("cap"); // The capacity of the client
+		
+		/* TO BE MODIFIED */
+		if(this.capacity <= 0)
+			this.capacity = 1000000;
 	}
 	
 	/*
