@@ -14,9 +14,9 @@ import instanceManager.Parameters;
 
 public class RouteManager {
 
-	/*
-	 * ATTRIBUTES
-	 */
+	/*=====================
+	 *      ATTRIBUTES
+	 ======================*/
 	private Instance instanceLIRP;		// The instance to which the routes apply
 	private ArrayList<Route> directSD;	// Direct routes between the supplier and the depots
 	private ArrayList<Route> loopSD;		// Multi-stops routes from the supplier to the depots

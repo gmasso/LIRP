@@ -8,17 +8,17 @@ MIP Presolve eliminated 4591 rows and 11 columns.
 MIP Presolve modified 1240 coefficients.
 Reduced MIP has 5220 rows, 51393 columns, and 172047 nonzeros.
 Reduced MIP has 4683 binaries, 0 generals, 0 SOSs, and 0 indicators.
-Presolve time = 0.15 sec. (101.45 ticks)
+Presolve time = 0.12 sec. (101.45 ticks)
 Tried aggregator 1 time.
 Reduced MIP has 5220 rows, 51393 columns, and 172047 nonzeros.
 Reduced MIP has 4683 binaries, 0 generals, 0 SOSs, and 0 indicators.
-Presolve time = 0.15 sec. (82.99 ticks)
-Probing time = 0.13 sec. (28.78 ticks)
+Presolve time = 0.10 sec. (82.99 ticks)
+Probing time = 0.06 sec. (28.78 ticks)
 Clique table members: 410.
 MIP emphasis: balance optimality and feasibility.
 MIP search method: dynamic search.
 Parallel mode: deterministic, using up to 4 threads.
-Root relaxation solution time = 1.20 sec. (668.97 ticks)
+Root relaxation solution time = 0.94 sec. (668.97 ticks)
 
         Nodes                                         Cuts/
    Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
@@ -40,14 +40,14 @@ Presolve time = 0.06 sec. (59.45 ticks)
 Tried aggregator 1 time.
 Reduced MIP has 4015 rows, 38226 columns, and 127176 nonzeros.
 Reduced MIP has 3486 binaries, 0 generals, 0 SOSs, and 0 indicators.
-Presolve time = 0.09 sec. (62.33 ticks)
-Represolve time = 0.23 sec. (161.06 ticks)
-Probing time = 0.05 sec. (22.33 ticks)
+Presolve time = 0.08 sec. (62.33 ticks)
+Represolve time = 0.22 sec. (161.06 ticks)
+Probing time = 0.04 sec. (22.33 ticks)
 Clique table members: 402.
 MIP emphasis: balance optimality and feasibility.
 MIP search method: dynamic search.
 Parallel mode: deterministic, using up to 4 threads.
-Root relaxation solution time = 0.76 sec. (568.16 ticks)
+Root relaxation solution time = 0.65 sec. (568.16 ticks)
 
         Nodes                                         Cuts/
    Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
@@ -67,7 +67,7 @@ Root relaxation solution time = 0.76 sec. (568.16 ticks)
       0     0     2562.3822    28     2677.4626     Cuts: 136    24258    4.30%
       0     0     2562.6225    27     2677.4626     Cuts: 128    24392    4.29%
       0     2     2562.6225    27     2677.4626     2562.6225    24392    4.29%
-Elapsed time = 16.87 sec. (15134.89 ticks, tree = 0.01 MB, solutions = 2)
+Elapsed time = 14.65 sec. (15134.89 ticks, tree = 0.01 MB, solutions = 2)
      13    11     2580.6481     4     2677.4626     2564.9124    25619    4.20%
      29    13     2605.1841    11     2677.4626     2565.3695    28543    4.19%
      71    25     2652.9664     2     2677.4626     2565.3695    32219    4.19%
@@ -78,7 +78,7 @@ Elapsed time = 16.87 sec. (15134.89 ticks, tree = 0.01 MB, solutions = 2)
     243    38     2658.5965    15     2677.4626     2595.5461    57172    3.06%
     275    42     2657.8763    14     2677.4626     2595.6814    59348    3.05%
     400    53     2639.1628    11     2677.4626     2609.4043    85105    2.54%
-Elapsed time = 23.49 sec. (18346.14 ticks, tree = 0.44 MB, solutions = 2)
+Elapsed time = 20.64 sec. (18346.14 ticks, tree = 0.44 MB, solutions = 2)
 
 GUB cover cuts applied:  1
 Cover cuts applied:  3
@@ -89,164 +89,21 @@ Zero-half cuts applied:  10
 Gomory fractional cuts applied:  5
 
 Root node processing (before b&c):
-  Real time             =   16.82 sec. (15120.94 ticks)
+  Real time             =   14.61 sec. (15120.94 ticks)
 Parallel b&c, 4 threads:
-  Real time             =    8.28 sec. (3945.65 ticks)
-  Sync time (average)   =    0.68 sec.
-  Wait time (average)   =    0.02 sec.
+  Real time             =    7.33 sec. (3945.65 ticks)
+  Sync time (average)   =    0.61 sec.
+  Wait time (average)   =    0.01 sec.
                           ------------
-Total (root+branch&cut) =   25.10 sec. (19066.60 ticks)
+Total (root+branch&cut) =   21.95 sec. (19066.60 ticks)
 
 ===========  RESULTS  ===========
 
 Status of this.LIRPSolver :   Optimal
 Objective function :   2677.462579460067
-ERROR, Constraint 8, period 0
-ERROR, Constraint 8, period 0
-ERROR, Constraint 8, period 0
-ERROR, Constraint 9, period 0
-ERROR, Constraint 9, period 0
-ERROR, Constraint 9, period 0
-ERROR, Constraint 9, period 0
-ERROR, Constraint 9, period 0
-ERROR, Constraint 9, period 0
-ERROR, Constraint 9, period 0
-ERROR, Constraint 9, period 0
-ERROR, Constraint 9, period 0
-ERROR, Constraint 9, period 0
 ERROR, Constraint 6, period 1
-ERROR, Constraint 7, period 1
-ERROR, Constraint 8, period 1
-ERROR, Constraint 8, period 1
-ERROR, Constraint 8, period 1
-ERROR, Constraint 9, period 1
-ERROR, Constraint 9, period 1
-ERROR, Constraint 9, period 1
-ERROR, Constraint 9, period 1
-ERROR, Constraint 9, period 1
-ERROR, Constraint 9, period 1
-ERROR, Constraint 9, period 1
-ERROR, Constraint 9, period 1
-ERROR, Constraint 9, period 1
-ERROR, Constraint 9, period 1
-ERROR, Constraint 8, period 2
-ERROR, Constraint 8, period 2
-ERROR, Constraint 8, period 2
-ERROR, Constraint 9, period 2
-ERROR, Constraint 9, period 2
-ERROR, Constraint 9, period 2
-ERROR, Constraint 9, period 2
-ERROR, Constraint 9, period 2
-ERROR, Constraint 9, period 2
-ERROR, Constraint 9, period 2
-ERROR, Constraint 9, period 2
-ERROR, Constraint 9, period 2
-ERROR, Constraint 9, period 2
-ERROR, Constraint 8, period 3
-ERROR, Constraint 8, period 3
-ERROR, Constraint 8, period 3
-ERROR, Constraint 9, period 3
-ERROR, Constraint 9, period 3
-ERROR, Constraint 9, period 3
-ERROR, Constraint 9, period 3
-ERROR, Constraint 9, period 3
-ERROR, Constraint 9, period 3
-ERROR, Constraint 9, period 3
-ERROR, Constraint 9, period 3
-ERROR, Constraint 9, period 3
-ERROR, Constraint 9, period 3
-ERROR, Constraint 8, period 4
-ERROR, Constraint 8, period 4
-ERROR, Constraint 8, period 4
-ERROR, Constraint 9, period 4
-ERROR, Constraint 9, period 4
-ERROR, Constraint 9, period 4
-ERROR, Constraint 9, period 4
-ERROR, Constraint 9, period 4
-ERROR, Constraint 9, period 4
-ERROR, Constraint 9, period 4
-ERROR, Constraint 9, period 4
-ERROR, Constraint 9, period 4
-ERROR, Constraint 9, period 4
 ERROR, Constraint 6, period 5
-ERROR, Constraint 8, period 5
-ERROR, Constraint 8, period 5
-ERROR, Constraint 8, period 5
-ERROR, Constraint 9, period 5
-ERROR, Constraint 9, period 5
-ERROR, Constraint 9, period 5
-ERROR, Constraint 9, period 5
-ERROR, Constraint 9, period 5
-ERROR, Constraint 9, period 5
-ERROR, Constraint 9, period 5
-ERROR, Constraint 9, period 5
-ERROR, Constraint 9, period 5
-ERROR, Constraint 9, period 5
-ERROR, Constraint 10, client 0 in period 5
-ERROR, Constraint 10, client 9 in period 5
-ERROR, Constraint 8, period 6
-ERROR, Constraint 8, period 6
-ERROR, Constraint 8, period 6
-ERROR, Constraint 9, period 6
-ERROR, Constraint 9, period 6
-ERROR, Constraint 9, period 6
-ERROR, Constraint 9, period 6
-ERROR, Constraint 9, period 6
-ERROR, Constraint 9, period 6
-ERROR, Constraint 9, period 6
-ERROR, Constraint 9, period 6
-ERROR, Constraint 9, period 6
-ERROR, Constraint 9, period 6
-ERROR, Constraint 10, client 0 in period 6
-ERROR, Constraint 10, client 9 in period 6
-ERROR, Constraint 8, period 7
-ERROR, Constraint 8, period 7
-ERROR, Constraint 8, period 7
-ERROR, Constraint 9, period 7
-ERROR, Constraint 9, period 7
-ERROR, Constraint 9, period 7
-ERROR, Constraint 9, period 7
-ERROR, Constraint 9, period 7
-ERROR, Constraint 9, period 7
-ERROR, Constraint 9, period 7
-ERROR, Constraint 9, period 7
-ERROR, Constraint 9, period 7
-ERROR, Constraint 9, period 7
-ERROR, Constraint 10, client 0 in period 7
-ERROR, Constraint 10, client 2 in period 7
-ERROR, Constraint 10, client 7 in period 7
-ERROR, Constraint 10, client 8 in period 7
-ERROR, Constraint 8, period 8
-ERROR, Constraint 8, period 8
-ERROR, Constraint 8, period 8
-ERROR, Constraint 9, period 8
-ERROR, Constraint 9, period 8
-ERROR, Constraint 9, period 8
-ERROR, Constraint 9, period 8
-ERROR, Constraint 9, period 8
-ERROR, Constraint 9, period 8
-ERROR, Constraint 9, period 8
-ERROR, Constraint 9, period 8
-ERROR, Constraint 9, period 8
-ERROR, Constraint 9, period 8
-ERROR, Constraint 10, client 0 in period 8
-ERROR, Constraint 10, client 3 in period 8
-ERROR, Constraint 10, client 6 in period 8
-ERROR, Constraint 10, client 7 in period 8
-ERROR, Constraint 10, client 8 in period 8
-ERROR, Constraint 8, period 9
-ERROR, Constraint 8, period 9
-ERROR, Constraint 8, period 9
-ERROR, Constraint 9, period 9
-ERROR, Constraint 9, period 9
-ERROR, Constraint 9, period 9
-ERROR, Constraint 9, period 9
-ERROR, Constraint 9, period 9
-ERROR, Constraint 9, period 9
-ERROR, Constraint 9, period 9
-ERROR, Constraint 9, period 9
-ERROR, Constraint 9, period 9
-ERROR, Constraint 9, period 9
-Time to solve the instance: 25143 milliseconds
+ERROR, Constraint 7, period 5
+Time to solve the instance: 21984 milliseconds
 ================================
 
