@@ -323,7 +323,7 @@ public class Solver{
 			/* Save the inventory variables */
 			for (int t = 0; t < this.LIRPInstance.getNbPeriods(); t++){
 				for (int dIter = 0; dIter < this.LIRPInstance.getNbDepots(); dIter++){
-					sol.setStockDepot(dIter,t, Math.round(this.LIRPSolver.getValue(this.InvDepots[dIter][t])));
+					sol.setStockDepot(dIter,t, this.LIRPSolver.getValue(this.InvDepots[dIter][t]));
 				}
 			}
 
@@ -333,7 +333,7 @@ public class Solver{
 					for (int rIter = 0; rIter < this.routesDC.length; rIter++){
 						if (this.LIRPSolver.getValue(this.z[rIter][t]) > 0) {
 							sol.setusedDCRoutes(rIter, t, true);
-							double uirt = Math.round(this.LIRPSolver.getValue(this.u[cIter][rIter][t]));
+							double uirt = this.LIRPSolver.getValue(this.u[cIter][rIter][t]);
 							sol.setDeliveryClient(cIter, rIter, t, uirt);			
 						}
 						else {
@@ -347,7 +347,7 @@ public class Solver{
 			/* Save inventory at clients for every period t */
 			for (int t = 0; t < this.LIRPInstance.getNbPeriods(); t++){
 				for (int cIter = 0; cIter < this.LIRPInstance.getNbClients(); cIter++){
-					sol.setStockClient(cIter, t, Math.round(this.LIRPSolver.getValue(this.InvClients[cIter][t])));
+					sol.setStockClient(cIter, t, this.LIRPSolver.getValue(this.InvClients[cIter][t]));
 				}
 			}
 

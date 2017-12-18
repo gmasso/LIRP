@@ -148,7 +148,7 @@ public final class Checker {
 				double newInvDepot = sol.getStockDepot(dIter, t);
 				for (int rDCIter = 0; rDCIter < routesDC.length; rDCIter++) {
 					for (int cIter = 0; cIter < instance.getNbClients(); cIter++)
-						newInvDepot += Beta[dIter][rDCIter] + sol.getDeliveryClient(cIter,  rDCIter,  t);
+						newInvDepot += Beta[dIter][rDCIter] * sol.getDeliveryClient(cIter,  rDCIter,  t);
 				}
 				if((lastInvDepot > newInvDepot + Parameters.epsilon) || (lastInvDepot < newInvDepot - Parameters.epsilon)) {
 					System.out.println("ERROR, Constraint 8, period "+ t + ": diff " + (newInvDepot - lastInvDepot));
