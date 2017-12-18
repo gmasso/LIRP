@@ -3,18 +3,25 @@ OK. Solving...
 done!
 CPXPARAM_TimeLimit                               1000
 CPXPARAM_Read_APIEncoding                        "UTF8"
-Bound infeasibility column 'x164361'.
-Presolve time = 0.63 sec. (187.88 ticks)
+Tried aggregator 1 time.
+MIP Presolve eliminated 78131 rows and 21 columns.
+MIP Presolve modified 23898 coefficients.
+Reduced MIP has 79160 rows, 1643753 columns, and 5422207 nonzeros.
+Reduced MIP has 78283 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 7.07 sec. (9716.92 ticks)
+Tried aggregator 1 time.
+Reduced MIP has 79160 rows, 1643753 columns, and 5422207 nonzeros.
+Reduced MIP has 78283 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 4.26 sec. (2362.37 ticks)
+Probing time = 3.03 sec. (846.83 ticks)
+Clique table members: 650.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 4 threads.
+Root relaxation solution time = 85.89 sec. (35090.91 ticks)
 
-Root node processing (before b&c):
-  Real time             =    1.06 sec. (492.20 ticks)
-Parallel b&c, 4 threads:
-  Real time             =    0.00 sec. (0.00 ticks)
-  Sync time (average)   =    0.00 sec.
-  Wait time (average)   =    0.00 sec.
-                          ------------
-Total (root+branch&cut) =    1.06 sec. (492.20 ticks)
-There is no solution
-Time to solve the instance: 1431 milliseconds
-================================
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
 
+*     0+    0                         5028.2942        0.0000           100.00%
+      0     0      914.4392    24     5028.2942      914.4392       49   81.81%

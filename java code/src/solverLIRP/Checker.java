@@ -40,7 +40,7 @@ public final class Checker {
 				int routeDepotConst = 0;
 				for (int rIter = 0; rIter < routesDC.length; rIter++) 
 					if(sol.isUsedDCRoute(rIter, t))
-						routeDepotConst += Beta[dIter][rIter] ;
+						routeDepotConst += Gamma[dIter][rIter] ;
 				if(routeDepotConst > 1) {
 					System.out.println("ERROR, Constraint 2, depot " + dIter + ",  period "+t);
 					isFeasible = false;
@@ -136,7 +136,11 @@ public final class Checker {
 
 			/* Flow conservation at the depots (8) */
 			for(int dIter = 0; dIter < instance.getNbDepots(); dIter++) {
-				double lastInvDepot = instance.getDepot(dIter).getInitialInventory();
+				double lastInvDepot;
+				if (t==0)
+					lastInvDepot = instance.getDepot(dIter).getInitialInventory();
+				else
+					lastInvDepot = sol.getStockDepot(dIter, t - 1);
 				for(int rSDIter = 0; rSDIter < routesSD.length; rSDIter++)
 					lastInvDepot += sol.getDeliveryDepot(dIter, rSDIter, t);
 				double newInvDepot = sol.getStockDepot(dIter, t);
@@ -156,7 +160,11 @@ public final class Checker {
 
 			/* Flow conservation at the clients (9) */
 			for(int cIter = 0; cIter < instance.getNbClients(); cIter++) {
-				double lastInvClient = instance.getClient(cIter).getInitialInventory();
+				double lastInvClient;
+				if (t==0)
+					lastInvClient = instance.getClient(cIter).getInitialInventory();
+				else
+					lastInvClient = sol.getStockClient(cIter, t - 1);
 				for(int rIter = 0; rIter < routesDC.length; rIter++)
 					lastInvClient += sol.getDeliveryClient(cIter, rIter, t);
 				double newInvClient = sol.getStockClient(cIter, t) + instance.getClient(cIter).getDemand(t);

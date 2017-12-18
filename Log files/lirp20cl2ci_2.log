@@ -1,1 +1,12 @@
 Creating the RouteManager...
+OK. Solving...
+Exception in thread "main" java.lang.OutOfMemoryError: Java heap space
+	at ilog.cplex.IndexManager.makeSpace(IndexManager.java:120)
+	at ilog.cplex.IndexManager.addIndex(IndexManager.java:37)
+	at ilog.cplex.CplexI.useVars(CplexI.java:1333)
+	at ilog.cplex.CpxRange.init(CpxRange.java:1323)
+	at ilog.cplex.CpxRange.<init>(CpxRange.java:1356)
+	at ilog.cplex.IloCplexModeler.addRange(IloCplexModeler.java:4351)
+	at ilog.cplex.IloCplexModeler.addLe(IloCplexModeler.java:4740)
+	at solverLIRP.Solver.<init>(Solver.java:169)
+	at userInterfaceLIRP.ResolutionMain.main(ResolutionMain.java:89)

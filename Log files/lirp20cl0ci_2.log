@@ -3,18 +3,288 @@ OK. Solving...
 done!
 CPXPARAM_TimeLimit                               1000
 CPXPARAM_Read_APIEncoding                        "UTF8"
-Bound infeasibility column 'x25614'.
-Presolve time = 0.05 sec. (28.87 ticks)
+Tried aggregator 1 time.
+MIP Presolve eliminated 11931 rows and 21 columns.
+MIP Presolve modified 530 coefficients.
+Reduced MIP has 13220 rows, 256283 columns, and 817747 nonzeros.
+Reduced MIP has 12213 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.48 sec. (442.91 ticks)
+Tried aggregator 1 time.
+Reduced MIP has 13220 rows, 256283 columns, and 817747 nonzeros.
+Reduced MIP has 12213 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.53 sec. (367.96 ticks)
+Probing time = 0.38 sec. (123.88 ticks)
+Clique table members: 780.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 4 threads.
+Root relaxation solution time = 6.68 sec. (4876.88 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                        13387.7215        0.0000           100.00%
+      0     0     4892.6160    27    13387.7215     4892.6160       32   63.45%
+*     0+    0                         4896.9976     4892.6160             0.09%
+      0     0        cutoff           4896.9976                     60    0.00%
+Elapsed time = 10.67 sec. (6991.56 ticks, tree = 0.01 MB, solutions = 2)
 
 Root node processing (before b&c):
-  Real time             =    0.13 sec. (75.79 ticks)
+  Real time             =   10.73 sec. (7005.01 ticks)
 Parallel b&c, 4 threads:
   Real time             =    0.00 sec. (0.00 ticks)
   Sync time (average)   =    0.00 sec.
   Wait time (average)   =    0.00 sec.
                           ------------
-Total (root+branch&cut) =    0.13 sec. (75.79 ticks)
-There is no solution
-Time to solve the instance: 183 milliseconds
+Total (root+branch&cut) =   10.73 sec. (7005.01 ticks)
+
+===========  RESULTS  ===========
+
+Status of this.LIRPSolver :   Optimal
+Objective function :   4896.997582279424
+ERROR, Constraint 7, period 0
+ERROR, Constraint 8, period 0
+ERROR, Constraint 8, period 0
+ERROR, Constraint 8, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 9, period 0
+ERROR, Constraint 7, period 1
+ERROR, Constraint 8, period 1
+ERROR, Constraint 8, period 1
+ERROR, Constraint 8, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 9, period 1
+ERROR, Constraint 6, period 2
+ERROR, Constraint 8, period 2
+ERROR, Constraint 8, period 2
+ERROR, Constraint 8, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 9, period 2
+ERROR, Constraint 7, period 3
+ERROR, Constraint 8, period 3
+ERROR, Constraint 8, period 3
+ERROR, Constraint 8, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 9, period 3
+ERROR, Constraint 6, period 4
+ERROR, Constraint 7, period 4
+ERROR, Constraint 8, period 4
+ERROR, Constraint 8, period 4
+ERROR, Constraint 8, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 9, period 4
+ERROR, Constraint 6, period 5
+ERROR, Constraint 8, period 5
+ERROR, Constraint 8, period 5
+ERROR, Constraint 8, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 9, period 5
+ERROR, Constraint 7, period 6
+ERROR, Constraint 8, period 6
+ERROR, Constraint 8, period 6
+ERROR, Constraint 8, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 9, period 6
+ERROR, Constraint 6, period 7
+ERROR, Constraint 7, period 7
+ERROR, Constraint 8, period 7
+ERROR, Constraint 8, period 7
+ERROR, Constraint 8, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 9, period 7
+ERROR, Constraint 7, period 8
+ERROR, Constraint 8, period 8
+ERROR, Constraint 8, period 8
+ERROR, Constraint 8, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 9, period 8
+ERROR, Constraint 6, period 9
+ERROR, Constraint 7, period 9
+ERROR, Constraint 8, period 9
+ERROR, Constraint 8, period 9
+ERROR, Constraint 8, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+ERROR, Constraint 9, period 9
+Time to solve the instance: 10937 milliseconds
 ================================
 
