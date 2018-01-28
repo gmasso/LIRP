@@ -303,4 +303,6 @@ public class RouteManager {
 		}
 		return routesToAdd;
 	}
+<<<<<<< HEAD
+>>>>>>> c3f3a8615abe12dd4b26cc7589d113c61d52994d
 }
