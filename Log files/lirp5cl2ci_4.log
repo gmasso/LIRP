@@ -1,62 +1,52 @@
 Creating the RouteManager...
+Route manager created.
 OK. Solving...
 done!
 CPXPARAM_TimeLimit                               1000
 CPXPARAM_Read_APIEncoding                        "UTF8"
+Tried aggregator 2 times.
+MIP Presolve eliminated 131 rows and 6 columns.
+MIP Presolve modified 120 coefficients.
+Aggregator did 3 substitutions.
+Reduced MIP has 387 rows, 835 columns, and 2511 nonzeros.
+Reduced MIP has 133 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.00 sec. (1.50 ticks)
+Found incumbent of value 5917.694270 after 0.01 sec. (2.77 ticks)
+Probing fixed 1 vars, tightened 0 bounds.
+Probing time = 0.00 sec. (0.43 ticks)
 Tried aggregator 1 time.
-MIP Presolve eliminated 291 rows and 6 columns.
-MIP Presolve modified 270 coefficients.
-Reduced MIP has 530 rows, 1498 columns, and 4647 nonzeros.
-Reduced MIP has 253 binaries, 0 generals, 0 SOSs, and 0 indicators.
-Presolve time = 0.00 sec. (2.58 ticks)
-Found incumbent of value 20200.753546 after 0.01 sec. (4.84 ticks)
-Probing fixed 0 vars, tightened 138 bounds.
-Probing time = 0.00 sec. (1.97 ticks)
-Tried aggregator 1 time.
-Reduced MIP has 530 rows, 1498 columns, and 4647 nonzeros.
-Reduced MIP has 253 binaries, 0 generals, 0 SOSs, and 0 indicators.
-Presolve time = 0.00 sec. (2.52 ticks)
-Probing fixed 0 vars, tightened 27 bounds.
-Probing time = 0.00 sec. (1.60 ticks)
-Clique table members: 200.
+MIP Presolve eliminated 30 rows and 2 columns.
+Reduced MIP has 357 rows, 833 columns, and 2450 nonzeros.
+Reduced MIP has 131 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.00 sec. (1.30 ticks)
+Probing time = 0.00 sec. (0.35 ticks)
+Clique table members: 150.
 MIP emphasis: balance optimality and feasibility.
 MIP search method: dynamic search.
 Parallel mode: deterministic, using up to 4 threads.
-Root relaxation solution time = 0.01 sec. (5.53 ticks)
+Root relaxation solution time = 0.00 sec. (1.36 ticks)
 
         Nodes                                         Cuts/
    Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
 
-*     0+    0                        20200.7535        0.0000           100.00%
-*     0+    0                         1339.0595        0.0000           100.00%
-      0     0      518.7483    15     1339.0595      518.7483      517   61.26%
-*     0+    0                         1153.2087      518.7483            55.02%
-      0     0      678.4261     6     1153.2087      Cuts: 66      660   41.17%
-*     0+    0                          746.3330      678.4261             9.10%
-      0     0        cutoff            746.3330                    717    0.00%
-Elapsed time = 0.19 sec. (65.79 ticks, tree = 0.01 MB, solutions = 4)
-
-GUB cover cuts applied:  1
-Cover cuts applied:  2
-Implied bound cuts applied:  14
-Flow cuts applied:  14
-Mixed integer rounding cuts applied:  9
-Lift and project cuts applied:  1
-Gomory fractional cuts applied:  3
+*     0+    0                         5917.6943      372.0849            93.71%
+*     0+    0                          930.6410      372.0849            60.02%
+*     0     0      integral     0      746.8114      746.8114       75    0.00%
+Elapsed time = 0.02 sec. (7.11 ticks, tree = 0.00 MB, solutions = 3)
 
 Root node processing (before b&c):
-  Real time             =    0.19 sec. (65.90 ticks)
+  Real time             =    0.02 sec. (7.17 ticks)
 Parallel b&c, 4 threads:
   Real time             =    0.00 sec. (0.00 ticks)
   Sync time (average)   =    0.00 sec.
   Wait time (average)   =    0.00 sec.
                           ------------
-Total (root+branch&cut) =    0.19 sec. (65.90 ticks)
+Total (root+branch&cut) =    0.02 sec. (7.17 ticks)
 
 ===========  RESULTS  ===========
 
 Status of this.LIRPSolver :   Optimal
-Objective function :   746.3329706663791
-Time to solve the instance: 190 milliseconds
+Objective function :   746.8114162496026
+Time to solve the instance: 21 milliseconds
 ================================
 

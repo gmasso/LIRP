@@ -1,20 +1,86 @@
 Creating the RouteManager...
+Route manager created.
 OK. Solving...
 done!
 CPXPARAM_TimeLimit                               1000
 CPXPARAM_Read_APIEncoding                        "UTF8"
-Bound infeasibility column 'x351'.
-Presolve time = 0.00 sec. (0.45 ticks)
+Tried aggregator 1 time.
+MIP Presolve eliminated 581 rows and 6 columns.
+MIP Presolve modified 374 coefficients.
+Reduced MIP has 900 rows, 3558 columns, and 11767 nonzeros.
+Reduced MIP has 593 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.01 sec. (6.69 ticks)
+Probing time = 0.01 sec. (3.06 ticks)
+Tried aggregator 1 time.
+Reduced MIP has 900 rows, 3558 columns, and 11767 nonzeros.
+Reduced MIP has 593 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.01 sec. (6.40 ticks)
+Probing time = 0.01 sec. (3.68 ticks)
+Clique table members: 230.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 4 threads.
+Root relaxation solution time = 0.03 sec. (16.95 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                         7311.6462        0.0000           100.00%
+      0     0     1374.6937    28     7311.6462     1374.6937     2037   81.20%
+      0     0     1607.1598    30     7311.6462     Cuts: 104     2201   78.02%
+*     0+    0                         1845.8895     1607.1598            12.93%
+      0     0     1611.5461    36     1845.8895      Cuts: 92     2280   12.70%
+      0     0     1614.1763    31     1845.8895      Cuts: 97     2359   12.55%
+      0     0     1621.4382    35     1845.8895     Cuts: 110     2445   12.16%
+      0     0     1628.5956    37     1845.8895      Cuts: 97     2542   11.77%
+      0     0     1640.8501    36     1845.8895     Cuts: 110     2645   10.59%
+      0     0     1716.8357    31     1845.8895     Cuts: 103     2843    6.99%
+      0     0     1722.8437    31     1845.8895      Cuts: 92     2925    6.67%
+      0     0     1725.2579    34     1845.8895      Cuts: 87     2987    6.54%
+      0     0     1728.5123    29     1845.8895      Cuts: 98     3067    6.36%
+      0     0     1730.2437    32     1845.8895      Cuts: 78     3122    6.27%
+      0     0     1731.5508    32     1845.8895      Cuts: 78     3174    6.19%
+      0     0     1735.4266    33     1845.8895      Cuts: 73     3262    5.98%
+      0     0     1739.8902    32     1845.8895      Cuts: 91     3326    5.74%
+      0     0     1746.3069    33     1845.8895      Cuts: 70     3411    5.39%
+      0     0     1748.7148    35     1845.8895      Cuts: 81     3475    5.26%
+      0     0     1751.4843    35     1845.8895      Cuts: 70     3533    5.11%
+      0     0     1758.3000    38     1845.8895      Cuts: 68     3621    4.75%
+      0     0     1762.9118    36     1845.8895      Cuts: 64     3711    4.50%
+      0     0     1766.5636    33     1845.8895      Cuts: 96     3795    4.30%
+      0     0     1769.0175    33     1845.8895      Cuts: 84     3856    4.16%
+      0     0     1772.9592    32     1845.8895      Cuts: 72     3922    3.95%
+      0     0     1775.3801    30     1845.8895      Cuts: 57     3974    3.82%
+      0     0     1776.5182    31     1845.8895      Cuts: 76     4061    3.76%
+      0     0     1777.9959    34     1845.8895      Cuts: 64     4105    3.68%
+      0     0     1778.7430    33     1845.8895      Cuts: 47     4132    3.64%
+      0     0     1781.3049    32     1845.8895      Cuts: 29     4169    3.50%
+      0     0     1781.5689    34     1845.8895      Cuts: 51     4213    3.48%
+      0     0     1783.4216    33     1845.8895      Cuts: 51     4290    3.38%
+      0     0     1783.8054    34     1845.8895      Cuts: 52     4357    3.36%
+      0     2     1783.8054    34     1845.8895     1783.8054     4357    3.36%
+Elapsed time = 2.05 sec. (1239.58 ticks, tree = 0.01 MB, solutions = 2)
+     68    13        cutoff           1845.8895     1802.4081     6908    2.36%
+
+Cover cuts applied:  1
+Implied bound cuts applied:  106
+Flow cuts applied:  39
+Mixed integer rounding cuts applied:  41
+Zero-half cuts applied:  7
 
 Root node processing (before b&c):
-  Real time             =    0.00 sec. (1.12 ticks)
+  Real time             =    2.04 sec. (1228.43 ticks)
 Parallel b&c, 4 threads:
-  Real time             =    0.00 sec. (0.00 ticks)
-  Sync time (average)   =    0.00 sec.
+  Real time             =    0.43 sec. (418.03 ticks)
+  Sync time (average)   =    0.14 sec.
   Wait time (average)   =    0.00 sec.
                           ------------
-Total (root+branch&cut) =    0.00 sec. (1.12 ticks)
-There is no solution
-Time to solve the instance: 5 milliseconds
+Total (root+branch&cut) =    2.47 sec. (1646.46 ticks)
+
+===========  RESULTS  ===========
+
+Status of this.LIRPSolver :   Optimal
+Objective function :   1845.8895445632074
+Time to solve the instance: 2479 milliseconds
 ================================
 

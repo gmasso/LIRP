@@ -1,6 +1,6 @@
 package solverLIRP;
 import java.io.PrintStream;
-import java.util.Arrays;
+import java.util.ArrayList;
 
 import ilog.concert.IloException;
 import ilog.concert.IloIntVar;
@@ -27,7 +27,7 @@ public class Solver{
 	/* Boolean */
 	private IloIntVar[] y;  // facility location variables (depots)
 	// Integer variables
-	private IloIntVar[][] x;   // = 1 is route r is delivered on period t (supplier-depot)
+	private IloIntVar[][] x;   // = 1 is route r is used on period t (supplier-depot)
 	private IloIntVar[][] z;  // = 1 if route r is used on period t (depot-clients)
 	/* Continuous */
 	private IloNumVar[][][] u; // quantity delivered by route r to client i on period t
@@ -43,12 +43,12 @@ public class Solver{
 	 * @param availableRoutes	the direct and multi-stops routes that are available in this model
 	 * @throws IloException
 	 */
-	public Solver(Instance LIRPInstance, RouteManager availableRoutes) throws IloException {
+	public Solver(Instance LIRPInstance, RouteManager rm, ArrayList<Integer> availRoutesSD, ArrayList<Integer> availRoutesDC) throws IloException {
 
 		/* Data */
 		this.LIRPInstance = LIRPInstance;
-		this.routesSD = availableRoutes.getSDRoutes(); // array of routes from the supplier to the depot
-		this.routesDC = availableRoutes.getDCRoutes(); // array of available routes from the depots to the clients
+		this.routesSD = rm.getSDRoutes(availRoutesSD); // array of routes from the supplier to the depot
+		this.routesDC = rm.getDCRoutes(availRoutesDC); // array of available routes from the depots to the clients
 
 		int nbClients = this.LIRPInstance.getNbClients();  // number of clients
 		int nbDepots = this.LIRPInstance.getNbDepots();  // number of depots
@@ -298,7 +298,7 @@ public class Solver{
 			//-----------------------------------------------------	
 			/* Save the status of depots (open/closed) */
 			for (int dIter = 0; dIter < this.LIRPInstance.getNbDepots(); dIter++){
-				if (this.LIRPSolver.getValue(this.y[dIter])>0)
+				if (this.LIRPSolver.getValue(this.y[dIter]) > Parameters.epsilon)
 					sol.setOpenDepot(dIter, true);
 				else
 					sol.setOpenDepot(dIter, false);

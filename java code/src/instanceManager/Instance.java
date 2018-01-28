@@ -1,6 +1,5 @@
 package instanceManager;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
@@ -23,9 +22,7 @@ public class Instance {
 	private Location supplier;
 	private DepotsMap depots;
 	private ClientsMap clients;
-
-	private Route[] routes; // Array of the possible routes for the instance
-
+	
 	/*
 	 * CONSTRUCTORS
 	 */
@@ -230,14 +227,6 @@ public class Instance {
 	 */
 	public int getNbVehicles() { 
 		return this.vehiclesCapacity.length;
-	}
-
-	/**
-	 * 
-	 * @return	the array of Route objects containing all the available routes for this instance
-	 */
-	public Route[] getRoutes() {
-		return this.routes;
 	}
 
 	/**

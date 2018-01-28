@@ -1,59 +1,52 @@
 Creating the RouteManager...
+Route manager created.
 OK. Solving...
 done!
 CPXPARAM_TimeLimit                               1000
 CPXPARAM_Read_APIEncoding                        "UTF8"
+Tried aggregator 2 times.
+MIP Presolve eliminated 241 rows and 6 columns.
+MIP Presolve modified 300 coefficients.
+Aggregator did 3 substitutions.
+Reduced MIP has 557 rows, 1675 columns, and 5401 nonzeros.
+Reduced MIP has 273 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.01 sec. (3.75 ticks)
+Found incumbent of value 4540.425242 after 0.01 sec. (6.26 ticks)
+Probing fixed 1 vars, tightened 0 bounds.
+Probing time = 0.00 sec. (2.15 ticks)
 Tried aggregator 1 time.
-MIP Presolve eliminated 551 rows and 6 columns.
-MIP Presolve modified 590 coefficients.
-Reduced MIP has 810 rows, 2958 columns, and 9597 nonzeros.
-Reduced MIP has 503 binaries, 0 generals, 0 SOSs, and 0 indicators.
-Presolve time = 0.02 sec. (5.51 ticks)
-Found incumbent of value 19113.426967 after 0.03 sec. (10.19 ticks)
-Probing time = 0.01 sec. (3.67 ticks)
-Tried aggregator 1 time.
-Reduced MIP has 810 rows, 2958 columns, and 9597 nonzeros.
-Reduced MIP has 503 binaries, 0 generals, 0 SOSs, and 0 indicators.
-Presolve time = 0.02 sec. (5.34 ticks)
-Probing time = 0.15 sec. (3.67 ticks)
-Clique table members: 230.
+MIP Presolve eliminated 60 rows and 2 columns.
+Reduced MIP has 497 rows, 1673 columns, and 5000 nonzeros.
+Reduced MIP has 271 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.01 sec. (2.82 ticks)
+Probing time = 0.00 sec. (1.90 ticks)
+Clique table members: 150.
 MIP emphasis: balance optimality and feasibility.
 MIP search method: dynamic search.
 Parallel mode: deterministic, using up to 4 threads.
-Root relaxation solution time = 0.06 sec. (16.10 ticks)
+Root relaxation solution time = 0.00 sec. (2.70 ticks)
 
         Nodes                                         Cuts/
    Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
 
-*     0+    0                        19113.4270        0.0000           100.00%
-*     0+    0                          924.5227        0.0000           100.00%
-      0     0      600.8844    23      924.5227      600.8844     1825   35.01%
-      0     0      691.4991     8      924.5227      Cuts: 67     1991   25.20%
-*     0+    0                          823.7589      691.4991            16.06%
-      0     0      772.4816     1      823.7589      Cuts: 20     2069    6.22%
-      0     0        cutoff            823.7589      823.7589     2096    0.00%
-Elapsed time = 0.85 sec. (185.09 ticks, tree = 0.01 MB, solutions = 3)
-
-GUB cover cuts applied:  1
-Implied bound cuts applied:  26
-Flow cuts applied:  10
-Mixed integer rounding cuts applied:  10
-Zero-half cuts applied:  2
-Gomory fractional cuts applied:  2
+*     0+    0                         4540.4252      219.7035            95.16%
+*     0+    0                          925.7572      219.7035            76.27%
+*     0     0      integral     0      654.8755      654.8755       66    0.00%
+Elapsed time = 0.04 sec. (17.62 ticks, tree = 0.00 MB, solutions = 3)
 
 Root node processing (before b&c):
-  Real time             =    0.85 sec. (185.28 ticks)
+  Real time             =    0.04 sec. (17.72 ticks)
 Parallel b&c, 4 threads:
   Real time             =    0.00 sec. (0.00 ticks)
   Sync time (average)   =    0.00 sec.
   Wait time (average)   =    0.00 sec.
                           ------------
-Total (root+branch&cut) =    0.85 sec. (185.28 ticks)
+Total (root+branch&cut) =    0.04 sec. (17.72 ticks)
 
 ===========  RESULTS  ===========
 
 Status of this.LIRPSolver :   Optimal
-Objective function :   823.7589036037074
-Time to solve the instance: 855 milliseconds
+Objective function :   654.8754759300302
+Time to solve the instance: 38 milliseconds
 ================================
 

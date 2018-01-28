@@ -1,20 +1,21 @@
 Creating the RouteManager...
+Route manager created.
 OK. Solving...
 done!
 CPXPARAM_TimeLimit                               1000
 CPXPARAM_Read_APIEncoding                        "UTF8"
-Bound infeasibility column 'x421'.
-Presolve time = 0.00 sec. (0.54 ticks)
+Row 'c42' infeasible, all entries at implied bounds.
+Presolve time = 0.00 sec. (0.24 ticks)
 
 Root node processing (before b&c):
-  Real time             =    0.00 sec. (1.35 ticks)
+  Real time             =    0.00 sec. (0.43 ticks)
 Parallel b&c, 4 threads:
   Real time             =    0.00 sec. (0.00 ticks)
   Sync time (average)   =    0.00 sec.
   Wait time (average)   =    0.00 sec.
                           ------------
-Total (root+branch&cut) =    0.00 sec. (1.35 ticks)
+Total (root+branch&cut) =    0.00 sec. (0.43 ticks)
 There is no solution
-Time to solve the instance: 5 milliseconds
+Time to solve the instance: 2 milliseconds
 ================================
 

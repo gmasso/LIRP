@@ -331,7 +331,8 @@ public class Solution {
 				if (!openDepots[dIter]) {
 					printStreamSol.print(" -- \t");
 				}
-				else	printStreamSol.print(stockDepot[dIter][t]+"\t");	
+				else	
+					printStreamSol.print(stockDepot[dIter][t]+"\t");	
 			}
 			printStreamSol.println();
 		}
