@@ -2,7 +2,7 @@ Creating the RouteManager...
 Route manager created.
 OK. Solving...
 ========================================
-== Solving with 	1 subsetsof routes ==
+== Solving with 	1 subsets of routes ==
 ========================================
 done!
 CPXPARAM_TimeLimit                               1000
@@ -14,7 +14,7 @@ Aggregator did 1 substitutions.
 Reduced MIP has 289 rows, 1035 columns, and 3097 nonzeros.
 Reduced MIP has 171 binaries, 0 generals, 0 SOSs, and 0 indicators.
 Presolve time = 0.00 sec. (2.35 ticks)
-Found incumbent of value 16936.278102 after 0.00 sec. (3.84 ticks)
+Found incumbent of value 16936.278102 after 0.01 sec. (3.84 ticks)
 Probing fixed 1 vars, tightened 0 bounds.
 Probing time = 0.00 sec. (1.07 ticks)
 Tried aggregator 1 time.
@@ -50,6 +50,6 @@ Total (root+branch&cut) =    0.02 sec. (9.93 ticks)
 
 Status of this.LIRPSolver :   Optimal
 Objective function :   654.8754759300302
-Time to solve the instance: 21 milliseconds
+Time to solve the instance: 39 milliseconds
 ================================
 

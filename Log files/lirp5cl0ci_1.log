@@ -2,7 +2,7 @@ Creating the RouteManager...
 Route manager created.
 OK. Solving...
 ========================================
-== Solving with 	1 subsetsof routes ==
+== Solving with 	1 subsets of routes ==
 ========================================
 done!
 CPXPARAM_TimeLimit                               1000
@@ -48,7 +48,7 @@ Root relaxation solution time = 0.00 sec. (1.16 ticks)
       0     0     2100.5638     8     2280.5654       Cuts: 8      308    7.89%
 *     0+    0                         2279.7282     2100.5638             7.86%
       0     0        cutoff           2279.7282     2279.7282      308    0.00%
-Elapsed time = 0.08 sec. (39.87 ticks, tree = 0.01 MB, solutions = 7)
+Elapsed time = 0.13 sec. (39.87 ticks, tree = 0.01 MB, solutions = 7)
 
 GUB cover cuts applied:  1
 Cover cuts applied:  1
@@ -58,18 +58,18 @@ Mixed integer rounding cuts applied:  15
 Gomory fractional cuts applied:  3
 
 Root node processing (before b&c):
-  Real time             =    0.08 sec. (39.93 ticks)
+  Real time             =    0.13 sec. (39.93 ticks)
 Parallel b&c, 4 threads:
   Real time             =    0.00 sec. (0.00 ticks)
   Sync time (average)   =    0.00 sec.
   Wait time (average)   =    0.00 sec.
                           ------------
-Total (root+branch&cut) =    0.08 sec. (39.93 ticks)
+Total (root+branch&cut) =    0.13 sec. (39.93 ticks)
 
 ===========  RESULTS  ===========
 
 Status of this.LIRPSolver :   Optimal
 Objective function :   2279.7282404336884
-Time to solve the instance: 89 milliseconds
+Time to solve the instance: 135 milliseconds
 ================================
 
