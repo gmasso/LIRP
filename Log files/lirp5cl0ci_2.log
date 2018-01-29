@@ -1,0 +1,86 @@
+Creating the RouteManager...
+Route manager created.
+OK. Solving...
+========================================
+== Solving with 	1 subsetsof routes ==
+========================================
+done!
+CPXPARAM_TimeLimit                               1000
+CPXPARAM_Read_APIEncoding                        "UTF8"
+Tried aggregator 1 time.
+MIP Presolve eliminated 621 rows and 6 columns.
+MIP Presolve modified 390 coefficients.
+Reduced MIP has 940 rows, 3798 columns, and 12707 nonzeros.
+Reduced MIP has 633 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.01 sec. (7.29 ticks)
+Probing time = 0.01 sec. (3.65 ticks)
+Tried aggregator 1 time.
+Reduced MIP has 940 rows, 3798 columns, and 12707 nonzeros.
+Reduced MIP has 633 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.01 sec. (6.87 ticks)
+Probing time = 0.02 sec. (4.07 ticks)
+Clique table members: 230.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 4 threads.
+Root relaxation solution time = 0.02 sec. (19.61 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                         8969.5413        0.0000           100.00%
+      0     0     1471.4079    32     8969.5413     1471.4079     2257   83.60%
+      0     0     1755.1887    35     8969.5413     Cuts: 134     2428   80.43%
+      0     0     1765.3282    38     8969.5413     Cuts: 110     2548   80.32%
+      0     0     1772.9591    33     8969.5413     Cuts: 102     2639   80.23%
+      0     0     1783.3032    35     8969.5413      Cuts: 83     2735   80.12%
+*     0+    0                         1991.6476     1783.3032            10.46%
+      0     0     1787.9354    42     1991.6476      Cuts: 97     2805   10.23%
+      0     0     1794.3460    40     1991.6476     Cuts: 109     2923    9.91%
+      0     0     1799.2427    35     1991.6476     Cuts: 118     3058    9.66%
+      0     0     1807.5780    34     1991.6476     Cuts: 110     3191    9.24%
+      0     0     1811.1898    35     1991.6476     Cuts: 122     3280    9.06%
+      0     0     1816.3413    34     1991.6476     Cuts: 121     3383    8.80%
+      0     0     1816.6370    35     1991.6476     Cuts: 113     3457    6.84%
+      0     0     1862.9706    33     1991.6476     Cuts: 106     3713    6.46%
+      0     0     1913.4829    28     1991.6476      Cuts: 93     3856    3.92%
+      0     0     1915.0084    29     1991.6476     Cuts: 113     3937    3.85%
+      0     0     1916.3300    24     1991.6476      Cuts: 68     3992    3.78%
+      0     0     1918.1692    23     1991.6476      Cuts: 78     4036    3.69%
+      0     0     1919.0362    31     1991.6476      Cuts: 61     4075    3.65%
+      0     0     1920.8892    31     1991.6476      Cuts: 60     4134    3.55%
+      0     0     1921.3672    30     1991.6476      Cuts: 58     4169    3.53%
+      0     0     1921.8941    29     1991.6476      Cuts: 40     4227    3.50%
+      0     0     1921.9722    31     1991.6476      Cuts: 73     4260    3.50%
+      0     0     1923.6269    30     1991.6476      Cuts: 53     4304    3.42%
+      0     0     1924.9086    29     1991.6476      Cuts: 59     4336    3.35%
+      0     0     1931.1521    30     1991.6476      Cuts: 18     4379    3.04%
+      0     0     1931.5305    31     1991.6476      Cuts: 63     4432    3.02%
+      0     2     1931.5305    31     1991.6476     1931.5305     4432    3.02%
+Elapsed time = 2.12 sec. (1252.74 ticks, tree = 0.01 MB, solutions = 2)
+     78     5        cutoff           1991.6476     1948.6662     6789    2.16%
+
+Cover cuts applied:  1
+Implied bound cuts applied:  125
+Flow cuts applied:  18
+Mixed integer rounding cuts applied:  41
+Zero-half cuts applied:  3
+Gomory fractional cuts applied:  7
+
+Root node processing (before b&c):
+  Real time             =    2.06 sec. (1239.43 ticks)
+Parallel b&c, 4 threads:
+  Real time             =    0.60 sec. (427.44 ticks)
+  Sync time (average)   =    0.26 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    2.66 sec. (1666.88 ticks)
+
+===========  RESULTS  ===========
+
+Status of this.LIRPSolver :   Optimal
+Objective function :   1991.6476059325714
+ERROR, Constraint 6, period 3
+Time to solve the instance: 2669 milliseconds
+================================
+

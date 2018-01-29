@@ -1,6 +1,9 @@
 Creating the RouteManager...
 Route manager created.
 OK. Solving...
+========================================
+== Solving with 	1 subsetsof routes ==
+========================================
 done!
 CPXPARAM_TimeLimit                               1000
 CPXPARAM_Read_APIEncoding                        "UTF8"
@@ -10,7 +13,7 @@ MIP Presolve modified 374 coefficients.
 Reduced MIP has 900 rows, 3558 columns, and 11767 nonzeros.
 Reduced MIP has 593 binaries, 0 generals, 0 SOSs, and 0 indicators.
 Presolve time = 0.01 sec. (6.69 ticks)
-Probing time = 0.01 sec. (3.06 ticks)
+Probing time = 0.04 sec. (3.06 ticks)
 Tried aggregator 1 time.
 Reduced MIP has 900 rows, 3558 columns, and 11767 nonzeros.
 Reduced MIP has 593 binaries, 0 generals, 0 SOSs, and 0 indicators.
@@ -20,7 +23,7 @@ Clique table members: 230.
 MIP emphasis: balance optimality and feasibility.
 MIP search method: dynamic search.
 Parallel mode: deterministic, using up to 4 threads.
-Root relaxation solution time = 0.03 sec. (16.95 ticks)
+Root relaxation solution time = 0.02 sec. (16.95 ticks)
 
         Nodes                                         Cuts/
    Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
@@ -59,7 +62,7 @@ Root relaxation solution time = 0.03 sec. (16.95 ticks)
       0     0     1783.4216    33     1845.8895      Cuts: 51     4290    3.38%
       0     0     1783.8054    34     1845.8895      Cuts: 52     4357    3.36%
       0     2     1783.8054    34     1845.8895     1783.8054     4357    3.36%
-Elapsed time = 2.05 sec. (1239.58 ticks, tree = 0.01 MB, solutions = 2)
+Elapsed time = 2.07 sec. (1239.58 ticks, tree = 0.01 MB, solutions = 2)
      68    13        cutoff           1845.8895     1802.4081     6908    2.36%
 
 Cover cuts applied:  1
@@ -69,18 +72,18 @@ Mixed integer rounding cuts applied:  41
 Zero-half cuts applied:  7
 
 Root node processing (before b&c):
-  Real time             =    2.04 sec. (1228.43 ticks)
+  Real time             =    2.06 sec. (1228.43 ticks)
 Parallel b&c, 4 threads:
   Real time             =    0.43 sec. (418.03 ticks)
-  Sync time (average)   =    0.14 sec.
+  Sync time (average)   =    0.15 sec.
   Wait time (average)   =    0.00 sec.
                           ------------
-Total (root+branch&cut) =    2.47 sec. (1646.46 ticks)
+Total (root+branch&cut) =    2.49 sec. (1646.46 ticks)
 
 ===========  RESULTS  ===========
 
 Status of this.LIRPSolver :   Optimal
 Objective function :   1845.8895445632074
-Time to solve the instance: 2479 milliseconds
+Time to solve the instance: 2503 milliseconds
 ================================
 

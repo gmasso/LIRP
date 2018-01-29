@@ -1,0 +1,37 @@
+Creating the RouteManager...
+Computing all SD routes
+All SD routes are computed.
+Computing all DC routes starting from depot 1(first stop at client 0)
+All DC routes from 1 are computed.
+Computing all DC routes starting from depot 1(first stop at client 1)
+All DC routes from 1 are computed.
+Computing all DC routes starting from depot 1(first stop at client 2)
+All DC routes from 1 are computed.
+Computing all DC routes starting from depot 1(first stop at client 3)
+All DC routes from 1 are computed.
+Computing all DC routes starting from depot 1(first stop at client 4)
+All DC routes from 1 are computed.
+Computing all DC routes starting from depot 1(first stop at client 5)
+All DC routes from 1 are computed.
+Computing all DC routes starting from depot 1(first stop at client 6)
+All DC routes from 1 are computed.
+Computing all DC routes starting from depot 1(first stop at client 7)
+All DC routes from 1 are computed.
+Computing all DC routes starting from depot 2(first stop at client 0)
+All DC routes from 2 are computed.
+Computing all DC routes starting from depot 2(first stop at client 1)
+All DC routes from 2 are computed.
+Computing all DC routes starting from depot 2(first stop at client 2)
+All DC routes from 2 are computed.
+Computing all DC routes starting from depot 2(first stop at client 3)
+All DC routes from 2 are computed.
+Computing all DC routes starting from depot 2(first stop at client 4)
+All DC routes from 2 are computed.
+Computing all DC routes starting from depot 2(first stop at client 5)
+All DC routes from 2 are computed.
+Computing all DC routes starting from depot 2(first stop at client 6)
+All DC routes from 2 are computed.
+Computing all DC routes starting from depot 2(first stop at client 7)
+All DC routes from 2 are computed.
+Route manager created.
+At least one client is not reachable. Moving on.
