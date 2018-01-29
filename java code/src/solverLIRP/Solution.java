@@ -400,6 +400,21 @@ public class Solution {
 		}
 	}
 
+	public ArrayList<Integer> collectRoutes(){
+		ArrayList<Integer> collectedRoutes = new ArrayList<Integer>();
+		for (int rIter = 0; rIter < this.usedDCRoutes.length; rIter++){
+			boolean used = false;
+			int t = 0;
+			while (!used && t < this.instanceLIRP.getNbPeriods()){
+				used = this.usedDCRoutes[rIter][t];
+				t++;
+			}
+			if(used)
+				collectedRoutes.add(rIter);
+		}
+		return collectedRoutes;
+	}
+	
 	/**
 	 * 
 	 * @param printStreamSol
