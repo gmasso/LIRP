@@ -117,7 +117,7 @@ public class ResolutionMain {
 							 * =======================================================*/
 							ArrayList<ArrayList<Integer>> rSample = sampleRoutes(loopIndicesDC, splitParam);
 							System.out.println("========================================");
-							System.out.println("== Solving with 	" + rSample.size() + " subsetsof routes ==" );
+							System.out.println("== Solving with 	" + rSample.size() + " subsets of routes ==" );
 							System.out.println("========================================");
 
 							while(rSample.size() > 1) {
