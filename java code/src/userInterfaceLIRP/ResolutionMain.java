@@ -79,7 +79,8 @@ public class ResolutionMain {
 						// Create the log file and solution file to store the results and the trace of the program
 						String fichierLog = "../Log files/" + fileName.replace(".json", ".log");
 						String fichierSol = "../Solutions/" + fileName.replace(".json", ".sol");
-						String fileSplitSol = "../Solutions/" + fileName.replace(".json", "_split"+splitParam+".sol");
+						if(splitParam > 0)
+							fichierSol = "../Solutions/" + fileName.replace(".json", "_split"+splitParam+".sol");
 
 						File fileLog = new File(fichierLog);
 						PrintStream printStreamLog = new PrintStream(fileLog);
@@ -90,7 +91,6 @@ public class ResolutionMain {
 						File fileSol = new File(fichierSol);
 						// Stream for the solution
 						PrintStream printStreamSol = new PrintStream(fileSol);
-						PrintStream printStreamSplitSol = new PrintStream(fileSplitSol);
 
 
 						System.out.println("Creating the RouteManager...");
@@ -101,12 +101,13 @@ public class ResolutionMain {
 							for(int index = 0; index < rm.getNbLoopDC(); index++)
 								loopIndicesDC.add(index);
 
+							int subsetSizes = splitParam;
 							/* =======================================================
 							 *  If we are solving the problem using cplex directly,
 							 *  set the split parameter to the total number of routes 
 							 * =======================================================*/
 							if(splitParam < 1) {
-								splitParam = loopIndicesDC.size();
+								subsetSizes = loopIndicesDC.size();
 							}
 
 							long startChrono = System.currentTimeMillis();
@@ -115,7 +116,7 @@ public class ResolutionMain {
 							 *  parameter is big enough, the set of routes will not be 
 							 *  split
 							 * =======================================================*/
-							ArrayList<ArrayList<Integer>> rSample = sampleRoutes(loopIndicesDC, splitParam);
+							ArrayList<ArrayList<Integer>> rSample = sampleRoutes(loopIndicesDC, subsetSizes);
 							System.out.println("========================================");
 							System.out.println("== Solving with 	" + rSample.size() + " subsets of routes ==" );
 							System.out.println("========================================");
@@ -131,7 +132,7 @@ public class ResolutionMain {
 											collectedRoutes.add(subsetRoutes.get(collectedIndex));
 									}
 								}
-								rSample = sampleRoutes(collectedRoutes, splitParam);
+								rSample = sampleRoutes(collectedRoutes, subsetSizes);
 							}
 
 							loopIndicesDC = rSample.get(0);
@@ -139,13 +140,7 @@ public class ResolutionMain {
 							System.out.println("done!");
 
 							// Call the method from the solver
-							Solution sol;
-							if(splitParam < 1) {
-								sol = solverLIRP.getSolution(printStreamSol);
-							}
-							else {
-								sol = solverLIRP.getSolution(printStreamSplitSol);
-							}
+							Solution sol = solverLIRP.getSolution(printStreamSol);
 							
 							long stopChrono = System.currentTimeMillis();
 							long duration = (stopChrono-startChrono);
@@ -155,14 +150,8 @@ public class ResolutionMain {
 							System.out.println();
 
 							if (sol != null){
-								if(splitParam < 1) {
-									sol.print(printStreamSol);
-									printStreamSol.println("Resolution time : " + duration + " milliseconds");
-								}
-								else {
-									sol.print(printStreamSplitSol);
-									printStreamSplitSol.println("Resolution time : " + duration + " milliseconds");
-								}
+								sol.print(printStreamSol);
+								printStreamSol.println("Resolution time : " + duration + " milliseconds");
 							}
 							else {
 								System.out.println("Error on this instance");
@@ -174,7 +163,6 @@ public class ResolutionMain {
 						else {
 							System.out.println("At least one client is not reachable. Moving on.");
 							printStreamSol.println("At least one client is not reachable. Moving on.");
-							printStreamSplitSol.println("At least one client is not reachable. Moving on.");
 							System.setOut(original);
 							System.out.println("At least one client is not reachable. Moving on.");
 						}
