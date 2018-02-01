@@ -12,18 +12,18 @@ MIP Presolve eliminated 551 rows and 6 columns.
 MIP Presolve modified 352 coefficients.
 Reduced MIP has 870 rows, 3378 columns, and 11167 nonzeros.
 Reduced MIP has 563 binaries, 0 generals, 0 SOSs, and 0 indicators.
-Presolve time = 0.01 sec. (6.33 ticks)
-Probing time = 0.01 sec. (2.80 ticks)
+Presolve time = 0.02 sec. (6.33 ticks)
+Probing time = 0.18 sec. (2.80 ticks)
 Tried aggregator 1 time.
 Reduced MIP has 870 rows, 3378 columns, and 11167 nonzeros.
 Reduced MIP has 563 binaries, 0 generals, 0 SOSs, and 0 indicators.
 Presolve time = 0.01 sec. (6.09 ticks)
-Probing time = 0.01 sec. (3.45 ticks)
+Probing time = 0.02 sec. (3.45 ticks)
 Clique table members: 230.
 MIP emphasis: balance optimality and feasibility.
 MIP search method: dynamic search.
 Parallel mode: deterministic, using up to 4 threads.
-Root relaxation solution time = 0.01 sec. (12.08 ticks)
+Root relaxation solution time = 0.02 sec. (12.08 ticks)
 
         Nodes                                         Cuts/
    Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
@@ -47,7 +47,7 @@ Root relaxation solution time = 0.01 sec. (12.08 ticks)
 *     0+    0                         2186.0531     1934.1131            11.52%
 *     0+    0                         2185.9439     1934.1131            11.52%
       0     2     1934.1131    21     2185.9439     1934.1131     1797   11.52%
-Elapsed time = 0.91 sec. (493.36 ticks, tree = 0.01 MB, solutions = 5)
+Elapsed time = 1.64 sec. (493.36 ticks, tree = 0.01 MB, solutions = 5)
     185    63        cutoff           2185.9439     1935.9533     6569   11.44%
     612   260     2167.8774     8     2185.9439     1955.8581    14025   10.53%
    1032   457        cutoff           2185.9439     2025.7337    24111    7.33%
@@ -64,18 +64,19 @@ Lift and project cuts applied:  1
 Gomory fractional cuts applied:  2
 
 Root node processing (before b&c):
-  Real time             =    0.90 sec. (492.48 ticks)
+  Real time             =    1.63 sec. (492.48 ticks)
 Parallel b&c, 4 threads:
-  Real time             =    1.89 sec. (1420.72 ticks)
-  Sync time (average)   =    0.20 sec.
-  Wait time (average)   =    0.00 sec.
+  Real time             =    3.24 sec. (1420.72 ticks)
+  Sync time (average)   =    0.50 sec.
+  Wait time (average)   =    0.01 sec.
                           ------------
-Total (root+branch&cut) =    2.79 sec. (1913.20 ticks)
+Total (root+branch&cut) =    4.87 sec. (1913.20 ticks)
 
 ===========  RESULTS  ===========
 
 Status of this.LIRPSolver :   Optimal
 Objective function :   2185.9439328095204
-Time to solve the instance: 2799 milliseconds
+Time to solve the instance: 4924 milliseconds
 ================================
 
+Printing the solution in ../Solutions/lirp5cl0ci_3_split500.sol

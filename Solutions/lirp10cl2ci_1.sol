@@ -20,10 +20,10 @@ Period 1:
 Depot 1: 	  0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	
 
 Period 2:   
-Depot 1: 	  1.000000082740371E-9	1.000000082740371E-9	1.000000082740371E-9	1.000000082740371E-9	1.000000082740371E-9	1.000000082740371E-9	1.0000005268295808E-9	1.000000082740371E-9	1.000000082740371E-9	1.000000082740371E-9	
+Depot 1: 	  0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	
 
 Period 3:   
-Depot 1: 	  2.0000000544584395E-9	1.999999943436137E-9	2.0000000544584395E-9	1.9999998324138346E-9	2.0000000544584395E-9	2.000000165480742E-9	1.999999943436137E-9	1.999999721391532E-9	1.9999998324138346E-9	2.0000000544584395E-9	
+Depot 1: 	  0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	
 
 Period 4:   
 Depot 1: 	  0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	
@@ -72,9 +72,7 @@ Period 0:
  route 10 starting from depot 1 and visiting clients : 	0 	 1 	 2 	 3 	 4 	 5 	 6 	 7 	 8 	 9 	  (cost = 129.39097098670862) 	
 Period 1:   
 Period 2:   
- route 1198 starting from depot 1 and visiting clients : 	0 	 1 	 2 	 3 	 4 	 5 	 6 	 7 	 8 	 9 	  (cost = 168.8232637440331) 	
 Period 3:   
- route 720 starting from depot 1 and visiting clients : 	0 	 1 	 2 	 3 	 4 	 5 	 6 	 7 	 8 	 9 	  (cost = 169.22546361820392) 	
 Period 4:   
 Period 5:   
  route 10 starting from depot 1 and visiting clients : 	0 	 1 	 2 	 3 	 4 	 5 	 6 	 7 	 8 	 9 	  (cost = 129.39097098670862) 	
@@ -86,7 +84,7 @@ Period 9:
 [[1],[],[],[],[],[1],[],[],[],[]]
 -----  RECALCULATION OF THE OBJECTIVE FUNCTION  -----
 Fixed cost of opening depots: 100.0
-Cost of routes: 1332.9854669332906
+Cost of routes: 994.9367395710535
 Inventory costs: 186.56848310968155
-Objective function recalculated: 1619.5539500429722
-Resolution time : 1001274 milliseconds
+Objective function recalculated: 1281.5052226807352
+Resolution time : 1001581 milliseconds

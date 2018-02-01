@@ -33,6 +33,7 @@ public class ResolutionMain {
 	public static void main(String[] args) throws IOException, IloException {
 
 		String instDir = "../Instances/Complete/";
+		String solDir = "../Solutions/";
 		if (create_inst) {
 			for(int nbClients : nb_clients) {
 				/* Create instances with 0 or 2 cities */
@@ -47,21 +48,28 @@ public class ResolutionMain {
 		}
 
 		/* Solve all instances in the directory */
-		File listSol = new File(instDir);
+		File listInst = new File(instDir);
+		File listSol = new File(solDir);
+
 
 		//------------------------------------------------------------------------------------
 		// PARAMETERS
 		/* Number of routes in each subset when separating */
 
-		int splitParam = 100; // Size of the subsets of routes
-		// splitParam = 0; // Uncomment to solve the original instance without sampling the routes
+		int splitParam = 50; // Size of the subsets of routes
+		//splitParam = 0; // Uncomment to solve the original instance without sampling the routes
 
 		try {
 			//IN THE DIRECTORY FOR EVERY FILE, YOU SOLVE AND SAVE
-			for (String fileName : listSol.list() ) {
+			for (String fileName : listInst.list() ) {
 				int i = fileName.lastIndexOf('.');
+				String fichierSol = "../Solutions/" + fileName.replace(".json", ".sol");
+				if(splitParam > 0) {
+					fichierSol = "../Solutions/" + fileName.replace(".json", "_split"+ splitParam +".sol");
+				}
+				File fileSol = new File(fichierSol);
 				/* One instance is too big for the solver, we exclude it from the resolution */
-				if (!fileName.startsWith("lirp20cl2ci_2") && i > 0 &&  i < fileName.length() - 1) {
+				if (!fileName.startsWith("lirp20cl2ci_2") && fileName.startsWith("lirp20cl") && i > 0 &&  i < fileName.length() - 1 && !fileSol.exists()) {
 					String extension = fileName.substring(i+1).toLowerCase();
 					if(extension!= null && extension.equals("json")) {
 						// Create the instance from the json file
@@ -78,9 +86,6 @@ public class ResolutionMain {
 
 						// Create the log file and solution file to store the results and the trace of the program
 						String fichierLog = "../Log files/" + fileName.replace(".json", ".log");
-						String fichierSol = "../Solutions/" + fileName.replace(".json", ".sol");
-						if(splitParam > 0)
-							fichierSol = "../Solutions/" + fileName.replace(".json", "_split"+splitParam+".sol");
 
 						File fileLog = new File(fichierLog);
 						PrintStream printStreamLog = new PrintStream(fileLog);
@@ -88,7 +93,6 @@ public class ResolutionMain {
 						PrintStream original = System.out;
 						System.setOut(printStreamLog);
 						System.setErr(printStreamLog);
-						File fileSol = new File(fichierSol);
 						// Stream for the solution
 						PrintStream printStreamSol = new PrintStream(fileSol);
 
@@ -101,14 +105,11 @@ public class ResolutionMain {
 							for(int index = 0; index < rm.getNbLoopDC(); index++)
 								loopIndicesDC.add(index);
 
-							int subsetSizes = splitParam;
 							/* =======================================================
 							 *  If we are solving the problem using cplex directly,
 							 *  set the split parameter to the total number of routes 
 							 * =======================================================*/
-							if(splitParam < 1) {
-								subsetSizes = loopIndicesDC.size();
-							}
+							int subsetSizes = (splitParam >0) ? splitParam:loopIndicesDC.size();
 
 							long startChrono = System.currentTimeMillis();
 							/* =======================================================
@@ -127,7 +128,6 @@ public class ResolutionMain {
 									Solver solverLIRP = new Solver(instLIRP, rm, new ArrayList<Integer> (), subsetRoutes);
 									Solution partialSol = solverLIRP.getSolution(printStreamSol);
 									if (partialSol != null){
-										partialSol.print(printStreamSol);
 										for(int collectedIndex : partialSol.collectRoutes())		
 											collectedRoutes.add(subsetRoutes.get(collectedIndex));
 									}
@@ -138,7 +138,7 @@ public class ResolutionMain {
 							loopIndicesDC = rSample.get(0);
 							Solver solverLIRP = new Solver(instLIRP, rm, new ArrayList<Integer> (), loopIndicesDC);
 							System.out.println("done!");
-
+							
 							// Call the method from the solver
 							Solution sol = solverLIRP.getSolution(printStreamSol);
 							
@@ -150,8 +150,10 @@ public class ResolutionMain {
 							System.out.println();
 
 							if (sol != null){
+								System.out.println("Printing the solution in " + fichierSol);
 								sol.print(printStreamSol);
 								printStreamSol.println("Resolution time : " + duration + " milliseconds");
+								printStreamSol.println();
 							}
 							else {
 								System.out.println("Error on this instance");

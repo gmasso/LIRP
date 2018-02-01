@@ -308,7 +308,7 @@ public class Solver{
 			for (int t = 0; t < this.LIRPInstance.getNbPeriods(); t++){
 				for (int dIter = 0; dIter < this.LIRPInstance.getNbDepots(); dIter++){
 					for(int rIter = 0; rIter < this.routesSD.length; rIter++)
-						if (this.LIRPSolver.getValue(this.x[rIter][t]) > 0) {
+						if (this.LIRPSolver.getValue(this.x[rIter][t]) > Parameters.epsilon) {
 							sol.setusedSDRoutes(rIter, t, true);
 							double vjrt = this.LIRPSolver.getValue(this.v[dIter][rIter][t]);
 							sol.setDeliveryDepot(dIter, rIter, t, vjrt);
@@ -331,7 +331,7 @@ public class Solver{
 			for (int t = 0;t < this.LIRPInstance.getNbPeriods(); t++){
 				for (int cIter = 0;cIter < this.LIRPInstance.getNbClients(); cIter++){
 					for (int rIter = 0; rIter < this.routesDC.length; rIter++){
-						if (this.LIRPSolver.getValue(this.z[rIter][t]) > 0) {
+						if (this.LIRPSolver.getValue(this.z[rIter][t]) > Parameters.epsilon) {
 							sol.setusedDCRoutes(rIter, t, true);
 							double uirt = this.LIRPSolver.getValue(this.u[cIter][rIter][t]);
 							sol.setDeliveryClient(cIter, rIter, t, uirt);			
@@ -352,7 +352,6 @@ public class Solver{
 			}
 
 			Checker.check(sol, this.LIRPInstance, this.routesSD, this.routesDC, printStreamSol);
-			printStreamSol.println("--------------------------------------------");
 		}
 		return sol;
 

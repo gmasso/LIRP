@@ -537,7 +537,6 @@ public class Solution {
 		printListOfRoutes(printStreamSol);
 		// printDetailedRoutes(printStreamSol);
 		evaluate(printStreamSol);
-
 	}
 
 }

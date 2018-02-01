@@ -50,6 +50,7 @@ Total (root+branch&cut) =    0.02 sec. (9.93 ticks)
 
 Status of this.LIRPSolver :   Optimal
 Objective function :   654.8754759300302
-Time to solve the instance: 39 milliseconds
+Time to solve the instance: 30 milliseconds
 ================================
 
+Printing the solution in ../Solutions/lirp5cl2ci_2_split500.sol

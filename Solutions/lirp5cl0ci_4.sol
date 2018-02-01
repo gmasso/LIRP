@@ -98,4 +98,4 @@ Fixed cost of opening depots: 200.0
 Cost of routes: 1421.3250673832729
 Inventory costs: 224.5644771799343
 Objective function recalculated: 1845.8895445632072
-Resolution time : 3288 milliseconds
+Resolution time : 3704 milliseconds

@@ -16,13 +16,13 @@ Presolve time = 0.08 sec. (54.96 ticks)
 Tried aggregator 1 time.
 Reduced MIP has 3470 rows, 32033 columns, and 105567 nonzeros.
 Reduced MIP has 2923 binaries, 0 generals, 0 SOSs, and 0 indicators.
-Presolve time = 0.07 sec. (51.98 ticks)
-Probing time = 0.04 sec. (18.52 ticks)
+Presolve time = 0.08 sec. (51.98 ticks)
+Probing time = 0.13 sec. (18.52 ticks)
 Clique table members: 420.
 MIP emphasis: balance optimality and feasibility.
 MIP search method: dynamic search.
 Parallel mode: deterministic, using up to 4 threads.
-Root relaxation solution time = 0.35 sec. (391.61 ticks)
+Root relaxation solution time = 0.72 sec. (391.61 ticks)
 
         Nodes                                         Cuts/
    Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
@@ -47,7 +47,7 @@ MIP Presolve modified 3 coefficients.
 Reduced MIP has 136 rows, 351 columns, and 908 nonzeros.
 Reduced MIP has 27 binaries, 0 generals, 0 SOSs, and 0 indicators.
 Presolve time = 0.00 sec. (0.45 ticks)
-Represolve time = 0.03 sec. (43.62 ticks)
+Represolve time = 0.07 sec. (43.62 ticks)
 Probing time = 0.00 sec. (0.09 ticks)
 Clique table members: 10.
 MIP emphasis: balance optimality and feasibility.
@@ -61,7 +61,7 @@ Root relaxation solution time = 0.00 sec. (2.00 ticks)
 *     0+    0                         1962.0822     1961.3387             0.04%
       0     0     1961.3918     9     1962.0822     1961.3918     5260    0.04%
       0     0        cutoff           1962.0822     1962.0822     5278    0.00%
-Elapsed time = 1.85 sec. (2037.14 ticks, tree = 0.01 MB, solutions = 2)
+Elapsed time = 3.36 sec. (2037.14 ticks, tree = 0.01 MB, solutions = 2)
 
 GUB cover cuts applied:  1
 Cover cuts applied:  1
@@ -71,13 +71,13 @@ Mixed integer rounding cuts applied:  16
 Gomory fractional cuts applied:  6
 
 Root node processing (before b&c):
-  Real time             =    1.86 sec. (2038.23 ticks)
+  Real time             =    3.36 sec. (2038.23 ticks)
 Parallel b&c, 4 threads:
   Real time             =    0.00 sec. (0.00 ticks)
   Sync time (average)   =    0.00 sec.
   Wait time (average)   =    0.00 sec.
                           ------------
-Total (root+branch&cut) =    1.86 sec. (2038.23 ticks)
+Total (root+branch&cut) =    3.36 sec. (2038.23 ticks)
 
 ===========  RESULTS  ===========
 
@@ -85,6 +85,7 @@ Status of this.LIRPSolver :   Optimal
 Objective function :   1962.082229692696
 ERROR, Constraint 6, period 4
 ERROR, Constraint 7, period 4
-Time to solve the instance: 1975 milliseconds
+Time to solve the instance: 3483 milliseconds
 ================================
 
+Printing the solution in ../Solutions/lirp10cl0ci_4_split500.sol

@@ -7,8 +7,6 @@ import java.util.stream.Stream;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
-import solverLIRP.Route;
-
 import java.awt.geom.Point2D;
 
 public class Instance {

@@ -24,7 +24,7 @@ Clique table members: 150.
 MIP emphasis: balance optimality and feasibility.
 MIP search method: dynamic search.
 Parallel mode: deterministic, using up to 4 threads.
-Root relaxation solution time = 0.02 sec. (2.90 ticks)
+Root relaxation solution time = 0.01 sec. (2.90 ticks)
 
         Nodes                                         Cuts/
    Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
@@ -37,7 +37,7 @@ Root relaxation solution time = 0.02 sec. (2.90 ticks)
 *     0+    0                          786.5795      615.9663            21.69%
 *     0     0      integral     0      660.3390      Cuts: 27      399    0.00%
       0     0        cutoff            660.3390      660.3390      399    0.00%
-Elapsed time = 0.29 sec. (49.18 ticks, tree = 0.01 MB, solutions = 5)
+Elapsed time = 0.17 sec. (49.18 ticks, tree = 0.01 MB, solutions = 5)
 
 GUB cover cuts applied:  1
 Cover cuts applied:  2
@@ -49,18 +49,19 @@ Lift and project cuts applied:  1
 Gomory fractional cuts applied:  4
 
 Root node processing (before b&c):
-  Real time             =    0.29 sec. (49.26 ticks)
+  Real time             =    0.17 sec. (49.26 ticks)
 Parallel b&c, 4 threads:
   Real time             =    0.00 sec. (0.00 ticks)
   Sync time (average)   =    0.00 sec.
   Wait time (average)   =    0.00 sec.
                           ------------
-Total (root+branch&cut) =    0.29 sec. (49.26 ticks)
+Total (root+branch&cut) =    0.17 sec. (49.26 ticks)
 
 ===========  RESULTS  ===========
 
 Status of this.LIRPSolver :   Optimal
 Objective function :   660.3390148453354
-Time to solve the instance: 312 milliseconds
+Time to solve the instance: 181 milliseconds
 ================================
 
+Printing the solution in ../Solutions/lirp5cl2ci_0_split500.sol
