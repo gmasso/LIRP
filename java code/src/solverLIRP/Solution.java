@@ -400,7 +400,7 @@ public class Solution {
 		}
 	}
 
-	public ArrayList<Integer> collectRoutes(){
+	public ArrayList<Integer> collectLoopDCRoutes(){
 		ArrayList<Integer> collectedRoutes = new ArrayList<Integer>();
 		for (int rIter = 0; rIter < this.usedDCRoutes.length; rIter++){
 			boolean used = false;
