@@ -33,6 +33,7 @@ public class ResolutionMain {
 	public static void main(String[] args) throws IOException, IloException {
 
 		String instDir = "../Instances/Complete/";
+		String solDir = "../Solutions/";
 		if (create_inst) {
 			for(int nbClients : nb_clients) {
 				/* Create instances with 0 or 2 cities */
@@ -48,6 +49,7 @@ public class ResolutionMain {
 
 		/* Solve all instances in the directory */
 		File listInst = new File(instDir);
+		File listSol = new File(solDir);
 
 
 		//------------------------------------------------------------------------------------
@@ -55,7 +57,7 @@ public class ResolutionMain {
 		/* Number of routes in each subset when separating */
 
 		int splitParam = 50; // Size of the subsets of routes
-		splitParam = 0; // Uncomment to solve the original instance without sampling the routes
+		//splitParam = 0; // Uncomment to solve the original instance without sampling the routes
 
 		try {
 			//IN THE DIRECTORY FOR EVERY FILE, YOU SOLVE AND SAVE
@@ -67,7 +69,7 @@ public class ResolutionMain {
 				}
 				File fileSol = new File(fichierSol);
 				/* One instance is too big for the solver, we exclude it from the resolution */
-				if (!fileName.startsWith("lirp20cl2ci_2") && fileName.startsWith("lirp10cl") && i > 0 &&  i < fileName.length() - 1 && !fileSol.exists()) {
+				if (!fileName.startsWith("lirp20cl2ci_2") && fileName.startsWith("lirp20cl") && i > 0 &&  i < fileName.length() - 1 && !fileSol.exists()) {
 					String extension = fileName.substring(i+1).toLowerCase();
 					if(extension!= null && extension.equals("json")) {
 						// Create the instance from the json file

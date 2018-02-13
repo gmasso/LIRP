@@ -12,18 +12,18 @@ MIP Presolve eliminated 2761 rows and 42 columns.
 MIP Presolve modified 736 coefficients.
 Reduced MIP has 3170 rows, 30202 columns, and 100728 nonzeros.
 Reduced MIP has 2752 binaries, 0 generals, 0 SOSs, and 0 indicators.
-Presolve time = 0.05 sec. (56.70 ticks)
-Found incumbent of value 14947.797167 after 0.11 sec. (98.46 ticks)
+Presolve time = 0.06 sec. (56.70 ticks)
+Found incumbent of value 14947.797167 after 0.13 sec. (98.46 ticks)
 Tried aggregator 1 time.
 Reduced MIP has 3170 rows, 30202 columns, and 100728 nonzeros.
 Reduced MIP has 2752 binaries, 0 generals, 0 SOSs, and 0 indicators.
-Presolve time = 0.06 sec. (48.87 ticks)
-Probing time = 0.08 sec. (18.10 ticks)
+Presolve time = 0.07 sec. (48.87 ticks)
+Probing time = 0.11 sec. (18.10 ticks)
 Clique table members: 300.
 MIP emphasis: balance optimality and feasibility.
 MIP search method: dynamic search.
 Parallel mode: deterministic, using up to 4 threads.
-Root relaxation solution time = 0.32 sec. (348.87 ticks)
+Root relaxation solution time = 0.39 sec. (348.87 ticks)
 
         Nodes                                         Cuts/
    Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
@@ -52,7 +52,7 @@ Root relaxation solution time = 0.32 sec. (348.87 ticks)
       0     0     2910.3795    36     3197.1288      Cuts: 28    29127    8.97%
       0     0     2910.3795    36     3197.1288     Cuts: 164    33559    8.97%
       0     2     2910.3795    36     3197.1288     2933.7603    33559    8.24%
-Elapsed time = 20.96 sec. (26917.68 ticks, tree = 0.01 MB, solutions = 3)
+Elapsed time = 21.64 sec. (26917.68 ticks, tree = 0.01 MB, solutions = 3)
       1     3     2928.6281    23     3197.1288     2933.7603    36113    8.24%
       2     4     2975.8337    14     3197.1288     2933.7603    37245    8.24%
       7     9     2977.2651    12     3197.1288     2933.7603    38202    8.24%
@@ -63,7 +63,7 @@ Elapsed time = 20.96 sec. (26917.68 ticks, tree = 0.01 MB, solutions = 3)
      52    27     3174.8432     8     3197.1288     2945.8932    51781    7.86%
      62    28     3176.9280     9     3197.1288     2945.8932    54072    7.86%
      95    47     3176.4964     9     3197.1288     2945.8932    67138    7.86%
-Elapsed time = 26.68 sec. (31025.18 ticks, tree = 0.31 MB, solutions = 3)
+Elapsed time = 26.74 sec. (31025.18 ticks, tree = 0.31 MB, solutions = 3)
     114    54     3025.2193    15     3197.1288     2945.8932    75030    7.86%
     160    62     3176.2036     3     3197.1288     2945.8932    86695    7.86%
     169    78     3174.0495    13     3197.1288     2945.8932   104535    7.86%
@@ -74,7 +74,7 @@ Elapsed time = 26.68 sec. (31025.18 ticks, tree = 0.31 MB, solutions = 3)
     420   100    infeasible           3197.1288     3071.4590   165211    3.93%
     466   105     3153.1544     3     3197.1288     3078.6026   168118    3.71%
     580   102     3153.8992     2     3197.1288     3093.9683   174600    3.23%
-Elapsed time = 40.26 sec. (40835.86 ticks, tree = 1.16 MB, solutions = 3)
+Elapsed time = 41.08 sec. (40835.86 ticks, tree = 1.16 MB, solutions = 3)
     684    95     3171.4019     2     3197.1288     3093.9683   193869    3.23%
     846    64        cutoff           3197.1288     3151.6639   210584    1.42%
    1051    60     3194.6665     1     3197.1288     3174.3604   215537    0.71%
@@ -88,13 +88,13 @@ Zero-half cuts applied:  3
 Gomory fractional cuts applied:  3
 
 Root node processing (before b&c):
-  Real time             =   20.57 sec. (26538.83 ticks)
+  Real time             =   21.30 sec. (26538.83 ticks)
 Parallel b&c, 4 threads:
-  Real time             =   24.92 sec. (18369.54 ticks)
-  Sync time (average)   =    2.51 sec.
+  Real time             =   25.52 sec. (18369.54 ticks)
+  Sync time (average)   =    2.22 sec.
   Wait time (average)   =    0.01 sec.
                           ------------
-Total (root+branch&cut) =   45.49 sec. (44908.37 ticks)
+Total (root+branch&cut) =   46.82 sec. (44908.37 ticks)
 
 ===========  RESULTS  ===========
 
@@ -102,7 +102,7 @@ Status of this.LIRPSolver :   Optimal
 Objective function :   3197.1288085415645
 ERROR, Constraint 6, period 5
 ERROR, Constraint 6, period 7
-Time to solve the instance: 45744 milliseconds
+Time to solve the instance: 46928 milliseconds
 ================================
 
-Printing the solution in ../Solutions/lirp10cl0ci_0.sol
+Printing the solution in ../Solutions/lirp10cl0ci_0_split500.sol

@@ -12,17 +12,17 @@ MIP Presolve eliminated 3641 rows and 11 columns.
 MIP Presolve modified 1012 coefficients.
 Reduced MIP has 4290 rows, 41053 columns, and 136427 nonzeros.
 Reduced MIP has 3743 binaries, 0 generals, 0 SOSs, and 0 indicators.
-Presolve time = 0.10 sec. (77.81 ticks)
+Presolve time = 0.11 sec. (77.81 ticks)
 Tried aggregator 1 time.
 Reduced MIP has 4290 rows, 41053 columns, and 136427 nonzeros.
 Reduced MIP has 3743 binaries, 0 generals, 0 SOSs, and 0 indicators.
-Presolve time = 0.09 sec. (66.58 ticks)
+Presolve time = 0.08 sec. (66.58 ticks)
 Probing time = 0.08 sec. (23.37 ticks)
 Clique table members: 420.
 MIP emphasis: balance optimality and feasibility.
 MIP search method: dynamic search.
 Parallel mode: deterministic, using up to 4 threads.
-Root relaxation solution time = 0.56 sec. (605.29 ticks)
+Root relaxation solution time = 0.74 sec. (605.29 ticks)
 
         Nodes                                         Cuts/
    Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
@@ -36,7 +36,7 @@ Root relaxation solution time = 0.56 sec. (605.29 ticks)
       0     0     2866.0172    27     3118.0502      Cuts: 39    12037    8.08%
       0     0     2866.0478    27     3118.0502      Cuts: 27    12050    8.08%
       0     2     2866.0478    27     3118.0502     2866.0478    12050    8.08%
-Elapsed time = 8.44 sec. (8973.02 ticks, tree = 0.01 MB, solutions = 2)
+Elapsed time = 8.72 sec. (8973.02 ticks, tree = 0.01 MB, solutions = 2)
       1     3     2882.4420    30     3118.0502     2866.4102    12719    8.07%
       8    10     2897.1647    11     3118.0502     2886.4305    15532    7.43%
      21    13     2907.5707    13     3118.0502     2886.4305    16288    7.43%
@@ -47,7 +47,7 @@ Elapsed time = 8.44 sec. (8973.02 ticks, tree = 0.01 MB, solutions = 2)
      80    47     3060.2361     6     3118.0502     2903.2191    27432    6.89%
     114    54     3060.3530     6     3118.0502     2903.2191    28416    6.89%
     256   129     2946.6133     7     3118.0502     2906.8517    37850    6.77%
-Elapsed time = 15.38 sec. (12905.29 ticks, tree = 1.35 MB, solutions = 2)
+Elapsed time = 14.53 sec. (12905.29 ticks, tree = 1.35 MB, solutions = 2)
     335   196     2988.9283    12     3118.0502     2908.2225    43526    6.73%
     372   220     3036.6644     6     3118.0502     2908.2225    54903    6.73%
     384   225     2949.5052    10     3118.0502     2910.5342    63958    6.66%
@@ -58,7 +58,7 @@ Elapsed time = 15.38 sec. (12905.29 ticks, tree = 1.35 MB, solutions = 2)
     529   274     2985.2590    30     3118.0502     2925.5016   118838    6.18%
     547   296     2976.4456    12     3118.0502     2926.2800   134302    6.15%
     593   324     3097.0483     8     3118.0502     2930.1012   147979    6.03%
-Elapsed time = 31.47 sec. (23113.43 ticks, tree = 6.38 MB, solutions = 2)
+Elapsed time = 29.75 sec. (23113.43 ticks, tree = 6.38 MB, solutions = 2)
     603   332     3006.5838    19     3118.0502     2937.7750   159782    5.78%
     662   334     2982.8311    11     3118.0502     2939.6165   157748    5.72%
     700   380     3094.0709    11     3118.0502     2943.0808   188553    5.61%
@@ -69,7 +69,7 @@ Elapsed time = 31.47 sec. (23113.43 ticks, tree = 6.38 MB, solutions = 2)
     929   442        cutoff           3118.0502     2958.4291   298955    5.12%
    1005   444        cutoff           3118.0502     2961.8048   313698    5.01%
    1038   449        cutoff           3118.0502     2970.1758   328198    4.74%
-Elapsed time = 47.73 sec. (33157.05 ticks, tree = 8.49 MB, solutions = 2)
+Elapsed time = 45.61 sec. (33157.05 ticks, tree = 8.49 MB, solutions = 2)
    1066   468     2980.5871    15     3118.0502     2970.1758   348636    4.74%
    1122   456        cutoff           3118.0502     2975.1581   363177    4.58%
    1169   465     2987.9794    21     3118.0502     2976.7511   368893    4.53%
@@ -80,7 +80,7 @@ Elapsed time = 47.73 sec. (33157.05 ticks, tree = 8.49 MB, solutions = 2)
    1350   490     3095.5863    11     3118.0502     2989.7509   434952    4.11%
    1370   533     3043.0940    11     3118.0502     2991.7348   439510    4.05%
    1390   537     3116.6721     9     3118.0502     2993.9741   452022    3.98%
-Elapsed time = 62.66 sec. (43534.55 ticks, tree = 8.54 MB, solutions = 2)
+Elapsed time = 61.60 sec. (43534.55 ticks, tree = 8.54 MB, solutions = 2)
    1401   525     3025.9114     8     3118.0502     2994.8600   477076    3.95%
    1455   530     3005.0113    26     3118.0502     2995.4492   488437    3.93%
    1469   524        cutoff           3118.0502     2995.4492   495705    3.93%
@@ -91,7 +91,7 @@ Elapsed time = 62.66 sec. (43534.55 ticks, tree = 8.54 MB, solutions = 2)
    1748   611        cutoff           3118.0502     3006.3863   552128    3.58%
    1764   535     3061.9826    17     3118.0502     3006.3863   545342    3.58%
    1792   621     3113.7189     8     3118.0502     3013.7652   570562    3.34%
-Elapsed time = 77.39 sec. (53641.47 ticks, tree = 8.96 MB, solutions = 2)
+Elapsed time = 77.27 sec. (53641.47 ticks, tree = 8.96 MB, solutions = 2)
    1816   613     3094.6163     8     3118.0502     3013.8124   577366    3.34%
    1854   605     3114.3039    11     3118.0502     3026.7883   581951    2.93%
    1947   588     3106.3020     1     3118.0502     3031.9432   597384    2.76%
@@ -109,20 +109,20 @@ Zero-half cuts applied:  2
 Gomory fractional cuts applied:  8
 
 Root node processing (before b&c):
-  Real time             =    8.17 sec. (8763.21 ticks)
+  Real time             =    8.51 sec. (8763.21 ticks)
 Parallel b&c, 4 threads:
-  Real time             =   80.95 sec. (52119.02 ticks)
-  Sync time (average)   =    4.73 sec.
+  Real time             =   81.06 sec. (52119.02 ticks)
+  Sync time (average)   =    4.27 sec.
   Wait time (average)   =    0.02 sec.
                           ------------
-Total (root+branch&cut) =   89.12 sec. (60882.23 ticks)
+Total (root+branch&cut) =   89.57 sec. (60882.23 ticks)
 
 ===========  RESULTS  ===========
 
 Status of this.LIRPSolver :   Optimal
 Objective function :   3118.0502278190315
 ERROR, Constraint 6, period 5
-Time to solve the instance: 89607 milliseconds
+Time to solve the instance: 89728 milliseconds
 ================================
 
-Printing the solution in ../Solutions/lirp10cl0ci_1.sol
+Printing the solution in ../Solutions/lirp10cl0ci_1_split500.sol
