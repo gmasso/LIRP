@@ -23,6 +23,7 @@ public class Depot extends Location{
 		super(coordDepot);
 		this.fixedCost = 0;
 		this.orderingCost = 0;
+		this.holdingCost = 1;
 	}
 	
 	/**

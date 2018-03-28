@@ -17,7 +17,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
 import instanceManager.ClientsMap;
-import instanceManager.Parameters;
+import tools.Parameters;
 
 public class ClientsPanel extends JPanel implements ActionListener{
 

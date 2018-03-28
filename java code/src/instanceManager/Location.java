@@ -8,8 +8,8 @@ import java.awt.geom.Point2D;
 
 public class Location {
 	protected Point2D locationCoords; // Coordinates of the location
-	protected double holdingCost = 1; // The per-unit per-period holding cost for this location
-	protected double initialInventory = 0; // The inventory on hand at the beginning of the planning horizon
+	protected double holdingCost = -1; // The per-unit per-period holding cost for this location
+	protected double initialInventory = -1; // The inventory on hand at the beginning of the planning horizon
 	protected double capacity = -1; // The storage capacity of the location
 	
 	/*
@@ -63,8 +63,8 @@ public class Location {
 		if(coord_x == -1 || coord_y == -1)
 			throw new NullPointerException();	
 		this.locationCoords = new Point2D.Double(coord_x, coord_y);
-		this.holdingCost = jsonLoc.isNull("hc") ? 0 : jsonLoc.getDouble("hc"); // Holding cost for this client
-		this.initialInventory = jsonLoc.isNull("is") ? 0 : jsonLoc.getDouble("is"); // Initial inventory at the client at the beginning of the planning horizon
+		this.holdingCost = jsonLoc.isNull("hc") ? -1 : jsonLoc.getDouble("hc"); // Holding cost for this client
+		this.initialInventory = jsonLoc.isNull("is") ? -1 : jsonLoc.getDouble("is"); // Initial inventory at the client at the beginning of the planning horizon
 		this.capacity = jsonLoc.isNull("cap") ? -1 : jsonLoc.getDouble("cap"); // The capacity of the client
 		
 		/* TO BE MODIFIED */
@@ -171,9 +171,13 @@ public class Location {
 	protected JSONObject getJSONLoc() throws IOException {
 		JSONObject jsonLoc = this.getJSONLocSpec();
 		jsonLoc.put("coordinates", new JSONArray(new double[] {this.locationCoords.getX(), this.locationCoords.getY()}));
-		jsonLoc.put("hc", this.holdingCost > 0 ? this.holdingCost : 0);
-		jsonLoc.put("is", this.initialInventory > 0 ? this.initialInventory : 0);
-		if(this.capacity > 0) {
+		if(this.holdingCost > -1) {
+			jsonLoc.put("hc", this.holdingCost > 0 ? this.holdingCost : 0);
+		}
+		if(this.initialInventory > -1) {
+			jsonLoc.put("is", this.initialInventory > 0 ? this.initialInventory : 0);
+		}
+		if(this.capacity > -1) {
 			jsonLoc.put("capacity", this.capacity);
 		}
 		

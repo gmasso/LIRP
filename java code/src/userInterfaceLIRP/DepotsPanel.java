@@ -18,7 +18,7 @@ import javax.swing.JRadioButton;
 
 import instanceManager.DepotsMap;
 import instanceManager.Location;
-import instanceManager.Parameters;
+import tools.Parameters;
 
 public class DepotsPanel extends JPanel implements ActionListener {
 

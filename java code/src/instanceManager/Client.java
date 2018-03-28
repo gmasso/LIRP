@@ -1,14 +1,18 @@
 package instanceManager;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import tools.Parameters;
 
 import java.awt.geom.Point2D;
 
 public class Client extends Location{
 	private double[] demands; // The demand of the client for each period of the planning horizon
-	
+	private Boolean[] activeDays;
+
 	/**
 	 * Creates a Client object from its coordinates on the map and its demands sequence
 	 * @param coordClient	the coordinates at which the client is located
@@ -18,7 +22,7 @@ public class Client extends Location{
 	public Client(Point2D coordClient) throws IOException{
 		super(coordClient);
 	}
-	
+
 	/**
 	 * Creates a Client object from all its attributes
 	 * @param coordClient		the coordinates at which the client is located
@@ -31,7 +35,7 @@ public class Client extends Location{
 	public Client(Point2D coordClient, double holdingCost, double initialInventory, double capacity) throws IOException{
 		super(coordClient, holdingCost, initialInventory, capacity);
 	}	
-	
+
 	/**
 	 * Creates a Client object from all its attributes
 	 * @param coordClient		the coordinates at which the client is located
@@ -45,14 +49,14 @@ public class Client extends Location{
 		super(coordClient, holdingCost, initialInventory, capacity);
 		this.demands = demands;
 	}	
-	
+
 	/**
 	 * Creates a Client object from data contained in a JSON object and the length of the number of periods to consider
 	 * @param jsonClient			the JSON object that contains the attributes of the client
 	 * @param planningHorizon	the number of periods
 	 * @throws IOException
 	 */
-	public Client(JSONObject jsonClient, int planningHorizon) throws IOException {
+	public Client(JSONObject jsonClient) throws IOException {
 		super(jsonClient);
 		// Check if the field "demands" is null
 		if(jsonClient.isNull("demands"))
@@ -60,35 +64,15 @@ public class Client extends Location{
 		// If not, create the demands array for this client and fill it with the values of the demands
 		else {
 			JSONArray jsonDemands = jsonClient.getJSONArray("demands"); // The JSON table containing the demands
-			if(jsonDemands.length() < planningHorizon)
-				throw new IOException("Error in instance file : the number of demands is not enough to cover the planning horizon");
-			demands = new double[planningHorizon]; 
-			for(int t=0; t<jsonDemands.length(); t++) {
+			//			if(jsonDemands.length() < planningHorizon)
+			//				throw new IOException("Error in instance file : the number of demands is not enough to cover the planning horizon");
+			demands = new double[jsonDemands.length()]; 
+			for(int t = 0; t < jsonDemands.length(); t++) {
 				this.demands[t] = jsonDemands.getDouble(t); // Demand for this client in period t
 			}
 		}
 	}
-	
-	/*
-	 * MUTATORS
-	 */
-	/**
-	 * Set the value of the demands for the entire planning horizon
-	 * @param demands	the demands sequence for the client
-	 */
-	public void setDemands(double[] demands){
-		this.demands = demands;
-	}
-	
-	/**
-	 * Set the value of the demand for a specific period
-	 * @param period	the period to which the demand is associated
-	 * @param value	the value of the demand for the period considered
-	 */
-	public void setDemand(int period, double value){
-		this.demands[period] = value;
-	}
-	
+
 	/*
 	 * ACCESSORS
 	 */
@@ -100,7 +84,7 @@ public class Client extends Location{
 	public double getDemand(int period) {
 		return this.demands[period];
 	}
-	
+
 	/**
 	 * Compute the cumulative demand over a time interval
 	 * @param start	the first period in the interval
@@ -116,17 +100,84 @@ public class Client extends Location{
 	}
 
 	/**
+	 * 
+	 * @param period
+	 * @return
+	 */
+	public boolean isActiveDay(int period) {
+		if(this.activeDays.length == 0)
+			return true;
+		else {
+			return this.activeDays[period % this.activeDays.length];
+		}
+	}
+
+	/*
+	 * MUTATORS
+	 */
+	public void setActiveDays(ArrayList<Boolean> activeDays) {
+		this.activeDays = activeDays.toArray(new Boolean[activeDays.size()]);
+	}
+
+	/**
+	 * Set the value of the demands for the entire planning horizon
+	 * @param demands	the demands sequence for the client
+	 */
+	public void setDemands(double[] demands){
+		this.demands = demands;
+	}
+
+	/**
+	 * Set the value of the demand for a specific period
+	 * @param period	the period to which the demand is associated
+	 * @param value	the value of the demand for the period considered
+	 */
+	public void setDemand(int period, double value){
+		if(this.activeDays.length == 0 || this.activeDays[period % this.activeDays.length]) {
+			this.demands[period] += value;
+		}
+		/* If period is not an active day, compute the distance to the closest active day before and after period */
+		else {
+			int closestBefore = 1;
+			while(!this.activeDays[(period - closestBefore) % this.activeDays.length]) {
+				closestBefore++;
+			}
+			int closestAfter = 1;
+			while(!this.activeDays[(period + closestAfter) % this.activeDays.length]) {
+				closestAfter++;
+			}
+			
+			/* Assign the demand to one one the two closest period with probability proportional to their distance */
+			double rnd = Parameters.rand.nextDouble();
+			if(rnd < closestBefore / (closestBefore + closestAfter)) {
+				this.demands[period - closestBefore] += value;
+			}
+			else {
+				this.demands[period + closestAfter] += value;
+			}
+		}
+	}
+
+	/**
+	 * Initialize the demand sequence array with the right length
+	 * @param planningHorizon
+	 */
+	public void initDemandSeq(int planningHorizon) {
+		this.demands = new double[planningHorizon];
+	}
+	
+	/**
 	 * Enrich the JSON object associated with the location with the demand sequence of the client
 	 */
 	@Override
 	protected JSONObject getJSONLocSpec() throws IOException {
 		// Create a JSON Object to describe the depots map
 		JSONObject jsonClient = new JSONObject();
-		
+
 		jsonClient.put("demands", new JSONArray(this.demands));
-		
+
 		return jsonClient;
 	}
 
-	
+
 }

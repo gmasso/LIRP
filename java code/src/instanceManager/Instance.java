@@ -2,9 +2,18 @@ package instanceManager;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.json.JSONObject;
+
+import tools.JSONParser;
+import tools.Pair;
+import tools.Parameters;
+
 import org.json.JSONArray;
 
 import java.awt.geom.Point2D;
@@ -18,8 +27,10 @@ public class Instance {
 	private int planningHorizon;
 	private double[] vehiclesCapacity;
 	private Location supplier;
-	private DepotsMap depots;
+	private DepotsMap[] depots;
 	private ClientsMap clients;
+	private DemandsMap demands;
+	private String instID;
 	
 	/*
 	 * CONSTRUCTORS
@@ -43,17 +54,24 @@ public class Instance {
 	 * @throws IOException
 	 * @throws NullPointerException
 	 */
-	public Instance(double gridSize, int planningHorizon, int nbDepots, double fc, double[] oc, int nbClients, double[] citiesSizes, double urbanRatio, double holdingRatio, int period, boolean uniformDistrib, double minD, double maxD, double[] vCapacities) throws IOException, NullPointerException {
+	public Instance(double gridSize, int planningHorizon, int nbDepots, double fc, double[] oc, int nbClients, double[] citiesSizes, double urbanRatio, double holdingRatio, int period, boolean uniformDistrib, int demandProfile, double[] vCapacities) throws IOException, NullPointerException {
 		try {
 			this.gridSize = gridSize;
 			this.supplier = new Location(new Point2D.Double(gridSize/2, gridSize/2));
-			this.depots = new DepotsMap(gridSize, fc, oc, 0, -1, this.supplier);
-			this.clients = new ClientsMap(gridSize, nbClients, citiesSizes, urbanRatio, holdingRatio, planningHorizon, period, uniformDistrib, minD, maxD);
+			this.depots = new DepotsMap[Parameters.nb_levels - 1];
+			for(int lvl = 0; lvl < Parameters.nb_levels - 1; lvl++) {
+				this.depots[lvl] = new DepotsMap(gridSize, nbDepots, fc, oc[lvl], 0, -1, this.supplier);
+			}
+			this.clients = new ClientsMap(gridSize, nbClients, citiesSizes, urbanRatio, holdingRatio);
+			this.demands = new DemandsMap(this.clients, planningHorizon, period, uniformDistrib);
+			this.clients.assignDemands(this.demands, demandProfile, vCapacities[Parameters.nb_levels-1]);
 			// Set the planning horizon
 			this.planningHorizon = planningHorizon;
 			// Fill the corresponding attribute
 			this.vehiclesCapacity = vCapacities; 
 
+			this.generateID();
+			
 			System.out.println("Instance created successfully.");
 		}
 		catch(IOException ioe) {
@@ -77,12 +95,22 @@ public class Instance {
 	 * @throws IOException
 	 * @throws NullPointerException
 	 */
-	public Instance(int planningHorizon, DepotsMap dMap, ClientsMap cMap, double[] vCapacities) throws IOException, NullPointerException {
+	public Instance(int planningHorizon, DepotsMap[] dMaps, ClientsMap cMap, double[] vCapacities, DemandsMap dBoxMap, int demandProfile) throws IOException, NullPointerException {
 		System.out.println("Creating instance...");
 		try {
-			this.gridSize = Math.max(dMap.getGridSize(), cMap.getGridSize());
-			this.depots = dMap;
+			LinkedHashSet<Pair<Double, ArrayList<Boolean>>> activeDays = new LinkedHashSet<Pair<Double, ArrayList<Boolean>>>();
+			for(int profile = 0; profile < Parameters.proba_profiles.length; profile++) {
+				activeDays.add(new Pair<Double, ArrayList<Boolean>>(Parameters.proba_profiles[profile], new ArrayList<Boolean>(Arrays.asList(Parameters.active_profiles[profile]))));
+			}
+			this.gridSize = 0;
+			for(DepotsMap dMap: dMaps) {
+				this.gridSize = Math.max(gridSize, dMap.getGridSize());
+			}
+			this.gridSize = Math.max(this.gridSize, cMap.getGridSize());
+			this.depots = dMaps;
 			this.clients = cMap;
+			this.clients.setClientsActiveDays(activeDays);
+			this.clients.assignDemands(dBoxMap, demandProfile, vCapacities[Parameters.nb_levels - 1]);
 			// Set the planning horizon
 			this.planningHorizon = planningHorizon;
 			// Fill the corresponding attribute
@@ -133,12 +161,19 @@ public class Instance {
 			this.supplier = new Location(new Point2D.Double(supplier_x, supplier_y));
 
 			// Create a map for the depots by extracting data from the corresponding JSONArray in the JSON file
-			this.depots = new DepotsMap(jsonInstanceObject.getJSONObject("depots"));
+			this.depots = new DepotsMap[Parameters.nb_levels-1];
+			for(int lvl = 0; lvl < Parameters.nb_levels - 1; lvl++) {
+				this.depots[lvl] = new DepotsMap(jsonInstanceObject.getJSONObject("depots"));
+			}
 
 			// Extract data from the JSONArrays containing data for the clients
-			this.clients = new ClientsMap(jsonInstanceObject.getJSONObject("clients"), this.planningHorizon);
+			this.clients = new ClientsMap(jsonInstanceObject.getJSONObject("clients"));
 
-			this.gridSize = Math.max(this.depots.getGridSize(), this.clients.getGridSize());
+			this.gridSize = 0;
+			for(DepotsMap dMap: this.depots) {
+				this.gridSize = Math.max(gridSize, dMap.getGridSize());
+			}
+			this.gridSize = Math.max(this.gridSize, this.clients.getGridSize());
 		}
 		catch(IOException ioe) {
 			System.out.println("Problem while reading the JSON file");
@@ -158,8 +193,15 @@ public class Instance {
 	 * 
 	 * @return	the number of depots
 	 */
-	public int getNbDepots() { 
-		return this.depots.getNbSites();
+	public String getID() { 
+		return this.instID;
+	}
+	/**
+	 * 
+	 * @return	the number of depots
+	 */
+	public int getNbDepots(int lvl) { 
+		return this.depots[lvl].getNbSites();
 	}
 
 	/**
@@ -183,7 +225,11 @@ public class Instance {
 	 * @return	the total number of sites on the map (depots + clients)
 	 */
 	public int getNbSites() {
-		return this.getNbDepots() + this.getNbClients();
+		int nbSites = 0;
+		for(int lvl = 0; lvl < Parameters.nb_levels - 1; lvl++) {
+			nbSites += this.depots[lvl].getNbSites();
+		}
+		return nbSites + this.clients.getNbSites();
 	}
 
 	/**
@@ -191,8 +237,8 @@ public class Instance {
 	 * @param d	the index of the depot of interest
 	 * @return	the Depot object corresponding to the depot index
 	 */
-	public Depot getDepot(int d) {
-		return (Depot) this.depots.getSite(d);
+	public Depot getDepot(int lvl, int d) {
+		return (Depot) this.depots[lvl].getSite(d);
 	}
 
 	/**
@@ -240,11 +286,10 @@ public class Instance {
 	 * @param depot	the Depot object of interest
 	 * @return		the index of this depot in the DepotsMap associated with the instance
 	 */
-	public int getDepotIndex(Location depot) {
-		for(int dIndex = 0; dIndex < this.depots.getNbSites(); dIndex++) {
-			if((Depot) this.depots.getSite(dIndex) == depot)
+	public int getDepotIndex(int lvl, Location depot) {
+		for(int dIndex = 0; dIndex < this.depots[lvl].getNbSites(); dIndex++) {
+			if((Depot) this.depots[lvl].getSite(dIndex) == depot)
 				return dIndex;
-
 		}
 		return -1;
 	}
@@ -262,7 +307,33 @@ public class Instance {
 		else
 			this.planningHorizon = nbPeriods;
 	}
+	
+	/**
+	 * Draw the position of depot d on the depots map
+	 * @param d	the index of the depot to draw
+	 */
+	public void drawDepot(int lvl, int d) {
+		this.depots[lvl].drawDepot(d);
+	}
+	
+	/**
+	 * Draw the position of client c on the clients map
+	 * @param c	the index of the client to draw
+	 */
+	public void drawClient(int c) {
+		this.clients.redrawClient(c);
+	}
 
+	/**
+	 * Generate an ID for this instance
+	 */
+	private void generateID() {
+		this.instID = Parameters.nb_levels + "l";
+		for(int lvl = 0; lvl < Parameters.nb_levels - 1; lvl++) {
+			this.instID += this.getNbDepots(lvl) + "dc" + lvl;
+		}
+		this.instID += this.getNbClients() + "cl" + this.clients.getCitiesMap().getNbSites() + "ci_" + UUID.randomUUID().toString();
+	}
 	/*
 	 * METHODS
 	 */
@@ -276,7 +347,11 @@ public class Instance {
 		JSONObject jsonInstance = new JSONObject();
 		jsonInstance.put("planning horizon", this.planningHorizon);
 		jsonInstance.put("supplier", this.supplier.getJSONLoc());
-		jsonInstance.put("depots", this.depots.getJSONLayer());
+		JSONArray jsonLayers = new JSONArray();
+		for(int lvl = 0; lvl < Parameters.nb_levels - 1; lvl++) {
+			jsonLayers.put(this.depots[lvl].getJSONLayer());
+		}
+		jsonInstance.put("depots layers", jsonLayers);
 		jsonInstance.put("clients", this.clients.getJSONLayer());
 		jsonInstance.put("vehicles capacities", new JSONArray(this.vehiclesCapacity));
 

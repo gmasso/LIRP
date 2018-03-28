@@ -1,8 +1,12 @@
 package instanceManager;
 import java.io.IOException;
+import java.util.UUID;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import tools.JSONParser;
+import tools.Parameters;
 
 import java.awt.geom.Point2D;
 
@@ -11,6 +15,7 @@ public abstract class Layer {
 	protected double gridSize; // Map is a square of size gridSize * gridSize
 	protected int nbSites; // Number of sites on the map
 	protected Location[] sites; // Coordinates of the different sites
+	protected String mapID;
 
 	/*
 	 * CONSTRUCTORS
@@ -25,6 +30,7 @@ public abstract class Layer {
 		this.gridSize = gridSize;
 		this.nbSites = nbSites;
 		this.sites = new Location[this.nbSites];
+		this.generateID();
 	}
 
 	/**
@@ -34,6 +40,7 @@ public abstract class Layer {
 	 */
 	public Layer(int nbSites) throws IOException {
 		this.nbSites = nbSites;
+		this.generateID();
 	}
 
 	/*
@@ -53,6 +60,14 @@ public abstract class Layer {
 	 */
 	protected int getNbSites() {
 		return this.nbSites;
+	}
+	
+	/**
+	 * 
+	 * @return the number of sites on the map
+	 */
+	public String getID() {
+		return this.mapID;
 	}
 	
 	/**
@@ -77,23 +92,53 @@ public abstract class Layer {
 	}
 
 	/**
+	 * Get the closest site of the map to a point
+	 * @param loc	a Point2D object
+	 * @return		the closest site of the Layer object to loc
+	 */
+	public Location findClosestSiteTo(Point2D loc) {
+		double minDist = this.gridSize;
+		Location closestSite = null;
+		for(int sIter = 0; sIter < nbSites; sIter++) {
+			double distWithSite = loc.distance(this.sites[sIter].getCoordinates());
+			if(distWithSite < minDist) {
+				minDist = distWithSite;
+				closestSite = this.sites[sIter];
+			}
+		}
+		return closestSite;
+	}
+	
+	/**
+	 * Get the closest site of the map to a Location object
+	 * @param loc	a Location object
+	 * @return		the closest site of the Layer object to loc
+	 */
+	public Location findClosestSiteTo(Location loc) {
+		return this.findClosestSiteTo(loc.getCoordinates());
+	}
+	
+	/**
 	 * Get the minimum distance between a point and any site on the map
 	 * @param loc	the point of interest
 	 * @return		the distance between loc and the closest point on the map
 	 */
 	protected double getMinDist(Point2D loc) {
-		double minDist = this.gridSize;
-		for(int sIter = 0; sIter < nbSites; sIter++) {
-			double distWithSite = loc.distance(this.sites[sIter].getCoordinates());
-			if(distWithSite < minDist)
-				minDist = distWithSite;
-		}
-		return minDist;
+		return loc.distance(this.findClosestSiteTo(loc).getCoordinates());
 	}
 
 	/*
 	 * PROTECTED METHODS
 	 */
+	/**
+	 * Generate an ID for this map
+	 */
+	private void generateID() {
+		this.mapID = this.getDescID() + this.getNbSites() + "s-"+ UUID.randomUUID().toString();
+	}
+	
+	protected abstract String getDescID();
+	
 	/**
 	 * Draw a location at random, separated from the borders of the map
 	 * @param siteSize	the diameter of the site
@@ -141,7 +186,7 @@ public abstract class Layer {
 	 * @param filename	the destination file
 	 * @throws IOException
 	 */
-	protected void writeToJSONFile(String filename) throws IOException {
+	public void writeToJSONFile(String filename) throws IOException {
 		System.out.println(filename);
 		JSONParser.writeJSONToFile(this.getJSONLayer(), filename);
 	}

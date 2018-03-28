@@ -1,8 +1,10 @@
 package solverLIRP;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import instanceManager.Instance;
+import tools.Parameters;
 
 
 public class Solution {
@@ -11,9 +13,8 @@ public class Solution {
 	 *         ATTRIBUTES
 	 ==============================*/
 	private Instance instanceLIRP;
-	private Route[] routesSD;
-	private Route[] routesDC;
-	
+	private Route[][] routes;
+
 	/* Depots */
 	private boolean[] openDepots;       			// Binary indicating whether a depot is opened or not
 	private double[][][] deliveriesDepots;   // Quantity delivered to the depots in period t via route r
@@ -24,40 +25,46 @@ public class Solution {
 	private double[][] stockClient;			// Stock at client i in period t
 
 	/* Routes */
-	private boolean[][] usedSDRoutes; 				// Binary indicating whether route r between the supplier and depots is used in period t
-	private boolean[][] usedDCRoutes;				// Binary indicating whether route r between the depots and clients is used in period t
+	private boolean[][][] usedRoutes; 				// Binary indicating whether route r at level l is used in period t
 
+	private double objValue;
 	/*==============================
 	 *        CONSTRUCTEUR  
 	 ===============================*/
 	/**
-	 * 
-	 * @param instance
-	 * @param routesSD
-	 * @param routesDC
+	 * Return a dull solution with a impossible objective value
 	 */
-	public Solution(Instance instance, Route[] routesSD, Route[] routesDC){
+	public Solution() {
+		this.objValue = -1;
+	}
+
+	/**
+	 * Create an Solution object that contains the solution produced by CPLEX
+	 * @param instance	The LIRP instance
+	 * @param routes		The array of available routes for each level
+	 */
+	public Solution(Instance instance, Route[][] routes){
 
 		/* Initialization of the attributes */
 		this.instanceLIRP = instance;
-		this.routesSD = routesSD;
-		this.routesDC = routesDC;
-		
+		this.routes = routes;
+
 		/* Variables of the model */
-		this.openDepots = new boolean[instance.getNbDepots()];
-		this.deliveriesDepots = new double[instance.getNbDepots()][routesSD.length][instance.getNbPeriods()];
-		this.stockDepot = new double[instance.getNbDepots()][instance.getNbPeriods()];
-		this.deliveriesClients = new double[instance.getNbClients()][routesDC.length][instance.getNbPeriods()];
+		this.openDepots = new boolean[instance.getNbDepots(0)];
+		this.deliveriesDepots = new double[instance.getNbDepots(0)][this.routes[0].length][instance.getNbPeriods()];
+		this.stockDepot = new double[instance.getNbDepots(0)][instance.getNbPeriods()];
+		this.deliveriesClients = new double[instance.getNbClients()][this.routes[1].length][instance.getNbPeriods()];
 		this.stockClient = new double[instance.getNbClients()][instance.getNbPeriods()];
-		this.usedSDRoutes = new boolean[routesSD.length][instance.getNbPeriods()];
-		this.usedDCRoutes = new boolean[routesDC.length][instance.getNbPeriods()];
+		this.usedRoutes = new boolean[Parameters.nb_levels][][];
+		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++)
+			this.usedRoutes[lvl] = new boolean[this.routes[lvl].length][instance.getNbPeriods()];
 
 		/* Initialization of the values of the variables for the depots */
-		for (int dIter = 0; dIter < instance.getNbDepots(); dIter++) {
+		for (int dIter = 0; dIter < instance.getNbDepots(0); dIter++) {
 			this.openDepots[dIter] = false;
 			for (int t = 0; t < instance.getNbPeriods(); t++){
 				this.stockDepot[dIter][t] = 0;
-				for(int rIter = 0; rIter < routesSD.length; rIter++) {
+				for(int rIter = 0; rIter < this.routes[0].length; rIter++) {
 					this.deliveriesDepots[dIter][rIter][t] = 0;
 				}
 			}
@@ -67,25 +74,27 @@ public class Solution {
 		for (int cIter = 0; cIter < instance.getNbClients(); cIter++){
 			for (int t = 0; t < instance.getNbPeriods(); t++) {
 				this.stockClient[cIter][t] = 0;
-				for(int rIter = 0; rIter < routesDC.length; rIter++) {
+				for(int rIter = 0; rIter < this.routes[1].length; rIter++) {
 					this.deliveriesClients[cIter][rIter][t] = 0;
 				}
 			}
 		}
 
-		/* Initialization of the boolean values for the depots-clients routes binary variables */
-		for (int rIter = 0; rIter < usedSDRoutes.length; rIter++){
-			for (int t = 0;t < instance.getNbPeriods(); t++){
-				usedSDRoutes[rIter][t] = false;
-			}
-		}
-		
-		/* Initialization of the boolean values for the supplier-depots routes binary variables */
-		for (int rIter = 0; rIter < usedDCRoutes.length; rIter++){
-			for (int t = 0;t < instance.getNbPeriods(); t++){
-				usedDCRoutes[rIter][t] = false;
-			}
-		}
+		//		/* Initialization of the boolean values for the depots-clients routes binary variables */
+		//		for (int rIter = 0; rIter < this.routes.length; rIter++){
+		//			for (int t = 0;t < instance.getNbPeriods(); t++){
+		//				usedSDRoutes[rIter][t] = false;
+		//			}
+		//		}
+		//		
+		//		/* Initialization of the boolean values for the supplier-depots routes binary variables */
+		//		for (int rIter = 0; rIter < usedDCRoutes.length; rIter++){
+		//			for (int t = 0;t < instance.getNbPeriods(); t++){
+		//				usedDCRoutes[rIter][t] = false;
+		//			}
+		//		}
+
+		this.objValue = -1;
 	}
 
 	/*==============================
@@ -104,7 +113,7 @@ public class Solution {
 	 * 
 	 * @param dIndex	the index of the depot of interest
 	 * @param t		the period index
-	 * @param rIndex	the route index in the routesSD array
+	 * @param rIndex	the route index in the this.routes[0] array
 	 * @return		the quantity delivered to depot dIndex by route rIndex in period t
 	 */
 	public double getDeliveryDepot(int dIndex, int rIndex, int t){
@@ -115,7 +124,7 @@ public class Solution {
 	 * 
 	 * @param cIndex	the index of the client of interest
 	 * @param t		the period index
-	 * @param rIndex	the route index in the routesSD array
+	 * @param rIndex	the route index in the this.routes[0] array
 	 * @return		the quantity delivered to client cIndex by route rIndex in period t
 	 */
 	public double getDeliveryClient(int cIndex, int rIndex, int t){
@@ -141,34 +150,34 @@ public class Solution {
 	public double getStockClient(int cIndex, int t){
 		return this.stockClient[cIndex][t];
 	}
-	
+
 	/**
 	 * 
 	 * @param rIndex
 	 * @param period
 	 * @return
 	 */
-	public boolean isUsedSDRoute(int rIndex, int period) {
-		return this.usedSDRoutes[rIndex][period];
+	public boolean isUsedRoute(int lvl, int rIndex, int period) {
+		return this.usedRoutes[lvl][rIndex][period];
 	}
-	
+
 	/**
 	 * 
-	 * @return	the set of indices of loop routes used in the solution between the supplier and the depots that are used in the solution
+	 * @return	the set of Routes used in the solution between the supplier and the depots that are used in the solution
 	 */
-	public ArrayList<Integer> getLoopSDRoutesUsed() {
-		ArrayList<Integer> loopUsed = new ArrayList<Integer>();
-		for(int rIter = 0; rIter < this.routesSD.length; rIter++) {
+	public ArrayList<Route> getUsedRoutes(int lvl) {
+		ArrayList<Route> loopUsed = new ArrayList<Route>();
+		for(int rIter = 0; rIter < this.routes[lvl].length; rIter++) {
 			/* Restrict the search only to multi-stops routes */
-			if(this.routesSD[rIter].getNbStops() > 1) {
+			if(this.routes[lvl][rIter].getNbStops() > 1) {
 				boolean notUsed = true;
 				int t = 0;
 				/* Check if the route is used in the solution in at least one period */
 				while(notUsed && t < this.instanceLIRP.getNbPeriods()) {
 					/* If the route is used in period t, add its index to the looopUsed list */
-					if(this.usedSDRoutes[rIter][t]) {
+					if(this.usedRoutes[lvl][rIter][t]) {
 						notUsed = false;
-						loopUsed.add(rIter);
+						loopUsed.add(routes[lvl][rIter]);
 					}
 					t++;
 				}
@@ -176,42 +185,15 @@ public class Solution {
 		}
 		return loopUsed;
 	}
-	
+
 	/**
 	 * 
-	 * @param rIndex
-	 * @param period
-	 * @return
+	 * @return	the value of the objective function for this solution
 	 */
-	public boolean isUsedDCRoute(int rIndex, int period) {
-		return this.usedDCRoutes[rIndex][period];
+	public double getObjVal() {
+		return this.objValue;
 	}
-	
-	/**
-	 * 
-	 * @return	the set of indices of loop routes used in the solution between depots and clients that are used in the solution
-	 */
-	public ArrayList<Integer> getLoopDCRoutesUsed() {
-		ArrayList<Integer> loopUsed = new ArrayList<Integer>();
-		for(int rIter = 0; rIter < this.routesDC.length; rIter++) {
-			/* Restrict the search only to multi-stops routes */
-			if(this.routesDC[rIter].getNbStops() > 1) {
-				boolean notUsed = true;
-				int t = 0;
-				/* Check if the route is used in the solution in at least one period */
-				while(notUsed && t < this.instanceLIRP.getNbPeriods()) {
-					/* If the route is used in period t, add its index to the looopUsed list */
-					if(this.usedDCRoutes[rIter][t]) {
-						notUsed = false;
-						loopUsed.add(rIter);
-					}
-					t++;
-				}
-			}
-		}
-		return loopUsed;
-	}
-	
+
 	/*==========================
 	 *         MUTATORS 
 	 ===========================*/
@@ -268,24 +250,48 @@ public class Solution {
 
 	/**
 	 * 
+	 * @param lvl
 	 * @param rIndex
 	 * @param t
 	 * @param isUsed
 	 */
-	public void setusedSDRoutes(int rIndex, int t, boolean isUsed){
-		this.usedSDRoutes[rIndex][t] = isUsed;	
+	public void setUsedRoute(int lvl, int rIndex, int t, boolean isUsed){
+		this.usedRoutes[lvl][rIndex][t] = isUsed;	
 	}
 
-	/**
-	 * 
-	 * @param rIndex
-	 * @param t
-	 * @param isUsed
-	 */
-	public void setusedDCRoutes(int rIndex, int t, boolean isUsed){
-		this.usedDCRoutes[rIndex][t] = isUsed;	
+	public void setObjValue(){
+		double objective1 = 0;
+		double objective2 = 0;
+		double objective3 = 0;
+
+		/* Fixed cost for opening the depots */
+		for (int dIter = 0; dIter < this.instanceLIRP.getNbDepots(0); dIter++) {
+			if(this.openDepots[dIter])
+				objective1 += this.instanceLIRP.getDepot(0, dIter).getFixedCost(); 
+		}
+
+		/* Transportation cost */
+		for (int t = 0; t < this.instanceLIRP.getNbPeriods(); t++) {
+			for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
+				for (int rIter = 0; rIter < this.routes[lvl].length; rIter++) {
+					if(this.usedRoutes[lvl][rIter][t])
+						objective2 += this.routes[lvl][rIter].getCost();
+				}
+			}
+		}
+
+		for (int t = 0; t < this.instanceLIRP.getNbPeriods(); t++) {
+			for (int dIter = 0; dIter < this.instanceLIRP.getNbDepots(0); dIter++) {
+				objective3 += this.instanceLIRP.getDepot(0, dIter).getHoldingCost() * this.stockDepot[dIter][t];   
+			}
+			for (int cIter = 0; cIter < this.instanceLIRP.getNbClients(); cIter++) {
+				objective3 += this.instanceLIRP.getClient(cIter).getHoldingCost() * this.stockClient[cIter][t];   
+			}
+		}
+
+		this.objValue = objective1 + objective2 + objective3;
 	}
-	
+
 	/*==========================
 	 *         METHODS
 	 ===========================*/
@@ -294,7 +300,7 @@ public class Solution {
 	 * @param printStreamSol
 	 */
 	public void printOpenDepots(PrintStream printStreamSol){	
-		
+
 		printStreamSol.println("----- DEPOTS -----");
 		printStreamSol.print("Open depots: \t");
 		for (int dIndex = 0; dIndex < this.openDepots.length; dIndex++){
@@ -321,13 +327,13 @@ public class Solution {
 				printStreamSol.print(" -- \t");
 			}
 			else
-				printStreamSol.print(this.instanceLIRP.getDepot(dIter).getInitialInventory()+"\t");	
+				printStreamSol.print(this.instanceLIRP.getDepot(0, dIter).getInitialInventory()+"\t");	
 		}
 		printStreamSol.println();
 
 		for (int t = 0;t < this.instanceLIRP.getNbPeriods(); t++){
 			printStreamSol.print("Period "+ t +":   ");
-			for (int dIter = 0; dIter < this.instanceLIRP.getNbDepots(); dIter++){
+			for (int dIter = 0; dIter < this.instanceLIRP.getNbDepots(0); dIter++){
 				if (!openDepots[dIter]) {
 					printStreamSol.print(" -- \t");
 				}
@@ -347,12 +353,12 @@ public class Solution {
 		printStreamSol.println("------  QUANTITY DELIVERED TO DEPOTS  -----");	
 		for (int t = 0; t < this.instanceLIRP.getNbPeriods(); t++){
 			printStreamSol.print("Period "+ t +":   ");
-			for (int dIter = 0; dIter < this.instanceLIRP.getNbDepots(); dIter++) {
+			for (int dIter = 0; dIter < this.instanceLIRP.getNbDepots(0); dIter++) {
 				if (!openDepots[dIter])
 					printStreamSol.print(" -- \t");
 				else {
 					double totalQuantity = 0;
-					for(int rIter = 0; rIter < this.usedSDRoutes.length; rIter++) 
+					for(int rIter = 0; rIter < this.usedRoutes[0].length; rIter++) 
 						totalQuantity += this.deliveriesDepots[dIter][rIter][t];
 					printStreamSol.print(totalQuantity + "\t");	
 				}
@@ -363,12 +369,12 @@ public class Solution {
 		printStreamSol.println("------  QUANTITY DELIVERED FROM DEPOTS to CLIENTS  -----");	
 		for (int t = 0; t < this.instanceLIRP.getNbPeriods(); t++){
 			printStreamSol.println("Period "+t+":   ");
-			for (int dIter = 0; dIter < this.instanceLIRP.getNbDepots(); dIter++){
+			for (int dIter = 0; dIter < this.instanceLIRP.getNbDepots(0); dIter++){
 				if (this.openDepots[dIter]) {
 					printStreamSol.print("Depot "+ dIter +": \t  ");
 					for (int cIter = 0; cIter < this.instanceLIRP.getNbClients(); cIter++){
 						double totalQuantity = 0;
-						for(int rIter = 0; rIter < this.usedDCRoutes.length; rIter++) 
+						for(int rIter = 0; rIter < this.usedRoutes[1].length; rIter++) 
 							totalQuantity += this.deliveriesClients[cIter][rIter][t];
 						printStreamSol.print(totalQuantity + "\t");
 					}
@@ -400,21 +406,25 @@ public class Solution {
 		}
 	}
 
-	public ArrayList<Integer> collectLoopDCRoutes(){
-		ArrayList<Integer> collectedRoutes = new ArrayList<Integer>();
-		for (int rIter = 0; rIter < this.usedDCRoutes.length; rIter++){
-			boolean used = false;
-			int t = 0;
-			while (!used && t < this.instanceLIRP.getNbPeriods()){
-				used = this.usedDCRoutes[rIter][t];
-				t++;
+	public HashMap<Integer, ArrayList<Route>> collectUsedRoutes(){
+		HashMap<Integer, ArrayList<Route>> collectedRoutes = new HashMap<Integer, ArrayList<Route>>();
+		for(int lvl=0; lvl < Parameters.nb_levels; lvl++) {
+			ArrayList<Route> routesLvl = new ArrayList<Route>();
+			for (int rIter = 0; rIter < this.usedRoutes[lvl].length; rIter++){
+				boolean used = false;
+				int t = 0;
+				while (!used && t < this.instanceLIRP.getNbPeriods()){
+					used = this.usedRoutes[lvl][rIter][t];
+					t++;
+				}
+				if(used)
+					routesLvl.add(this.routes[lvl][rIter]);
 			}
-			if(used)
-				collectedRoutes.add(rIter);
+			collectedRoutes.put(lvl, routesLvl);
 		}
 		return collectedRoutes;
 	}
-	
+
 	/**
 	 * 
 	 * @param printStreamSol
@@ -423,14 +433,14 @@ public class Solution {
 		printStreamSol.println("------  LIST OF ROUTES  -----");	
 		for (int t = 0; t < this.instanceLIRP.getNbPeriods(); t++){
 			printStreamSol.println("Period "+ t +":   ");
-			for (int rIter = 0; rIter < this.usedDCRoutes.length; rIter++){
-				if (this.usedDCRoutes[rIter][t]) {
-					printStreamSol.print(" route " + rIter + " starting from depot " + this.instanceLIRP.getDepotIndex(this.routesDC[rIter].getStart()) + " and visiting clients : \t");
+			for (int rIter = 0; rIter < this.usedRoutes[1].length; rIter++){
+				if (this.usedRoutes[1][rIter][t]) {
+					printStreamSol.print(" route " + rIter + " starting from depot " + this.instanceLIRP.getDepotIndex(0, this.routes[1][rIter].getStart()) + " and visiting clients : \t");
 					for (int cIter = 0; cIter < this.instanceLIRP.getNbClients(); cIter++){ 
 						if (this.deliveriesClients[cIter][rIter][t] > 0)
 							printStreamSol.print(cIter + " \t ");
 					}
-					printStreamSol.println(" (cost = " + this.routesDC[rIter].getCost() + ") \t");
+					printStreamSol.println(" (cost = " + this.routes[1][rIter].getCost() + ") \t");
 				}
 			}
 		}
@@ -443,8 +453,8 @@ public class Solution {
 				printStreamSol.print(",");
 			printStreamSol.print("[");
 			boolean firstCustomer = true;
-			for(int rIter = 0; rIter < this.routesSD.length; rIter++){
-				if(this.usedSDRoutes[rIter][t]){
+			for(int rIter = 0; rIter < this.routes[0].length; rIter++){
+				if(this.usedRoutes[0][rIter][t]){
 					if(!firstCustomer){
 						printStreamSol.print(",");
 					}
@@ -468,7 +478,7 @@ public class Solution {
 			printStreamSol.println(" Client " + i + ": \t");
 			for (int t = 0; t < this.instanceLIRP.getNbPeriods(); t++){
 				printStreamSol.print("Period "+t+": ");
-				for (int r = 0; r < this.routesDC.length; r++){
+				for (int r = 0; r < this.routes[1].length; r++){
 					double qu = this.deliveriesClients[i][r][t];
 					if (qu>0){
 						printStreamSol.print(" route " + r + "/ quantity = "+qu+ "\t");
@@ -491,26 +501,24 @@ public class Solution {
 		double objective3 = 0;
 
 		/* Fixed cost for opening the depots */
-		for (int dIter = 0; dIter < this.instanceLIRP.getNbDepots(); dIter++) {
+		for (int dIter = 0; dIter < this.instanceLIRP.getNbDepots(0); dIter++) {
 			if(this.openDepots[dIter])
-				objective1 += this.instanceLIRP.getDepot(dIter).getFixedCost(); 
+				objective1 += this.instanceLIRP.getDepot(0, dIter).getFixedCost(); 
 		}
 
 		/* Transportation cost */
-		for (int t = 0; t < this.instanceLIRP.getNbPeriods(); t++) {
-			for (int rIter = 0; rIter < this.routesSD.length; rIter++) {
-				if(this.usedSDRoutes[rIter][t])
-					objective2 += this.routesSD[rIter].getCost();
-			}
-			for (int rIter = 0; rIter < this.routesDC.length; rIter++) {
-				if(this.usedDCRoutes[rIter][t])
-					objective2 += this.routesDC[rIter].getCost();
+		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
+			for (int t = 0; t < this.instanceLIRP.getNbPeriods(); t++) {
+				for (int rIter = 0; rIter < this.routes[lvl].length; rIter++) {
+					if(this.usedRoutes[lvl][rIter][t])
+						objective2 += this.routes[0][rIter].getCost();
+				}
 			}
 		}
 
 		for (int t = 0; t < this.instanceLIRP.getNbPeriods(); t++) {
-			for (int dIter = 0; dIter < this.instanceLIRP.getNbDepots(); dIter++) {
-				objective3 += this.instanceLIRP.getDepot(dIter).getHoldingCost() * this.stockDepot[dIter][t];   
+			for (int dIter = 0; dIter < this.instanceLIRP.getNbDepots(0); dIter++) {
+				objective3 += this.instanceLIRP.getDepot(0, dIter).getHoldingCost() * this.stockDepot[dIter][t];   
 			}
 			for (int cIter = 0; cIter < this.instanceLIRP.getNbClients(); cIter++) {
 				objective3 += this.instanceLIRP.getClient(cIter).getHoldingCost() * this.stockClient[cIter][t];   
@@ -523,6 +531,7 @@ public class Solution {
 
 		double objective = objective1 + objective2 + objective3;
 		printStreamSol.println("Objective function recalculated: "+ objective);
+		this.objValue = objective;
 	}
 
 	/**

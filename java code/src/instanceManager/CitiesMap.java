@@ -6,8 +6,12 @@ import java.io.IOException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import tools.Parameters;
+
 public class CitiesMap extends Layer {
 	private double[] sizes;
+	private double[] cityCumRatio;
+	private double urbanRatio;
 	
 	/**
 	 * Create a CitiesMap object to locate the cities on the map and keep a record of their respective sizes
@@ -15,11 +19,13 @@ public class CitiesMap extends Layer {
 	 * @param citiesSizes	the sizes of the cities
 	 * @throws IOException
 	 */
-	public CitiesMap(double gridSize, double[] citiesSizes) throws IOException {
+	public CitiesMap(double gridSize, double[] citiesSizes, double urbanRatio) throws IOException {
 		super(gridSize, citiesSizes.length);
 
 		this.sites = new Location[this.nbSites];
 		this.sizes = citiesSizes;
+		this.urbanRatio = urbanRatio;
+		
 		boolean cityOK = true;
 		// Draw their location at random, such that their coordinates are at least 2 * city sizes away from the limits of the grid 
 		int cityIndex = 0;
@@ -44,6 +50,7 @@ public class CitiesMap extends Layer {
 				cityOK = true;
 			}
 		}
+		this.computeCityCumRatio(urbanRatio);
 	}
 	
 	/*
@@ -60,7 +67,70 @@ public class CitiesMap extends Layer {
 		else
 			return 0;
 	}
+	
+	/**
+	 * 
+	 * @param cityIndex	the index of the city of interest
+	 * @return
+	 */
+	public double getCumRatio(int cityIndex) {
+		return this.cityCumRatio[cityIndex];
+	}
+	
+	public double getUrbanRatio() {
+		return this.urbanRatio;
+	}
+	
+	/*
+	 * METHODS
+	 */
+	/**
+	 * Compute the cumulative ratio represented by each sity on the map
+	 */
+	private void computeCityCumRatio(double urbanRatio) {
+		// Define the 'cdf' of city ratios
+		this.cityCumRatio = new double[this.getNbSites()]; 
+		double cumSum = 0;
+		for(int cityIter = 0; cityIter < this.getNbSites(); cityIter++) {
+			cumSum += Math.PI * Math.pow(sizes[cityIter], 2);
+			this.cityCumRatio[cityIter] = cumSum;
+		}
 
+		// Normalize the cdf with respect to the total urban area of the grid
+		for(int cityIter = 0; cityIter < this.getNbSites(); cityIter++) {
+			this.cityCumRatio[cityIter] *= urbanRatio/cumSum;
+		}
+	}
+	
+	/**
+	 * Return the coordinates of a client drawn at random with respect to the probabilities of it belonging to the cities
+	 * @param urbanProba		the random number drawn for this client
+	 * @return				the proposed coordinates of the client
+	 */
+	public Point2D positionClient(double urbanProba) {
+		// Select the index of the city to which the client belongs
+		int cityIndex = 0;
+		while(urbanProba > this.cityCumRatio[cityIndex] && cityIndex < this.getNbSites()) {
+			cityIndex++;
+		}
+
+		/* If no city has been selected, draw the position of the client at random on the map */
+		if(cityIndex == this.getNbSites())
+			return drawLocation(0);
+		/* Otherwise, draw the position of the client according to the center and the size of the selected city */
+		else
+		{
+			Point2D cityCoords = this.getSite(cityIndex).getCoordinates();
+			double std = this.sizes[cityIndex];
+			return new Point2D.Double(cityCoords.getX() + Parameters.rand.nextGaussian() * std, cityCoords.getY() + Parameters.rand.nextGaussian() * std);
+
+		}
+	}
+	
+	protected String getDescID() {
+		return this.sites.length + "c-";
+	}
+	
 	/**
 	 * Enrich a JSON object related to a ClientsMap with information on the cities
 	 */

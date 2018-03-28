@@ -14,7 +14,7 @@
 \usepackage{tikz}
 \usepackage{tkz-graph}
 \usetikzlibrary{shapes, shapes.gates.logic.US, trees, positioning, arrows, decorations.pathreplacing, plotmarks, backgrounds,shapes}
-%%% Other packages %%%
+%%% Other packages %%%o
 \usepackage[affil-it]{authblk}
 \usepackage{multirow}
 \usepackage{xcolor}

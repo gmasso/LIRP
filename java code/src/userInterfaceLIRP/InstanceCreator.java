@@ -22,7 +22,7 @@ import javax.swing.JPanel;
 import instanceManager.ClientsMap;
 import instanceManager.DepotsMap;
 import instanceManager.Instance;
-import instanceManager.Parameters;
+import tools.Parameters;
 
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
