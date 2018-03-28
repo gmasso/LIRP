@@ -223,6 +223,49 @@ public class RouteManager {
 	}
 
 	
+	/**
+	 * 
+	 * @param Allocation  allocation matrix
+	 * @return list of selected depot indices
+	 * @throws IOException
+	 */
+	private ArrayList<Integer> getListOfSelectedDepots(int[][] Allocation)throws IOException 
+	{
+		ArrayList<Integer> S = new ArrayList<Integer>();
+		int nd = this.instLIRP.getNbDepots(0); 
+		int nc = this.instLIRP.getNbClients(); 
+		
+		// If depot d has at least one client allocated to it, we consider it is selected, otherwise not. 
+		for (int d=0; d<nd;d++){
+			for (int c=0; c<nc;c++) {
+				if (Allocation[c][d] ==1)
+					S.add(d);
+				c=nc; // if at least one client is allocated to depot d, depot d exists and we can check next depot
+			}
+		}
+		return S;
+	}
+	
+	/**
+	 * @param : d : depot index
+	 * @param Allocation  allocation matrix
+	 * @return list of clients allocated to d
+	 * @throws IOException
+	 * **/
+	 
+		private ArrayList<Integer> getListOfAllocatedClients(int d, int[][] Allocation)throws IOException 
+		{
+			ArrayList<Integer> AAA = new ArrayList<Integer>();
+			int nc = this.instLIRP.getNbClients(); 
+			
+			for (int c=0; c<nc;c++) {
+					if (Allocation[c][d] == 1) AAA.add(c);
+			}
+			return AAA;
+		}
+	 
+	
+	
 	
 	/**
 	 * 
@@ -231,20 +274,19 @@ public class RouteManager {
 	 * @return list of SD routes: SD routes starting from an unselected depot are filtered
 	 * @throws IOException
 	 */
-	private HashMap<Integer, HashMap<Integer, LinkedHashSet<Route>>> filterRoutes(ArrayList<Route> loopSD, int[][] Allocation) throws IOException {
 
-		int nd = this.instLIRP.getNbDepots(0); 
-		int nc = this.instLIRP.getNbClients(); 
+	// GUILLAUME
+	//private HashMap<Integer, HashMap<Integer, LinkedHashSet<Route>>> filterSDRoutes(ArrayList<Route> loopSD, int[][] Allocation) throws IOException {
 
+	// OLIVIER
+	ArrayList<Route> filterSDRoutes(ArrayList<Route> loopSD, int[][] Allocation) throws IOException {
+		
 		ArrayList<Route> filteredSD = new ArrayList<Route>();
-		for (int d=0; d<nd;d++){
-			for (int c=0; c<nc;c++) {
-				if (Allocation[c][d] == 1) {
-					Route r = new Route(this.instLIRP, -1, d); // create a new SD route r from s to d
-					filteredSD.add(r);
-					c=nc; // to exit the for loop
-				}
-			}
+		ArrayList<Integer> S =  getListOfSelectedDepots(Allocation);
+	
+		for (int d=0; d<S.size();d++){
+			Route r = new Route(this.instLIRP, -1, S.get(d)); // create a new SD route r from s to d
+			filteredSD.add(r);
 		}
 		return filteredSD;
 	}
@@ -253,38 +295,64 @@ public class RouteManager {
 	/**
 	 * 
 	 * @param loopDC        routes from depots to clients
-	 * @param Allocation    matrix with customer allocation. Depot with 0 client = not selected
+	 * @param Allocation    matrix with customer allocation. 
 	 * @return filtered list of DC routes. 
 	 * DC route starting from an unselected depot are filtered
-	 * DC Routes with all clients not allocated to d are filtered
 	 * @throws IOException
 	 */
 
-	private LinkedHashSet<Route> filterRoutes(int ArrayList<Route> loopDC, int[][] Allocation) throws IOException {
+		// OLIVIER
+	private ArrayList<Route> filterDCRoutes(ArrayList<Route> loopDC, int[][] Allocation) throws IOException {
 
 		int keep; // indicates if a route must be kept or not in the filtered list
-
 		ArrayList<Route> filteredDC = new ArrayList<Route>();
-
-		for (int r=0; r<loopDC.size();r++) {
-			keep=1;
-			Route currentRoute = loopDC.get(r);
-			ArrayList<Integer> stops = currentRoute.getStops();
-			int d = stops.get(0); // check if it is the depot index OR the index of first client
-			int rsize = currentRoute.getNbStops();
-			for (int i=0;i<rsize; i++) {
-				int c = stops.get(i); // index of client number i on route r
-				if (Allocation[c][d]==0){
-					keep = 0;
-					i=rsize; // to directly check next 
-				}
-			}
-			if (keep==1) { // in this case, all clients are allocated to the depot
-				filteredDC.add(currentRoute);
+		ArrayList<Integer> S =  getListOfSelectedDepots(Allocation);
+		
+		for (int itr=0; itr<loopDC.size();itr++) {
+			Route r = loopDC.get(itr);
+			instanceManager.Location rdep = r.getStart();
+			// Ici ca risque de ne pas fonctionner car rdep est de type Location et S continet des entiers (a vérifier)
+			if (S.contains(rdep)){
+					filteredDC.add(r);
 			}
 		}
 		return filteredDC;
 	}
+	
+	
+	
+	
+	/**
+	 * 
+	 * @param loopDC        routes from depots to clients
+	 * @param Allocation    matrix with customer allocation. 
+	 * @return filtered list of DC routes. 
+	 * DC Routes where all clients not preAllocated to d are filtered
+	 * @throws IOException
+	 */
+
+	// GUILLAUME
+	//private LinkedHashSet<Route> filterRoutes(ArrayList<Route> loopDC, int[][] Allocation) throws IOException {
+
+	// OLIVIER
+	private ArrayList<Route> filterRoutes(ArrayList<Route> loopDC, int[][] Allocation) throws IOException {
+
+		int keep; // indicates if a route must be kept or not in the filtered list
+		ArrayList<Integer> S =  getListOfSelectedDepots(Allocation);
+		ArrayList<Route> filtered = new ArrayList<Route>();
+
+		for (int itr=0; itr<loopDC.size();itr++) {
+			keep=1;
+			Route r = loopDC.get(itr);
+			ArrayList<Integer> AAA = getListOfAllocatedClients(itr, Allocation);
+			if (r.containsAll(AAA)) { // all clients are allocated to the depot of route r
+				filtered.add(r);
+			}
+		}
+		return filtered;
+	}
+	
+	
 
 	//			/* Build additional routes from every existing shorter route */
 	//			for(Route startRouteLvl0 : this.routes.get(0).get(nbStops - 1)) {

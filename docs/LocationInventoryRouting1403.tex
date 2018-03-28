@@ -40,40 +40,37 @@ Throughout the paper, we use the following notations:
         \hline
         Set & Definition \\
         \hline
-        $\cu$ & Set of customers \\ 
-        $\dc$ & Set of distribution centers j \\
-        $\su$ & Set of plants (1 plant here)\\
         $T$ & Length of the planning horizon\\
-        $\rd$ & Set of routes starting from the plant and visiting a subset of the depots\\
-        $\rc$ & Set of routes starting from a DC and visiting a subset of customers\\
+        $L$ & Number of levels in the distribution network\\
+        $\loc_k$ & Set of distribution centers $j$ of level $k=1, \ldots,L$ \\
+        $\loc=\cup_{k=1}^L \loc_k$ & Set of all locations in the distribution network\\
+        $\cu=\loc_L$ & Set of customers \\ 
+        $\ro_k$ & Set of routes starting from a DC at level $k-1$ and visiting and a subset of locations at level $k$, $k=1,\ldots,L$\\
+        $\ro = \cup_{k=1}^{L} \ro_k$ & Set of all the routes in the distribution network\\
         \hline
         \hline
         Data & Definition \\
         \hline
-        $f_j$ & Fixed cost of opening distribution center $j\in\dc$\\ 
-        $\kd$ & Capacity of vehicles delivering distribution centers\\ 
-        $\kc$ & Capacity of vehicles delivering customers\\ 
-        $\nu_{\dc}$ & fleet size for vehicles delivering distribution centers\\ 
-        $\nu_{\cu}$ & fleet size for vehicles delivering customers\\ 
+        $f_j$ & Fixed cost of opening distribution center $j\in\loc_k$, $k=1,\ldots,L-1$\\ 
+        $\kappa_k$ & Capacity of vehicles delivering locations at level $k$\\ 
+        $\nu_k$ & fleet size for vehicles delivering locations of level $k$\\ 
         $d^t_i$ & Demand faced by customer $i\in\cu$ in period $t=1,\ldots,T$\\
-        $h^t_i$ & Per-unit, per-period holding cost of location $i\in\cu\cup\dc$ in period $t=1,\ldots, T$\\
-        $I_{i0}$ & Initial inventory of location $i\in \cu\cup\dc$ at the beginning of the planning horizon\\
-        $c_r$ & Cost of route $r\in \rd\cup\rc$\\
-        $\alpha_{ir}$ & indicator of route $r\in\rc$ visits customer $i$\\
-        $\beta_{jr}$ & indicator of route $r\in\rc$ visits depot $j$\\
-        $\gamma_{jr}$ & indicator of route $r\in\rd$ visits depot $j$\\
-        $I_i^{\max}$ & Maximum inventory at location $i\in\dc\cup\cu$\\
+        $h^t_i$ & Per-unit, per-period holding cost of location $i\in\loc$ in period $t=1,\ldots, T$\\
+        $I_{i0}$ & Initial inventory of location $i\in \loc$ at the beginning of the planning horizon\\
+        $c_r$ & Cost of route $r\in \ro$\\
+        $\alpha_{ir}$ & indicator that route $r$ visits location $i$\\
+        $\beta_{jr}$ & indicator that route $r$ starts from DC $j$\\
+        $I_i^{\max}$ & Maximum inventory at location $i\in\loc$\\
         \hline
         \hline
         \multicolumn{2}{l}{Variables}\\
         \hline
         \multicolumn{2}{l}{\textit{Binary Variables}}\\
-        $y_j$ & $\rightarrow$ 1 if distribution center j is selected \\
-        $z^t_r$ & $\rightarrow$ 1 if route r is selected in period t\\
+        $y_{j}$ & $\rightarrow$ 1 if distribution center $j$ is selected \\
+        $z^t_{r}$ & $\rightarrow$ 1 if route $r$ from level is selected in period $t$\\
         \hline
         \multicolumn{2}{l}{\textit{Continuous variables}}\\
-        $u^t_{ir}$ & $\rightarrow$ quantity delivered by route $r\in\rc$ to customer $i\in\cu$ in period $t=1,\ldots,T$\\
-        $v^t_{jr}$ & $\rightarrow$ quantity delivered by route $r\in\rd$ to location $j\in\dc$ in period $t=1,\ldots,T$\\
+        $u^t_{ir}$ & $\rightarrow$ quantity delivered by route $r$ to location $i$ in period $t=1,\ldots,T$\\
         $I^t_i$ & $\rightarrow$ Inventory at location $i$ in period $t=1,\ldots,T$\\
         \hline
     \end{tabular}
@@ -81,42 +78,43 @@ Throughout the paper, we use the following notations:
 
 \subsection{MIP formulation}\label{subsection:MIP}
 \begin{alignat}{3}
-    \text{minimize} &&\sum_{j\in \dc} f_j y_j &+\sum_{t=1}^{T} \left( \sum_{r\in \rd\cup\rc} c_r z^t_r + \sum_{i\in \dc\cup\cu} h^t_i I_i^t\right)\label{objfunct}\\ 
-    \text{s.t.}  &&\sum_{r\in \rd} \gamma_{jr} z^t_r &\leq 1 															&\forall j&\in \dc, \forall t=1,\ldots,T  \label{const:singleroutedepots}\\
-                 &&\sum_{r\in \rc} \alpha_{ir} z^t_r &\leq 1 															&\forall i&\in \cu, \forall t=1,\ldots,T  \label{const:singleroutecustomers}\\
-                 &&\gamma_{jr}z^t_r 					&\leq y_j 													&\forall j&\in\dc, \forall r\in \rd, \forall t=1,\ldots,T\label{const:serveopendepots}\\
-                 &&z^t_r 					&\leq \sum_{j\in\dc}\beta_{jr}y_j 													&\forall r&\in \rc, \forall t=1,\ldots,T\label{const:startfromopendepots}\\
-                 &&\sum_{r\in \rd} z^t_r &\leq 	\nu_{\dc}													&\forall t&=1,\ldots,T  \label{const:fleetcapadepots}\\
-                 &&\sum_{r\in \rc} z^t_r &\leq 	\nu_{\cu}													&\forall t&=1,\ldots,T  \label{const:fleetcapaclients}\\
-                 &&\sum_{j\in \dc} v^t_{jr}   		&\leq \kd z^t_r 														&\forall r&\in \rd, t=1,\ldots,T\label{const:deliveryUBdepots}\\
-                 &&\sum_{i\in \cu} u^t_{ir}   		&\leq \kc z^t_r 														&\forall r&\in \rc, t=1,\ldots,T\label{const:deliveryUBcustomers}\\
-                 &&I^{t-1}_j + \sum_{r\in\rd} v^t_{jr}   			&=I^t_j +\sum_{r\in \rc}\beta_{jr} \left(\sum_{i\in \cu}u^t_{ir}\right) 			&\forall j&\in \dc, \forall t=1,\ldots,T \label{const:invflowdepots}\\
-                 &&I^{t-1}_i+\sum_{r\in \rc} u^t_{ir} &= I^t_i +d^t_i 							&\forall i&\in \cu, \forall t=1,\ldots,T\label{const:invflowcustomers}\\
-                 &&I^t_j					& \leq I_j^{\max} y_j  														&\forall j&\in \dc,\forall t=1,\ldots,T\label{const:invdepotUB}\\	
-                 &&I^t_i 					&\leq \min\left(I_i^{\max}, \sum_{t'\geq t}d^{t'}_i\right)											&\forall i&\in \cu, \forall t=1,\ldots,T\label{const:invcustUB}\\
-                 &&u^t_{ir}			&\geq 0 															&\forall i &\in \cu, \forall r\in \rc,\forall t=1,\ldots, T\label{const:upos}	\\
-                 &&v^t_{jr}			&\geq 0 															&\forall j &\in \dc, \forall r\in \rd,\forall t=1,\ldots, T\label{const:vpos}	\\
-                 &&I^t_{i}			&\geq 0 															&\forall i &\in \cu, \forall t=1,\ldots, T\label{const:invCpos}	\\
-                 &&I^t_{j}			&\geq 0 															&\forall j &\in \dc, \forall t=1,\ldots, T\label{const:invDpos}	\\
-                 &&y_{j}					& \in \{0,1\} 														&\forall j&\in \dc\label{const:ybool}\\	
-                 &&z^t_r					&\in \{0,1\} 														&\forall r&\in \rc\cup\rd, \forall t=1,\ldots,T\label{const:zbool}
+    \text{minimize} &&\sum_{j\in \loc \setminus \cu} f_{j} y_{j} &+\sum_{t=1}^{T} \left( \sum_{r\in \ro} c_r z^t_r + \sum_{i\in \loc} h^t_i I_i^t\right)\label{objfunct}\\ 
+    \text{s.t.}  %&&\sum_{r\in \ro} \gamma_{jr} z^t_r &\leq 1 															&\forall j&\in \, \forall t=1,\ldots,T  \label{const:singleroutedepots}\\
+    &&\sum_{r\in \ro_L} \alpha_{ir} z^t_r &\leq 1 															&\forall i&\in \cu, \forall t=1,\ldots,T  \label{const:singleroutecustomers}\\
+&&\sum_{r\in \ro_k} \alpha_{jr} z^t_r &\leq y_j 															&\forall k&=1,\ldots,L-1, \forall j\in \loc_k, \forall t=1,\ldots,T  \label{const:singleroutedc}\\
+    %&&\gamma_{jr}z^t_r 					&\leq y_j 													&\forall k&=1,\ldots,L, \forall j\in\loc_{k-1}, \forall r\in \ro_k, \forall t=1,\ldots,T\label{const:serveopendepots}\\
+&&z^t_r 					&\leq \sum_{j\in\loc_{k}}\beta_{jr}y_j 													&\forall k&=1,\ldots,L-1,r\in \ro_{k+1}, \forall t=1,\ldots,T\label{const:startfromopendepots}\\
+    &&\sum_{r\in \ro_k} z^t_r &\leq 	\nu_k													&\forall k&=1,\ldots,L, \forall t=1,\ldots,T  \label{const:fleetcapa}\\
+    %            &&\sum_{r\in \roc} z^t_r &\leq 	\nu_{\cu}													&\forall t&=1,\ldots,T  \label{const:fleetcapaclients}\\
+    &&\sum_{i\in \loc_k} u^t_{ir}   		&\leq \kappa_k z^t_r 														&\forall k&=1,\ldots,L, \forall r\in \ro_k, t=1,\ldots,T\label{const:deliveryUB}\\
+    %&&\sum_{i\in \cu} u^t_{ir}   		&\leq \kc z^t_r 														&\forall r&\in \roc, t=1,\ldots,T\label{const:deliveryUBcustomers}\\
+    &&I^{t-1}_j + \sum_{r\in\ro_k} u^t_{jr}   			&=I^t_j +\sum_{r'\in \ro_{k+1}}\left(\beta_{jr'} \sum_{i\in \loc_{k+1}}u^t_{ir'}\right)\quad 			&\forall k&=1,\ldots,L-1, \forall j\in \loc_k, \forall t=1,\ldots,T \label{const:invflowdepots}\\
+    &&I^{t-1}_i+\sum_{r\in \ro_L} u^t_{ir} &= I^t_i +d^t_i 							&\forall i&\in \cu, \forall t=1,\ldots,T\label{const:invflowcustomers}\\
+    &&I^t_j					&\leq I_j^{\max} y_j  									&\forall k&=1,\ldots,L-1, \forall j\in \loc_k,\forall t=1,\ldots,T\label{const:invdepotUB}\\	
+    &&I^t_i 					&\leq \min\left(I_i^{\max}, \sum_{t'\geq t}d^{t'}_i\right)											&\forall i&\in \cu, \forall t=1,\ldots,T\label{const:invcustUB}\\
+    &&u^t_{ir}			&\geq 0 															&\forall k&=1,\ldots,L, \forall i\in \loc_k, \forall r\in \ro_k,\forall t=1,\ldots, T\label{const:upos}	\\
+    % &&v^t_{jr}			&\geq 0 															&\forall j &\in \dc, \forall r\in \rod,\forall t=1,\ldots, T\label{const:vpos}	\\
+    &&I^t_{i}			&\geq 0 															&\forall i &\in \loc, \forall t=1,\ldots, T\label{const:invCpos}	\\
+    %&&I^t_{j}			&\geq 0 															&\forall j &\in \dc, \forall t=1,\ldots, T\label{const:invDpos}	\\
+    &&y_{j}					& \in \{0,1\} 														&\forall j&\in \loc\setminus\cu\label{const:ybool}\\	
+    &&z^t_r					&\in \{0,1\} 														&\forall r&\in \ro, \forall t=1,\ldots,T\label{const:zbool}
 \end{alignat}
 
 The objective function~\eqref{objfunct} aims at minimizing the total cost incurred by the system. 
-Constraints~\eqref{const:singleroutedepots} and~\eqref{const:singleroutecustomers} state that every depot and every customer is served by at most one route $r\in\rd$ and $r\in\rc$ in every period, respectively. 
-Constraint~\eqref{const:serveopendepots} ensure that the routes used in period $t$ only pass through open depots, while constraint~\eqref{const:startfromopendepots} ensures that routes start only from opened depots. 
-Constraints~\eqref{const:fleetcapadepots} and~\eqref{const:fleetcapaclients} states that the number of routes used to serve clients and depots in period $t$ does not exceed the fleet size allocated to the corresponding routes, respectively.
-Constraints~\eqref{const:deliveryUBdepots} and~\eqref{const:deliveryUBcustomers} ensures that the sum of the quantities deliverd through a given route in a given period is lower than the capacity of a vehicle. 
+Constraints~\eqref{const:singleroutecustomers} and~\eqref{const:singleroutedc} state that every (open) location is served by at most one route $r\in\ro$ serving the corresponding level in every period, respectively. 
+Constraint~\eqref{const:startfromopendepots} ensures that routes start only from opened depots. 
+Constraints~\eqref{const:fleetcapa} states that the number of routes used to serve the locations of a given level $k$ in period $t$ does not exceed the fleet size allocated to the routes $r\in\ro_k$.
+Constraint~\eqref{const:deliveryUB} ensures that the sum of the quantities deliverd through a route $r\in\ro_k$ in period $t$ is lower than the capacity of a vehicle. 
 Constraints~\eqref{const:invflowdepots} and~\eqref{const:invflowcustomers} define the units flow through the depots and customers, respectively.
 Finally, constraints~\eqref{const:invdepotUB} and~\eqref{const:invcustUB} ensure that the capacity constraint on the inventory at the depots and the customers are satisfied in any period. 
 
 \subsection{Restrictions}
 Although the MIP formulation from~\S~\ref{subsection:MIP} deals with a rather general version of the problem, we focus on two particular cases:
 \begin{enumerate}
-    \item The first one considers a model ``Direct+Loop'' in which the set $\rd$ consists only of direct routes between the supplier and the depots. 
-        That is, a route $r\in\rd$ can be described by two arcs $(s,j)$ and $(j,s)$, where $j\in\dc$ and $s$ is the supplier.
-    \item The second one, called ``Loop+Direct'' considers a set $\rc$ containing only direct routes between depots and customers. 
-        In other words, a route $r\in\rc$ can be described by two arcs $(j,i)$ and $(i,j)$ with $j\in\dc$ and $i\in\cu$. Figure~\ref{fig:ld}.
+    \item The first one considers a model ``Direct+Loop'' in which the set $\ro_k$ consists only of direct routes between the supplier and the depots. 
+        That is, a route $r\in\ro_k$ can be described by two arcs $(s,j)$ and $(j,s)$, where $j\in\ro_k$ and $s$ is the supplier.
+    \item The second one, called ``Loop+Direct'' considers a set $\ro_L$ containing only direct routes between depots and customers. 
+        In other words, a route $r\in\ro_L$ can be described by two arcs $(j,i)$ and $(i,j)$ with $j\in\loc_k$ and $i\in\cu$. Figure~\ref{fig:ld}.
 \end{enumerate}
 Figure~\ref{fig:dl} and~\ref{fig:ld} illustrates the two types of structures related to these models.
 \begin{figure}
