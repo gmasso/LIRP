@@ -40,11 +40,11 @@ public class ClientsMap extends Layer {
 		super(gridSize, nbClients);
 		this.sites = new Client[this.nbSites];
 		this.cities = new CitiesMap(this.gridSize, citiesSizes, urbanRatio);
-
 		// Fill the clients array with their respective coordinates
 		for (int cIndex = 0; cIndex < this.nbSites; cIndex++) {
 			this.sites[cIndex] = new Client(drawClient());
 		}
+		this.generateID();
 	}
 	/**
 	 * Create a clientsMap that defines the location and the attributes of the
@@ -71,6 +71,7 @@ public class ClientsMap extends Layer {
 		for (int cIndex = 0; cIndex < this.nbSites; cIndex++) {
 			this.sites[cIndex] = new Client(drawClient(), holdingCost, 0, -1);
 		}
+		this.generateID();
 	}
 
 	/**
@@ -99,6 +100,7 @@ public class ClientsMap extends Layer {
 		// We set the average demand per box as the total demand (avgD/site * nbSites)
 		// divided among the number of demand boxes on the map
 		this.assignDemands(demandsMap, demandProfile, vCapacity);
+		this.generateID();
 	}
 
 	/**

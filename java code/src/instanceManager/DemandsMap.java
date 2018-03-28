@@ -31,6 +31,7 @@ public class DemandsMap extends Layer {
 			}
 		}
 		this.fillDemands();
+		this.generateID();
 	}
 
 	/*
@@ -62,6 +63,9 @@ public class DemandsMap extends Layer {
 		return ((DemandSequence) this.sites[dBoxIndex]).getValue(period);
 	}
 
+	public int getPeriod() {
+		return this.period;
+	}
 	/*
 	 * PRIVATE METHODS
 	 */
@@ -98,6 +102,8 @@ public class DemandsMap extends Layer {
 		double intensity = 0;
 		double citiesInfluence = 0;
 		CitiesMap cities = this.clients.getCitiesMap();
+		if(cities.getNbSites() == 0)
+			return 1;
 		double distWithCity, citySize = 0;
 		// Get the cities map from the client map in order to determine the intensity of
 		// the demand on each box
@@ -179,14 +185,24 @@ public class DemandsMap extends Layer {
 			/* Change the ID depending on if the demand patter differentiates week days from week end (WD)
 			 * or if it does not exclude any day of the week (AW)
 			 */
-			return "periodic-" + this.clients.getCitiesMap().getDescID();
+			return "period" + this.period + "-" + this.clients.getCitiesMap().getDescID();
 		}
-		else
-			return "iid-" + this.clients.getCitiesMap().getDescID();
+		else {
+			if(this.isUniform)
+				return "iid_Uniform-" + this.clients.getCitiesMap().getDescID();
+			else
+				return "iid_Normal-" + this.clients.getCitiesMap().getDescID();
+
+		}
 	}
 
 	protected JSONObject getJSONLayerSpec() throws IOException {
-		return new JSONObject();
+		JSONObject jsonDemands = new JSONObject();
+		jsonDemands.put("planning horizon", this.planningHorizon);
+		jsonDemands.put("period", this.period);
+		jsonDemands.put("uniform", this.isUniform);
+
+		return jsonDemands;
 	}
 
 }
