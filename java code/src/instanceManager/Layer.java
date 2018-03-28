@@ -30,7 +30,6 @@ public abstract class Layer {
 		this.gridSize = gridSize;
 		this.nbSites = nbSites;
 		this.sites = new Location[this.nbSites];
-		this.generateID();
 	}
 
 	/**
@@ -40,7 +39,6 @@ public abstract class Layer {
 	 */
 	public Layer(int nbSites) throws IOException {
 		this.nbSites = nbSites;
-		this.generateID();
 	}
 
 	/*
@@ -124,7 +122,11 @@ public abstract class Layer {
 	 * @return		the distance between loc and the closest point on the map
 	 */
 	protected double getMinDist(Point2D loc) {
-		return loc.distance(this.findClosestSiteTo(loc).getCoordinates());
+		Location closestSite = this.findClosestSiteTo(loc);
+		if(closestSite == null)
+			return this.gridSize;
+		else
+			return loc.distance(closestSite.getCoordinates());
 	}
 
 	/*
@@ -133,7 +135,7 @@ public abstract class Layer {
 	/**
 	 * Generate an ID for this map
 	 */
-	private void generateID() {
+	protected void generateID() {
 		this.mapID = this.getDescID() + this.getNbSites() + "s-"+ UUID.randomUUID().toString();
 	}
 	
@@ -164,8 +166,8 @@ public abstract class Layer {
 
 		// Loop through the sites and add their coordinates to the JSON Object
 		for(int locIter = 0; locIter < this.nbSites; locIter++) {
-			JSONObject jsonLoc = this.sites[locIter].getJSONLoc();
-			jsonSites.put(locIter, jsonLoc);
+			//JSONObject jsonLoc = this.sites[locIter].getJSONLoc();
+			jsonSites.put(((Client) this.sites[locIter]).getJSONLoc());
 		}
 
 		jsonMap.put("nb sites", this.nbSites);

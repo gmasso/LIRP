@@ -61,7 +61,7 @@ public class DepotsMap extends Layer {
 		// Create a new candidate site
 		Point2D siteCandidate = drawLocation(0);
 		// Draw new coordinates while the minimum distance with other sites is not respected
-		while(getMinDist(siteCandidate) < minDist) 
+		while(getMinDist(siteCandidate) < this.minDist) 
 			siteCandidate.setLocation(Parameters.rand.nextDouble() * this.gridSize, Parameters.rand.nextDouble() * this.gridSize);
 		// Set the coordinates of the new depot to the first valid candidate
 		this.setSiteCoords(d, siteCandidate);

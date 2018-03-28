@@ -21,6 +21,7 @@ public class Client extends Location{
 	 */
 	public Client(Point2D coordClient) throws IOException{
 		super(coordClient);
+		this.demands = null;
 	}
 
 	/**
@@ -34,6 +35,7 @@ public class Client extends Location{
 	 */
 	public Client(Point2D coordClient, double holdingCost, double initialInventory, double capacity) throws IOException{
 		super(coordClient, holdingCost, initialInventory, capacity);
+		this.demands = null;
 	}	
 
 	/**
@@ -60,13 +62,13 @@ public class Client extends Location{
 		super(jsonClient);
 		// Check if the field "demands" is null
 		if(jsonClient.isNull("demands"))
-			demands = null;
+			this.demands = null;
 		// If not, create the demands array for this client and fill it with the values of the demands
 		else {
 			JSONArray jsonDemands = jsonClient.getJSONArray("demands"); // The JSON table containing the demands
 			//			if(jsonDemands.length() < planningHorizon)
 			//				throw new IOException("Error in instance file : the number of demands is not enough to cover the planning horizon");
-			demands = new double[jsonDemands.length()]; 
+			this.demands = new double[jsonDemands.length()]; 
 			for(int t = 0; t < jsonDemands.length(); t++) {
 				this.demands[t] = jsonDemands.getDouble(t); // Demand for this client in period t
 			}
@@ -146,7 +148,7 @@ public class Client extends Location{
 			while(!this.activeDays[(period + closestAfter) % this.activeDays.length]) {
 				closestAfter++;
 			}
-			
+
 			/* Assign the demand to one one the two closest period with probability proportional to their distance */
 			double rnd = Parameters.rand.nextDouble();
 			if(rnd < closestBefore / (closestBefore + closestAfter)) {
@@ -165,7 +167,7 @@ public class Client extends Location{
 	public void initDemandSeq(int planningHorizon) {
 		this.demands = new double[planningHorizon];
 	}
-	
+
 	/**
 	 * Enrich the JSON object associated with the location with the demand sequence of the client
 	 */
@@ -174,7 +176,9 @@ public class Client extends Location{
 		// Create a JSON Object to describe the depots map
 		JSONObject jsonClient = new JSONObject();
 
-		jsonClient.put("demands", new JSONArray(this.demands));
+		if(this.demands != null) {
+			jsonClient.put("demands",new JSONArray(this.demands));
+		}
 
 		return jsonClient;
 	}
