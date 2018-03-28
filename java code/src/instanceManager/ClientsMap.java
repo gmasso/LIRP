@@ -255,8 +255,8 @@ public class ClientsMap extends Layer {
 	}
 
 	/**
-	 * 
-	 * @param activeDays
+	 * Define the active days for the client, based on its probability to be opened during a given period of time
+	 * @param activeDays		The pairs giving a positive weight for each possible sequence of active days
 	 */
 	public void setClientsActiveDays(LinkedHashSet<Pair<Double, ArrayList<Boolean>>> activeDays) {
 		double totalWeight = 0;

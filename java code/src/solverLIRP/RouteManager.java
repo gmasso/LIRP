@@ -22,7 +22,7 @@ public class RouteManager {
 	/*=====================
 	 *      ATTRIBUTES
 	 ======================*/
-	private Instance instLIRP;											// The instance to which the routes apply
+	private Instance instLIRP;												// The instance to which the routes apply
 	private HashMap<Integer, HashMap<Integer, LinkedHashSet<Route>>> routes; 	// A route is referenced with its level (0 : supplier-depot, 1 : depot-client)
 	// For a given level, routes are ordered according to their number of stops
 	private int[] nbRoutesLvl;												// Total number of routes at each level (0: Supplier to depots, 1: Depots to clients)
