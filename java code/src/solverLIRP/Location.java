@@ -11,7 +11,7 @@ import tools.Pair;
 import tools.Parameters;
 
 
-public class LocationBasedSampling {
+public class Location {
 
 	/*======================
 	 *      ATTRIBUTES
@@ -26,7 +26,7 @@ public class LocationBasedSampling {
 	 * @param number of client, number of depots
 	 * @throws IOException
 	 */
-	public LocationBasedSampling(Instance instLIRP, int nbClients, int nbDepots) throws IOException {
+	public Location(Instance instLIRP, int nbClients, int nbDepots) throws IOException {
 		this.instLIRP = instLIRP;
 		//	this.nbClients = nbClients;
 		//this.nbDepots = nbDepots;
@@ -121,8 +121,8 @@ public class LocationBasedSampling {
 				for (int j = 0; j < this.instLIRP.getNbClients(); j++)
 				{
 					p = distanceClients.get(j); 
-					int cli = p.getL(); // get the jth closest client
-					double distcj = this.instLIRP.getClient(c).getDistance(this.instLIRP.getClient(cli));
+					int cprime = p.getL(); // get the jth closest client
+					double distcj = this.instLIRP.getClient(c).getDistance(this.instLIRP.getClient(cprime));
 					if (distcj < mu2)
 					{
 						for (int d=0; d < this.instLIRP.getNbDepots(0); d++)
@@ -150,12 +150,11 @@ public class LocationBasedSampling {
 	// Heuristic depot selection
 	// Return a matrix with clients allocation (possibly to a dummy depot)
 
-	private int[][] depotSelection(Instance inst)
+	private int[][] depotSelection(Instance inst, int p)
 	{
 		int[][] preAlloc = preAllocation(inst); 
 		int nc = inst.getNbClients();
 		int nd = inst.getNbDepots(0);
-		int p = nd-2;
 		int beta = 3; // parameter for roulette wheel selection
 
 		double y; 	// random value used in roulette wheel selection
@@ -172,17 +171,20 @@ public class LocationBasedSampling {
 		ArrayList<Pair<Integer, Double>> depotScore = new ArrayList<Pair<Integer, Double>>(); // depots and their scores
 
 
-		while (s<p && nbclient < nc){
-			// calculate score for each depot
-			for (int d=0; d<nd;d++) {
-				score =0;
-				for (int c=0; c<nc;c++){
-					score = score + preAlloc[c][d];
-				}
-				Pair<Integer, Double> ds = new Pair<Integer, Double>(d);
-				ds.setScore(score);
-				depotScore.add(ds);
+		// calculate score for each depot
+		for (int d=0; d<nd;d++) {
+			score =0;
+			for (int c=0; c<nc;c++){
+				score = score + preAlloc[c][d];
 			}
+			Pair<Integer, Double> ds = new Pair<Integer, Double>(d);
+			ds.setScore(score);
+			depotScore.add(ds);
+		}
+		
+		// Main loop
+		while (s<p && nbclient < nc){
+			
 			// rank depots in decreasing order of scores
 			depotScore.sort(new Comparator<Pair<Integer, Double>>() {
 				@Override
@@ -202,21 +204,28 @@ public class LocationBasedSampling {
 			y = Math.random();
 			int position = 0; 
 			while (position < Math.pow(y,beta) * nd) { position = position +1;} // generate biased random position
-			int d = depotScore.get(position).getL(); // select depot at the generated random position
+			int dnew = depotScore.get(position).getL(); // select depot at the generated random position
 			s=s+1;
 
 			// Update allocations and preAllocations
 			for (int c=0;c<nc;c++) {
-				if (preAlloc[c][d]==1) {
-					A[c][d] =1;
+				if (preAlloc[c][dnew]==1) {
+					A[c][dnew] =1;
 					nbclient = nbclient +1;
 					for (int dep=0; dep<nd;dep++) {
-						preAlloc[c][dep]=0;
+						if (dep != dnew)
+						{
+							if (preAlloc[c][dep]==1) {
+								preAlloc[c][dep]=0;
+								depotScore.get(dep).decrement();   // decrease scoreof depot dep
+							}
+						}
 					}
 				}
 			}
 		}
 
+		
 		// Complete allocation with a dummy depot
 		if (nbclient < nc){
 			for (int c=0;c<nc;c++) {
@@ -231,8 +240,6 @@ public class LocationBasedSampling {
 		}
 		return A;  // return the allocation matrix (the set of selected depots can be found from this)
 	}
-
-
 }
 
 

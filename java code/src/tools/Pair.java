@@ -44,7 +44,8 @@ public class Pair<L, R> {
 	    public void setScore(double score) {
 	        this.score = score;
 	    }
-	
-	
-
-}
+	    
+	    public void decrement() {
+	        this.score = score-1;
+	    }
+	 }
