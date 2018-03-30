@@ -30,6 +30,7 @@ public abstract class Layer {
 		this.gridSize = gridSize;
 		this.nbSites = nbSites;
 		this.sites = new Location[this.nbSites];
+		this.generateID();
 	}
 
 	/**
@@ -39,6 +40,7 @@ public abstract class Layer {
 	 */
 	public Layer(int nbSites) throws IOException {
 		this.nbSites = nbSites;
+		this.generateID();
 	}
 
 	/*
@@ -122,11 +124,7 @@ public abstract class Layer {
 	 * @return		the distance between loc and the closest point on the map
 	 */
 	protected double getMinDist(Point2D loc) {
-		Location closestSite = this.findClosestSiteTo(loc);
-		if(closestSite == null)
-			return this.gridSize;
-		else
-			return loc.distance(closestSite.getCoordinates());
+		return loc.distance(this.findClosestSiteTo(loc).getCoordinates());
 	}
 
 	/*
@@ -135,7 +133,7 @@ public abstract class Layer {
 	/**
 	 * Generate an ID for this map
 	 */
-	protected void generateID() {
+	private void generateID() {
 		this.mapID = this.getDescID() + this.getNbSites() + "s-"+ UUID.randomUUID().toString();
 	}
 	

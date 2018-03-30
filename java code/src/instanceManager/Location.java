@@ -11,7 +11,7 @@ public class Location {
 	protected double holdingCost = -1; // The per-unit per-period holding cost for this location
 	protected double initialInventory = -1; // The inventory on hand at the beginning of the planning horizon
 	protected double capacity = -1; // The storage capacity of the location
-
+	
 	/*
 	 * CONSTRUCTOR
 	 */
@@ -23,7 +23,7 @@ public class Location {
 	public Location(Point2D locationCoord) throws IOException {
 		this.locationCoords = locationCoord;
 	}
-
+	
 	/**
 	 * Create a Location object from its coordinates and its holding cost
 	 * @param locationCoord, holdingCost
@@ -33,7 +33,7 @@ public class Location {
 		this.locationCoords = locationCoord;
 		this.holdingCost = holdingCost;
 	}
-
+	
 	/**
 	 * Create a Location object from its coordinates and other attributes
 	 * @param locationCoord, holdingCost, initialInventory, capacity
@@ -45,7 +45,7 @@ public class Location {
 		this.initialInventory = initialInventory;
 		this.capacity = capacity;
 	}
-
+	
 	/**
 	 * Create a Location object from a JSON object containing data
 	 * @param jsonLoc		the JSON object that describes the location
@@ -66,12 +66,12 @@ public class Location {
 		this.holdingCost = jsonLoc.isNull("hc") ? -1 : jsonLoc.getDouble("hc"); // Holding cost for this client
 		this.initialInventory = jsonLoc.isNull("is") ? -1 : jsonLoc.getDouble("is"); // Initial inventory at the client at the beginning of the planning horizon
 		this.capacity = jsonLoc.isNull("cap") ? -1 : jsonLoc.getDouble("cap"); // The capacity of the client
-
+		
 		/* TO BE MODIFIED */
 		if(this.capacity <= 0)
 			this.capacity = 1000000;
 	}
-
+	
 	/*
 	 * ACCESSORS 
 	 */
@@ -82,7 +82,7 @@ public class Location {
 	public Point2D getCoordinates() {
 		return this.locationCoords;
 	}
-
+	
 	/**
 	 * 
 	 * @return	the holding cost of the location
@@ -90,7 +90,7 @@ public class Location {
 	public double getHoldingCost() {
 		return this.holdingCost;
 	}
-
+	
 	/**
 	 * 
 	 * @return	the capacity of the location
@@ -98,7 +98,7 @@ public class Location {
 	public double getCapacity() {
 		return this.capacity;
 	}
-
+	
 	/**
 	 * 
 	 * @return	the initial inventory of the location
@@ -106,7 +106,7 @@ public class Location {
 	public double getInitialInventory() {
 		return this.initialInventory;
 	}
-
+	
 	/*
 	 * MUTATORS
 	 */
@@ -117,7 +117,7 @@ public class Location {
 	public void setCoordinates(Point2D coords) {
 		this.locationCoords = coords;
 	}
-
+	
 	/**
 	 * Reset the holding cost of the Location
 	 * @param hc	the new holding cost value
@@ -125,7 +125,7 @@ public class Location {
 	public void setHC(double hc) {
 		this.holdingCost = hc;
 	}
-
+	
 	/**
 	 * Reset the capacity constraint of the inventory of this location
 	 * @param capa	the new capacity
@@ -133,7 +133,7 @@ public class Location {
 	public void setCapacity(double capa) {
 		this.capacity = (capa > 0) ? capa : 0;
 	}
-
+	
 	/**
 	 * Set the initial inventory at the beginning of the planning horizon
 	 * @param initInv	the new starting stock level
@@ -141,7 +141,7 @@ public class Location {
 	public void setInitInv(double initInv) {
 		this.initialInventory = (initInv > 0) ? initInv : 0;
 	}
-
+	
 	/*
 	 * PUBLIC METHODS
 	 */
@@ -153,7 +153,7 @@ public class Location {
 	public double getDistance(Location otherLocation) {
 		return this.locationCoords.distance(otherLocation.getCoordinates());
 	}
-
+	
 	/**
 	 * Compute the distance between this Location object and a point
 	 * @param otherLocation	the point of interest
@@ -162,7 +162,7 @@ public class Location {
 	public double getDistance(Point2D otherLocation) {
 		return this.locationCoords.distance(otherLocation);
 	}
-
+	
 	/**
 	 * Creates and fill a new JSON object containing data about this Location object
 	 * @return	a JSON object filled with this Location object characteristics
@@ -180,17 +180,18 @@ public class Location {
 		if(this.capacity > -1) {
 			jsonLoc.put("capacity", this.capacity);
 		}
-
+		
 		return jsonLoc;
 	}
-
+	
 	/**
 	 * Creates a JSON object to store info about this Location object (overriden in subclasses)
 	 * @return	a new JSON object
 	 * @throws IOException
 	 */
-	protected JSONObject getJSONLocSpec() throws IOException {
+	protected JSONObject getJSONLocSpec() throws IOException 
+	{
 		return new JSONObject();
 	}
-
+	
 }

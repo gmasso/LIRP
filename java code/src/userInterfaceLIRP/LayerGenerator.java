@@ -10,11 +10,12 @@ import instanceManager.DepotsMap;
 import instanceManager.Location;
 import tools.Parameters;
 
+
 public class LayerGenerator {
 
-	private static double capa_loc = 100000;								// Capacity of any location
+	private static double capa_loc = 100000;									// Capacity of any location
 
-	private static int[] nb_depots = {3, 6, 9, 12};						// Possible number of depots on a layer
+	private static int[] nb_depots = {0, 3, 6, 9, 12};					// Possible number of depots on a layer
 	private static double oc_depots = 5;									// Ordering costs for the depots (in addition to routing costs)
 
 	private static int nb_clients = 300;
