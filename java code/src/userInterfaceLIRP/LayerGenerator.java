@@ -22,6 +22,10 @@ public class LayerGenerator {
 	private static double[] proba_sizes = {0.25, 0.3, 0.2, 0.18, 0.07};	// Probability of each size
 
 
+	/**
+	 * @param args
+	 * @throws IOException
+	 */
 	public static void main(String[] args) throws IOException {
 		String layersDir = "../Instances/Layers/";
 
@@ -39,39 +43,39 @@ public class LayerGenerator {
 			}
 		}
 		/* Create instances with 3 or 2 cities */
-		//		for(int nbCities = 0; nbCities < 3; nbCities++) {
-		//			/* Create 10 layers of each type */
-		//			for(int i = 0; i < 10; i++) {
-		//				ClientsMap cMap = new ClientsMap(Parameters.grid_size, nb_clients, selectCitiesSizes(nbCities), 0.75);
-		//				DemandsMap dMapIID = new DemandsMap(cMap, 90, 0, true);
-		//				DemandsMap dMapNormal = new DemandsMap(cMap, 90, 0, false);
-		//				DemandsMap dMapPeriodic = new DemandsMap(cMap, 90, 7, false);
-		//
-		//				String cMapDirName = layersDir + "Clients/" + cMap.getID() + "/";
-		//				File cMapDir = new File(cMapDirName);
-		//				// if the directory does not exist, create it
-		//				if (!cMapDir.exists()) {
-		//					boolean result = false;
-		//
-		//					try{
-		//						cMapDir.mkdir();
-		//						result = true;
-		//					} 
-		//					catch(SecurityException se){
-		//						//handle it
-		//					}        
-		//					if(result) {    
-		//						System.out.println("DIR " + cMapDirName +" created");  
-		//					}
-		//				}
-		//				
-		//				cMap.writeToJSONFile(cMapDirName + "map.json");
-		//				dMapIID.writeToJSONFile(cMapDirName + dMapIID.getID() + ".json");
-		//				dMapNormal.writeToJSONFile(cMapDirName + dMapNormal.getID() + ".json");
-		//				dMapPeriodic.writeToJSONFile(cMapDirName + dMapPeriodic.getID() + ".json");
-		//
-		//			}
-		//		}
+		for(int nbCities = 0; nbCities < 3; nbCities++) {
+			/* Create 10 layers of each type */
+			for(int i = 0; i < 10; i++) {
+				ClientsMap cMap = new ClientsMap(Parameters.grid_size, nb_clients, selectCitiesSizes(nbCities), 0.75);
+				DemandsMap dMapIID = new DemandsMap(cMap, 90, 0, true);
+				DemandsMap dMapNormal = new DemandsMap(cMap, 90, 0, false);
+				DemandsMap dMapPeriodic = new DemandsMap(cMap, 90, 7, false);
+
+				String cMapDirName = layersDir + "Clients/" + cMap.getID() + "/";
+				File cMapDir = new File(cMapDirName);
+				/* if the directory does not exist, create it */
+				if (!cMapDir.exists()) {
+					boolean result = false;
+
+					try{
+						cMapDir.mkdir();
+						result = true;
+					} 
+					catch(SecurityException se){
+						/* handle it */
+					}        
+					if(result) {    
+						System.out.println("DIR " + cMapDirName +" created");  
+					}
+				}
+
+				cMap.writeToJSONFile(cMapDirName + "map.json");
+				dMapIID.writeToJSONFile(cMapDirName + dMapIID.getID() + ".json");
+				dMapNormal.writeToJSONFile(cMapDirName + dMapNormal.getID() + ".json");
+				dMapPeriodic.writeToJSONFile(cMapDirName + dMapPeriodic.getID() + ".json");
+
+			}
+		}
 	}
 
 	private static double[] selectCitiesSizes(int nbCities) {

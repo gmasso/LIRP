@@ -167,7 +167,7 @@ public abstract class Layer {
 		// Loop through the sites and add their coordinates to the JSON Object
 		for(int locIter = 0; locIter < this.nbSites; locIter++) {
 			//JSONObject jsonLoc = this.sites[locIter].getJSONLoc();
-			jsonSites.put(((Client) this.sites[locIter]).getJSONLoc());
+			jsonSites.put(this.sites[locIter].getJSONLoc());
 		}
 
 		jsonMap.put("nb sites", this.nbSites);

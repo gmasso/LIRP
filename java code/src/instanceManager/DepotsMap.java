@@ -35,6 +35,7 @@ public class DepotsMap extends Layer {
         for(int sIndex = 0; sIndex < this.nbSites; sIndex++) {
         		this.drawDepot(sIndex);
         }
+        this.generateID();
 	}
 
 	/**

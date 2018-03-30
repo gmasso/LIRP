@@ -44,15 +44,6 @@ public class DemandSequence extends Location {
 	/*
 	 * MUTATORS
 	 */
-	//	/**
-	//	 * Set the value of the demand for a specific period
-	//	 * @param period	the period to which the demand is associated
-	//	 * @param value	the value of the demand for the period considered
-	//	 */
-	//	public void setDemand(int period, double value){
-	//		this.demands[period] = value;
-	//	}
-
 	public void fillValues(int planningHorizon, double intensity, boolean isUniform, int period) {
 		this.demands = new double[planningHorizon];
 
@@ -119,13 +110,9 @@ public class DemandSequence extends Location {
 	protected JSONObject getJSONLocSpec() throws IOException {
 		// Create a JSON Object to describe the depots map
 		JSONObject jsonSequence = new JSONObject();
-//		JSONArray jsonDemands = new JSONArray();
-//		if(this.demands != null) {
-//			for(int t = 0; t < this.demands.length; t++) {
-//				jsonDemands.put(this.demands[t]);
-//			}
-//			jsonSequence.put("demands",jsonDemands);
-//		}
+		if(this.demands != null)
+			jsonSequence.put("demands",new JSONArray(this.demands));
+
 		return jsonSequence;
 	}
 

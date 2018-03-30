@@ -189,10 +189,7 @@ public class Location {
 	 * @return	a new JSON object
 	 * @throws IOException
 	 */
-	protected JSONObject getJSONLocSpec() throws IOException 
-	{
-		int i = 0;
-		System.out.println(i);
+	protected JSONObject getJSONLocSpec() throws IOException {
 		return new JSONObject();
 	}
 
