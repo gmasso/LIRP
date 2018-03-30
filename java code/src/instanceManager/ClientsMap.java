@@ -195,7 +195,7 @@ public class ClientsMap extends Layer {
 			}
 		}
 		else {
-			System.out.println("Trying to assign demands for clients map " + demandsMap.getClients().getID() + " to the clients map " + this.mapID);
+			 ("Trying to assign demands for clients map " + demandsMap.getClients().getID() + " to the clients map " + this.mapID);
 		}
 	}	
 
