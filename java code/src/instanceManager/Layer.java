@@ -133,7 +133,7 @@ public abstract class Layer {
 	/**
 	 * Generate an ID for this map
 	 */
-	private void generateID() {
+	public void generateID() {
 		this.mapID = this.getDescID() + this.getNbSites() + "s-"+ UUID.randomUUID().toString();
 	}
 	
@@ -164,7 +164,6 @@ public abstract class Layer {
 
 		// Loop through the sites and add their coordinates to the JSON Object
 		for(int locIter = 0; locIter < this.nbSites; locIter++) {
-			//JSONObject jsonLoc = this.sites[locIter].getJSONLoc();
 			jsonSites.put(this.sites[locIter].getJSONLoc());
 		}
 
