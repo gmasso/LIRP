@@ -36,7 +36,7 @@ public class LayerGenerator {
 		/* DC levels */
 		for(int lvl = 0; lvl < Parameters.nb_levels - 1; lvl++) {
 			for(int nbDepots : nb_depots) {
-				for(int i = 0; i < 10; i++) {
+				for(int i = 0; i < 30; i++) {
 					DepotsMap dMap = new DepotsMap(Parameters.grid_size, nbDepots, Parameters.fixed_cost_dc, oc_depots, 0, capa_loc, supplier);
 					String layerName = layersDir + "Depots/" + dMap.getID() +".json";
 					dMap.writeToJSONFile(layerName);

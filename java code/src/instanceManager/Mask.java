@@ -21,6 +21,7 @@ public class Mask {
 		this.map = map;
 		this.activeSites = new int[Math.min(nbActive, this.map.getNbSites())];
 		this.inactiveSites = new int[Math.max(0, this.map.getNbSites() - nbActive)];
+		this.setActiveSites();
 	}
 	
 	/**
@@ -44,6 +45,24 @@ public class Mask {
 	public Mask(Layer map, int[] activeSites) {
 		this.map = map;
 		this.activeSites = activeSites;
+		this.inactiveSites = new int[this.map.getNbSites() - this.activeSites.length];
+		int iterSites = 0;
+		int inactiveIndex = 0;
+		while(iterSites < this.map.getNbSites() && inactiveIndex < this.inactiveSites.length) {
+			boolean isInactive = true;
+			int activeIter = 0;
+			while(isInactive && activeIter < this.activeSites.length) {
+				if(this.activeSites[activeIter] == iterSites)
+					isInactive = false;
+				else
+					activeIter++;
+			}
+			if(isInactive) {
+				this.inactiveSites[inactiveIndex] = iterSites;
+				inactiveIndex++;
+			}
+			iterSites++;
+		}
 	}
 
 	/**
@@ -51,6 +70,10 @@ public class Mask {
 	 */
 	public void setActiveSites() {
 		int[] indices = new int[this.map.getNbSites()];
+		for(int i = 0; i < indices.length; i++) {
+			indices[i] = i;
+		}
+		
 		/* Shuffle as many elements in the array indices as there are active sites */
 		Random rnd = ThreadLocalRandom.current();
 		/* Fill an array with the indices of possible routes */

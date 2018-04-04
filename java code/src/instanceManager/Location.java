@@ -55,8 +55,7 @@ public class Location {
 	public Location(JSONObject jsonLoc) throws IOException, NullPointerException {
 		JSONArray jsonCoords = (JSONArray) jsonLoc.get("coordinates");
 
-		// Get the different parameters for each client
-		// Remark: Coordinates can't be null but other fields may not have values, in this case the corresponding attribute of the client is set to zero.
+		/* Remark: Coordinates can't be null but other fields may not have values, in this case the corresponding attribute of the location is set to zero. */
 		double coord_x = jsonCoords.isNull(0) ? -1 : jsonCoords.getDouble(0); // Coordinate of the client on the x-axis
 		double coord_y = jsonCoords.isNull(1) ? -1 : jsonCoords.getDouble(1); // Coordinate of the client on the y-axis
 		// If one the coordinates does not appear, throw an exception

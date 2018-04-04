@@ -42,13 +42,29 @@ public abstract class Layer {
 	}
 	
 	/**
-	 * Create a new Layer object
+	 * 
+	 * @param lMask The mask to apply
+	 */
+	public Layer(Mask lMask) {
+		this.gridSize = lMask.getLayer().getGridSize();
+		this.nbSites = lMask.getNbActiveSites();
+		this.sites = new Location[this.nbSites];
+		
+		/* Assign coordinates to each site according to the active sites of the mask */
+		for(int sIndex = 0; sIndex < this.nbSites; sIndex++) {
+			this.sites[sIndex] = lMask.getSite(sIndex);
+		}
+	}
+	
+	/**
+	 * Create a new Layer object from a JSON object containing its description
 	 * @param nbSites	the number of location to position on the map
 	 * @throws IOException
 	 */
 	public Layer(JSONObject jsonMap) throws IOException {
-		// Create a JSON Object to describe the depots map
-		this.mapID = jsonMap.getString("id");
+		if(jsonMap.has("id")) {
+			this.mapID = jsonMap.getString("id");
+	}
 		this.gridSize = jsonMap.getDouble("map size");
 		this.nbSites = jsonMap.getInt("nb sites");
 		this.sites = new Location[this.nbSites];
@@ -167,12 +183,11 @@ public abstract class Layer {
 	}
 
 	/**
-	 * 
+	 * Create a JSON Object describing the layer
 	 * @return	a JSON object containing the attributes of each site on the map
 	 * @throws IOException
 	 */
 	protected JSONObject getJSONLayer() throws IOException {
-		// Create a JSON Object to describe the depots map
 		JSONObject jsonMap = this.getJSONLayerSpec();
 		jsonMap.put("id", this.mapID);
 		jsonMap.put("map size", this.gridSize);

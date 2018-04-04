@@ -121,10 +121,14 @@ public class Client extends Location{
 
 	/**
 	 * Set the value of the demands for the entire planning horizon
-	 * @param demands	the demands sequence for the client
+	 * @param normFactor	a normalization factor that depends on the vehicles capacities available
+	 * @param demands		the demands sequence for the client
 	 */
-	public void setDemands(double[] demands){
-		this.demands = demands;
+	public void setDemands(double normFactor, double[] demands){
+		this.demands = new double[demands.length];
+		for(int t = 0; t < this.demands.length; t++) {
+			this.demands[t] = normFactor * demands[t];
+		}
 	}
 
 	/**
@@ -149,11 +153,24 @@ public class Client extends Location{
 			
 			/* Assign the demand to one one the two closest period with probability proportional to their distance */
 			double rnd = Parameters.rand.nextDouble();
+			System.out.println(rnd);
+			if(period - closestBefore < 0) {
+				closestBefore = 0;
+			}
+			if(period + closestAfter > this.demands.length - 1) {
+				closestAfter = 0;
+			}
+			if(closestBefore + closestAfter <= 0) {
+				System.out.println("Problem while looking for an active day around an off period");
+				System.exit(1);
+			}
+				
 			if(rnd < closestBefore / (closestBefore + closestAfter)) {
-				this.demands[period - closestBefore] += value;
+				
+					this.demands[period - closestBefore] += value;
 			}
 			else {
-				this.demands[period + closestAfter] += value;
+					this.demands[period + closestAfter] += value;
 			}
 		}
 	}

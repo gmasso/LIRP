@@ -213,17 +213,17 @@ public class DemandsMap extends Layer {
 	private static double cdfGaussian(double z, double mu, double sigma) {
 		return cdfGaussian((z - mu) / sigma);
 	}
-
+	
 	@Override
 	protected String getDescID() {
 		if(this.period > 0) {
 			/* Change the ID depending on if the demand pattern differentiates week days from week end (WD)
 			 * or if it does not exclude any day of the week (AW)
 			 */
-			return "periodic-" + this.clients.getDescID();
+			return "periodic-" + this.clients.getID() + "*-";
 		}
 		else
-			return "iid-" + this.clients.getDescID();
+			return "iid-" + this.clients.getID() + "*-";
 	}
 
 	@Override

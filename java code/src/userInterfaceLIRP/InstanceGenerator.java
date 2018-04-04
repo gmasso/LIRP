@@ -18,8 +18,8 @@ import tools.Parameters;
 public class InstanceGenerator {
 
 	private static ArrayList<Pair<Integer, Double>> vehicles = new ArrayList<Pair<Integer, Double>>(); 				// Number and capacity of vehicles for each level
-	private static int[] nb_depots_inst = {3};//, 6, 9, 12};
-	private static int[] nb_clients_inst = {10, 25, 50};//, 75, 100, 150, 200};
+	private static int[] nb_depots_inst = {/*3, */6/*, 9, 12*/};
+	private static int[] nb_clients_inst = {/*10, */25, 50, 75, 100, 150, 200};
 
 	private static int planning_horizon = 30;
 	private static double fc_factor = 1000;
@@ -56,33 +56,51 @@ public class InstanceGenerator {
 						ClientsMap cMap = new ClientsMap(JSONParser.readJSONFromFile(clDirName + clFName + "/map.json"));
 
 						DepotsMap[] dMaps = new DepotsMap[1];
-						dMaps[0] = new DepotsMap(JSONParser.readJSONFromFile(dcFName));
+						dMaps[0] = new DepotsMap(JSONParser.readJSONFromFile(dcDirName + dcFName));
 						dcFName = dcFNames.get(Parameters.rand.nextInt(dcFNames.size()));
-						
+
 						Mask cMask = new Mask(cMap, nbClients);
 						Mask dMask[] = new Mask[1];
 						dMask[0] = new Mask(dMaps[0]);
 
 						/* Select all the files associated with the clients map selected */
-						ArrayList<String> demandsFNames = selectLayersNames("", clFName);
+						ArrayList<String> demandsFNames = selectLayersNames("", clDirName + clFName + "/");
 						String demandPattern = "";
 						/* All files that do not describe the clients map are demands maps */
 						for(String demandFName : demandsFNames) {
 							if(!demandFName.startsWith("map")) {
-								DemandsMap demandsMap = new DemandsMap(JSONParser.readJSONFromFile(demandFName));
+								DemandsMap demandsMap = new DemandsMap(JSONParser.readJSONFromFile(clDirName + clFName + "/" + demandFName));
 								demandPattern = demandFName.substring(0, demandFName.lastIndexOf("-"));
-								for(int activeProfile = 0; activeProfile < Parameters.active_profiles.length; activeProfile++) {
+								for(int activeProfile = 0; activeProfile < Parameters.proba_actives.length; activeProfile++) {
 									try {
-										String instFileName = instDir + "lirp" + nbClients + "r" + nbDC + "d" + demandPattern + count;
-										System.out.print("Creating instance " + instFileName + "...");
+										String instName = "lirp" + nbClients + "r-" + nbDC + "d-" + demandPattern + count;
+										System.out.print("Creating instance " + instName + "...");
 
 										Instance inst = new Instance(planning_horizon, dMask, cMask, demandsMap, vehicles, holding_ratio, fc_factor, oc_factor, count % 3, activeProfile);
 
 										RouteManager rm = new RouteManager(inst);
 										inst.assignDemands();
-										String instPrefix = instDir + inst.getNbClients() + "r-" + inst.getNbDepots(0) + "d-" + inst.getDemandProfile() + "_" + count + "/";
-										inst.writeToJSONFile(instPrefix + "INST-" + inst.getID() + ".json");
-										rm.writeToJSONFile(instPrefix + "RM-" + inst.getID() + ".json");
+
+										String instDirName = instDir + inst.getID();
+										File instDirectory = new File(instDirName);
+										/* if the directory does not exist, create it */
+										if (!instDirectory.exists()) {
+											boolean result = false;
+
+											try{
+												instDirectory.mkdir();
+												result = true;
+											} 
+											catch(SecurityException se){
+												/* handle it */
+											}        
+											if(result) {    
+												System.out.println("DIR " + instDirName +" created");  
+											}
+
+											inst.writeToJSONFile(instDirName + "/instance.json");
+											rm.writeToJSONFile(instDirName + "/rm.json");
+										}
 									}
 									catch (IOException ioe) {
 										System.out.println("Error: " + ioe.getMessage());

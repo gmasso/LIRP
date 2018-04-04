@@ -119,23 +119,22 @@ public class ClientsMap extends Layer {
 		super(jsonClients);
 
 		JSONArray jsonClientsArray = jsonClients.getJSONArray("sites");
-		// Loop through the depots and get the different parameters
+		/* Loop through the clients and get the different parameters */
 		for (int clientIndex = 0; clientIndex < jsonClientsArray.length(); clientIndex++) {
 			this.sites[clientIndex] = new Client((JSONObject) jsonClientsArray.get(clientIndex));
+		}
+		if(jsonClients.has("cities")) {
+			this.cities = new CitiesMap(jsonClients.getJSONObject("cities"));
 		}
 	}
 
 	
 	public ClientsMap(Mask cMask) throws IOException {
-		super(cMask.getLayer().getGridSize(), cMask.getNbActiveSites());
+		super(cMask);
 
 		if(cMask.getLayer().getClass() == ClientsMap.class) {
-			// Start by assigning virtual coordinates to all sites, out of the grid
-			for(int sIndex = 0; sIndex < this.nbSites; sIndex++) {
-				this.sites[sIndex] = cMask.getLayer().getSite(sIndex);
-			}
 			this.cities = ((ClientsMap) cMask.getLayer()).getCitiesMap();
-			this.generateID();
+			this.mapID = cMask.getLayer().getID().replaceFirst(cMask.getLayer().getDescID(), this.getDescID());
 		}
 		else {
 			System.out.println("Trying to build a clients map from another type of layer. Stopping.");
@@ -173,10 +172,10 @@ public class ClientsMap extends Layer {
 	}
 
 	public void assignDemands(DemandsMap demandsMap, int demandProfile, double vCapacity) {
-		if(this.mapID.equals(demandsMap.getClients().getID())) {
-			double[] clientsDemandsInPeriod = new double[this.sites.length];
+		if(this.isCompatible(demandsMap)) {
+			double[][] clientsDemands = new double[this.sites.length][demandsMap.getPlanningHorizon()];
 
-			// Assign a weight to each client for the allocation of each demand box
+			/* Assign a weight to each client for the allocation of each demand box */
 			double[][] clientsWeights = new double[demandsMap.getNbSites()][this.sites.length];
 			double totalWeight = 0;
 
@@ -187,8 +186,9 @@ public class ClientsMap extends Layer {
 					Location cLoc = this.sites[cIndex];
 					((Client) cLoc).initDemandSeq(demandsMap.getPlanningHorizon());
 
-					// The weight of each client to collect each demand of the DemandsMap object is
-					// proportional to the inverse of the square of the distance
+					/* The weight of each client to collect each demand of the DemandsMap object is
+					 * proportional to the inverse of the square of the distance
+					 */
 					clientsWeights[dBoxIndex][cIndex] = 1/Math.pow(dLoc.getDistance(cLoc), 2);
 					totalWeight += clientsWeights[dBoxIndex][cIndex];
 				}
@@ -209,11 +209,11 @@ public class ClientsMap extends Layer {
 						c = selectIndex(clientsWeights[dBoxIndex]); 
 						rnd = Parameters.rand.nextDouble();
 					}
-					clientsDemandsInPeriod[c] +=  this.scaleDemand(demandProfile) * demandsMap.getDemandBoxInPeriod(dBoxIndex, t);
+					clientsDemands[c][t] +=  this.scaleDemand(demandProfile) * demandsMap.getDemandBoxInPeriod(dBoxIndex, t);
 				}
 				// Set the clients demands in period t
-				for (int cIndex = 0; cIndex < clientsDemandsInPeriod.length; cIndex++) {
-						((Client) this.sites[cIndex]).setDemand(t, normFactor * clientsDemandsInPeriod[cIndex]);
+				for (int cIndex = 0; cIndex < clientsDemands.length; cIndex++) {
+						((Client) this.sites[cIndex]).setDemands(normFactor, clientsDemands[cIndex]);
 				}
 			}
 		}
@@ -276,6 +276,14 @@ public class ClientsMap extends Layer {
 
 		return clientCoords;
 	}
+	
+	private boolean isCompatible(DemandsMap dMap) {
+		String dMapID = dMap.getID();
+		int prefix = dMapID.indexOf("s-") + 2;
+		int postfix = dMapID.indexOf("*-");
+		String subMap = dMapID.substring(prefix, postfix);
+		return (this.mapID.contains(subMap));
+	}
 
 	/**
 	 * 
@@ -290,7 +298,7 @@ public class ClientsMap extends Layer {
 		double cumSum = 0;
 		double rnd = 0;
 		Pair<Double, ArrayList<Boolean>> activePair = new Pair<Double, ArrayList<Boolean>> (0.0, new ArrayList<Boolean>());
-		for(Client client : (Client[]) this.sites) {
+		for(Location client : this.sites) {
 			cumSum = 0;
 			rnd = Parameters.rand.nextDouble();
 			Iterator<Pair<Double, ArrayList<Boolean>>> pairIter = activeDays.iterator();
@@ -298,7 +306,7 @@ public class ClientsMap extends Layer {
 				activePair = pairIter.next();
 				cumSum += activePair.getL() / totalWeight;
 			}
-			client.setActiveDays(activePair.getR());
+			((Client) client).setActiveDays(activePair.getR());
 		}
 	}
 	
@@ -309,8 +317,9 @@ public class ClientsMap extends Layer {
 	protected JSONObject getJSONLayerSpec() throws IOException {
 		// Create a JSON Object to describe the depots map
 		JSONObject jsonSpec = new JSONObject();
-
-		jsonSpec.put("cities", this.cities.getJSONLayer());
+		if(this.cities != null) {
+			jsonSpec.put("cities", this.cities.getJSONLayer());
+		}
 
 		return jsonSpec;
 	}

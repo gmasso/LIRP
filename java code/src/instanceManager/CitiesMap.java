@@ -53,6 +53,24 @@ public class CitiesMap extends Layer {
 		this.computeCityCumRatio(urbanRatio);
 	}
 	
+	/**
+	 * Creates a citiesMap object according to the data contained in a JSON object 
+	 * @param jsonCities
+	 * @throws IOException
+	 */
+	public CitiesMap(JSONObject jsonCities) throws IOException {
+		super(jsonCities);
+		
+		JSONArray jsonCitiesArray = jsonCities.getJSONArray("sites");
+		JSONArray jsonSizesArray = jsonCities.getJSONArray("sizes");
+		this.sizes = new double[jsonSizesArray.length()];
+		/* Loop through the clients and get the different parameters */
+		for (int cityIndex = 0; cityIndex < jsonCitiesArray.length(); cityIndex++) {
+			this.sites[cityIndex] = new Location((JSONObject) jsonCitiesArray.get(cityIndex));
+			this.sizes[cityIndex] = jsonSizesArray.getDouble(cityIndex);
+		}
+	}
+	
 	/*
 	 * ACCESSORS
 	 */

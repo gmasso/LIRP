@@ -44,25 +44,21 @@ public class DepotsMap extends Layer {
 	 * @throws IOException
 	 */
 	public DepotsMap(JSONObject jsonDepots) throws IOException {
-		super(jsonDepots.getDouble("map size"), jsonDepots.getJSONArray("sites").length());
+		super(jsonDepots);
 
 		JSONArray jsonDepotsArray = jsonDepots.getJSONArray("sites");
-		// Loop through the depots and get the different parameters
-		for(int depotIndex=0; depotIndex<jsonDepotsArray.length(); depotIndex++) {
-			// Create a new depot with the corresponding features
+		/* Loop through the depots and get the different parameters */
+		for(int depotIndex = 0; depotIndex < jsonDepotsArray.length(); depotIndex++) {
+			/* Create a new depot with the corresponding features */
 			sites[depotIndex] = new Depot((JSONObject) jsonDepotsArray.get(depotIndex));
 		}
 	}
 
 	public DepotsMap(Mask dMask) throws IOException {
-		super(dMask.getLayer().getGridSize(), dMask.getNbActiveSites());
+		super(dMask);
 
 		if(dMask.getLayer().getClass() == DepotsMap.class) {
-			// Start by assigning virtual coordinates to all sites, out of the grid
-			for(int sIndex = 0; sIndex < this.nbSites; sIndex++) {
-				this.sites[sIndex] = dMask.getLayer().getSite(sIndex);
-			}
-			this.generateID();
+			this.mapID = dMask.getLayer().getID().replaceFirst(dMask.getLayer().getDescID(), this.getDescID());
 		}
 		else {
 			System.out.println("Trying to build a depots map from another type of layer. Stopping.");
