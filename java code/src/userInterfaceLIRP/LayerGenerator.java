@@ -34,15 +34,16 @@ public class LayerGenerator {
 		Location supplier = new Location(new Point2D.Double(Parameters.grid_size/2, Parameters.grid_size/2));
 		/* Create the layers for each level */
 		/* DC levels */
-//		for(int lvl = 0; lvl < Parameters.nb_levels - 1; lvl++) {
-//			for(int nbDepots : nb_depots) {
-//				for(int i = 0; i < 10; i++) {
-//					DepotsMap dMap = new DepotsMap(Parameters.grid_size, nbDepots, Parameters.fixed_cost_dc, oc_depots, 0, capa_loc, supplier);
-//					String layerName = layersDir + "Depots/" + dMap.getID() +".json";
-//					dMap.writeToJSONFile(layerName);
-//				}
-//			}
-//		}
+		for(int lvl = 0; lvl < Parameters.nb_levels - 1; lvl++) {
+			for(int nbDepots : nb_depots) {
+				for(int i = 0; i < 10; i++) {
+					DepotsMap dMap = new DepotsMap(Parameters.grid_size, nbDepots, Parameters.fixed_cost_dc, oc_depots, 0, capa_loc, supplier);
+					String layerName = layersDir + "Depots/" + dMap.getID() +".json";
+					dMap.writeToJSONFile(layerName);
+				}
+			}
+		}
+		
 		/* Create instances with 3 or 2 cities */
 		for(int nbCities = 0; nbCities < 3; nbCities++) {
 			/* Create 10 layers of each type */
