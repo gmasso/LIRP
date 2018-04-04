@@ -112,7 +112,7 @@ public class ClientsMap extends Layer {
 	 * @throws IOException
 	 */
 	public ClientsMap(JSONObject jsonClients) throws IOException {
-		super(jsonClients.getDouble("map size"), jsonClients.getJSONArray("sites").length());
+		super(jsonClients);
 
 		JSONArray jsonClientsArray = jsonClients.getJSONArray("sites");
 		// Loop through the depots and get the different parameters
@@ -121,6 +121,24 @@ public class ClientsMap extends Layer {
 		}
 	}
 
+	
+	public ClientsMap(Mask cMask) throws IOException {
+		super(cMask.getLayer().getGridSize(), cMask.getNbActiveSites());
+
+		if(cMask.getLayer().getClass() == ClientsMap.class) {
+			// Start by assigning virtual coordinates to all sites, out of the grid
+			for(int sIndex = 0; sIndex < this.nbSites; sIndex++) {
+				this.sites[sIndex] = cMask.getLayer().getSite(sIndex);
+			}
+			this.cities = ((ClientsMap) cMask.getLayer()).getCitiesMap();
+			this.generateID();
+		}
+		else {
+			System.out.println("Trying to build a clients map from another type of layer. Stopping.");
+			System.exit(1);
+		}
+	}
+	
 	/*
 	 * ACCESSORS
 	 */
@@ -206,7 +224,7 @@ public class ClientsMap extends Layer {
 	 * @return
 	 */
 	private double scaleDemand(int demandProfile) {
-		return (Parameters.demandProfiles[demandProfile][0] + (Parameters.demandProfiles[demandProfile][1] - Parameters.demandProfiles[demandProfile][0]) * Parameters.rand.nextDouble());
+		return (Parameters.demand_profiles[demandProfile][0] + (Parameters.demand_profiles[demandProfile][1] - Parameters.demand_profiles[demandProfile][0]) * Parameters.rand.nextDouble());
 	}
 	//Select an index in the range of the array size with a probability
 	//proportional to the associated weight of each index

@@ -54,6 +54,22 @@ public class DepotsMap extends Layer {
 		}
 	}
 	
+	public DepotsMap(Mask dMask) throws IOException {
+		super(dMask.getLayer().getGridSize(), dMask.getNbActiveSites());
+
+		if(dMask.getLayer().getClass() == DepotsMap.class) {
+			// Start by assigning virtual coordinates to all sites, out of the grid
+			for(int sIndex = 0; sIndex < this.nbSites; sIndex++) {
+				this.sites[sIndex] = dMask.getLayer().getSite(sIndex);
+			}
+			this.generateID();
+		}
+		else {
+			System.out.println("Trying to build a depots map from another type of layer. Stopping.");
+			System.exit(1);
+		}
+	}
+	
 	/**
 	 * 
 	 * @param d	the index of the depot that we want to position on the map

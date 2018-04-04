@@ -3,6 +3,7 @@ package instanceManager;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import tools.Parameters;
@@ -14,6 +15,14 @@ public class DemandsMap extends Layer {
 	private boolean isUniform;
 	private ClientsMap clients;
 
+	/**
+	 * 
+	 * @param clientsMap		The client map from which the instance is generated
+	 * @param planningHorizon	The length of the planning horizon
+	 * @param period			The length of a cycle in the demand sequences (0 if the demand sequences are aperiodic)
+	 * @param isUniform			True if the demand distribution is uniform
+	 * @throws IOException
+	 */
 	public DemandsMap(ClientsMap clientsMap, int planningHorizon, int period, boolean isUniform) throws IOException {
 		super(clientsMap.getGridSize(), Parameters.nb_steps * Parameters.nb_steps);
 
@@ -33,6 +42,19 @@ public class DemandsMap extends Layer {
 		this.fillDemands();
 	}
 
+	public DemandsMap(JSONObject jsonDMap) throws IOException {
+		super(jsonDMap);
+
+		/* Set up the shared characteristics of the demands sequences */
+		this.planningHorizon = jsonDMap.getInt("planning horizon");
+		this.isUniform = jsonDMap.getBoolean("uniform");
+		this.period = jsonDMap.getInt("period");
+		
+		JSONArray jsonDBoxes = jsonDMap.getJSONArray("sites");
+		for (int sIndex = 0; sIndex < this.nbSites; sIndex++) {
+				this.sites[sIndex] = new DemandSequence(jsonDBoxes.getJSONObject(sIndex));
+		}
+	}
 	/*
 	 * ACCESSORS
 	 */
@@ -62,6 +84,21 @@ public class DemandsMap extends Layer {
 		return ((DemandSequence) this.sites[dBoxIndex]).getValue(period);
 	}
 
+	/**
+	 * 
+	 * @return The description of the demand pattern
+	 */
+	public String getPatternDesc() {
+		if(this.isUniform) {
+			return "Uni";
+		}
+		else if(this.period > 0) {
+			return "P-" + this.period;
+		}
+		else {
+			return "Gau";
+		}
+	}
 	/*
 	 * PRIVATE METHODS
 	 */
@@ -186,7 +223,12 @@ public class DemandsMap extends Layer {
 	}
 
 	protected JSONObject getJSONLayerSpec() throws IOException {
-		return new JSONObject();
+		JSONObject jsonDMap = new JSONObject();
+		jsonDMap.put("planning horizon", this.planningHorizon);
+		jsonDMap.put("uniform", this.isUniform);
+		jsonDMap.put("period", this.period);
+		
+		return jsonDMap;
 	}
 
 }

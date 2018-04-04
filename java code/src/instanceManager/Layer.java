@@ -42,6 +42,19 @@ public abstract class Layer {
 		this.nbSites = nbSites;
 		this.generateID();
 	}
+	
+	/**
+	 * Create a new Layer object
+	 * @param nbSites	the number of location to position on the map
+	 * @throws IOException
+	 */
+	public Layer(JSONObject jsonMap) throws IOException {
+		// Create a JSON Object to describe the depots map
+		this.mapID = jsonMap.getString("id");
+		this.gridSize = jsonMap.getDouble("map size");
+		this.nbSites = jsonMap.getInt("nb sites");
+		this.sites = new Location[this.nbSites];
+	}
 
 	/*
 	 * ACCESSORS
@@ -159,6 +172,7 @@ public abstract class Layer {
 	protected JSONObject getJSONLayer() throws IOException {
 		// Create a JSON Object to describe the depots map
 		JSONObject jsonMap = this.getJSONLayerSpec();
+		jsonMap.put("id", this.mapID);
 		jsonMap.put("map size", this.gridSize);
 		JSONArray jsonSites = new JSONArray();
 

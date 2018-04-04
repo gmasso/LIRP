@@ -35,11 +35,12 @@ public final class Parameters {
 	// Granularity for the demand map (split into demand boxes of size nbSteps x nbSteps)
 	public static int nb_steps = 100;
 	// Possible demand profiles(0: Light, 1: Heavy, 2: Mixture)
-	public static double[][] demandProfiles = {{0.05, 0.15}, {0.2, 0.4}, {0.05, 0.4}};
+	public static double[][] demand_profiles = {{0.05, 0.15}, {0.2, 0.4}, {0.05, 0.4}};
+	public static String[] profile_names = {"L", "H", "M"};
 	public static double spatial_threshold = 0.3;
 	public static Boolean[][] active_profiles = {{true,true,true,true,true,true,true}, {true,true,true,true,true,true,false},
 		{true,true,true,true,true,false,false}, {false,true,true,true,true,true,false}};
-	public static double[] proba_profiles = {0.1, 0.4, 0.25, 0.25};
+	public static double[][] proba_actives = {{0.1, 0.4, 0.25, 0.25}, {1, 0, 0, 0}, {0, 0, 1, 0}};
 
 	// Routes parameters
 	public static double avg_speed = 50; 			// In km/h

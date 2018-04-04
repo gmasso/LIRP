@@ -1,5 +1,7 @@
 package tools;
 
+import org.json.JSONArray;
+
 public class Pair<L, R> {
 	    private L l;
 	    private R r;
@@ -47,5 +49,13 @@ public class Pair<L, R> {
 	    
 	    public void decrement() {
 	        this.score = score-1;
+	    }
+	    
+	    public JSONArray getJSON() {
+	    	JSONArray jsonPair = new JSONArray();
+	    	jsonPair.put(this.l);
+	    	jsonPair.put(this.r);
+	    	
+	    	return jsonPair;
 	    }
 	 }

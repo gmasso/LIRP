@@ -22,6 +22,19 @@ public class Mask {
 		this.activeSites = new int[Math.min(nbActive, this.map.getNbSites())];
 		this.inactiveSites = new int[Math.max(0, this.map.getNbSites() - nbActive)];
 	}
+	
+	/**
+	 * 
+	 * @param map
+	 * @param nbActive
+	 */
+	public Mask(Layer map) {
+		this.map = map;
+		this.activeSites = new int[this.map.getNbSites()];
+		for(int i = 0; i < this.activeSites.length; i++) {
+			this.activeSites[i] = i;
+		}
+	}
 
 	/**
 	 * 
@@ -76,5 +89,9 @@ public class Mask {
 	 */
 	public int[] getInactiveSites() {
 		return this.inactiveSites;
+	}
+	
+	public int getNbActiveSites() {
+		return this.activeSites.length;
 	}
 }

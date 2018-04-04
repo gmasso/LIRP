@@ -4,7 +4,6 @@
 package solverLIRP;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -124,61 +123,50 @@ public class RouteManager {
 	 * METHODS
 	 */
 	/**
-	 * Fill the direct routes arrays with the all valid direct routes for the instance considered
+	 * Fill the direct routes arrays with all the valid direct routes for the instance considered. 
+	 * If a location is not reachable from an upper level, re-position this location on the map.
 	 * @param instLIRP		the LIRP instance
 	 * @throws IOException
 	 */
 	private void populateDirect() throws IOException {
-		/* Linked Hashsets to store the feasible routes on the two levels as they are computed */
-		LinkedHashSet<Route> directLvl0 = new LinkedHashSet<Route>();
-		LinkedHashSet<Route> directLvl1 = new LinkedHashSet<Route>();
-		int dIndex = 0;
-		/* Fill the direct routes first in order to test the reachability of each location */
-		while(dIndex < this.instLIRP.getNbDepots(0)) {
-			/* Create a new direct route from the supplier to the depot */
-			Route direct0 = new Route(this.instLIRP, -1, dIndex);
-			/* If its duration is lower than the maximum time allowed, add it to the list */
-			if(direct0.isValid()) {
-				directLvl0.add(direct0);
-				this.nbRoutesLvl[0] += 1;
-				int cIndex = 0;
-				while(cIndex < this.instLIRP.getNbClients()) {
-					/* Create a new direct Route object between the current depot and client */
-					Route direct1 = new Route(this.instLIRP, dIndex, cIndex);
-					/* If its duration is lower than the maximum time allowed, add it to the list */
-					if(direct1.isValid()) {
-						directLvl1.add(direct1);
-						this.nbRoutesLvl[1] += 1;
-						cIndex++;
+		/* Loop through the different levels */
+		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
+			/* Create a LinkedHashSet to store the feasible routes on the current level as they are computed */
+			LinkedHashSet<Route> directLvl = new LinkedHashSet<Route>();
+			int sIndex = 0;
+			/* Fill the direct routes first and test that each location of the level is reachable from at least one site on the upper level */
+			while(sIndex < this.instLIRP.getNbDepots(lvl)) {
+				int nbUpperSites = this.instLIRP.getNbDepots(lvl - 1);
+				int uIndex = (lvl == 0) ? -1 : 0;
+				boolean reachable = false;
+				while(uIndex < nbUpperSites) {
+					/* Create a new direct route from the current upper site (uIndex) to the current lower site (sIndex) */
+					Route directR = new Route(this.instLIRP, uIndex, sIndex);
+					/* If its duration is lower than the maximum time allowed, add it to the list and mark the lower site as reachable*/
+					if(directR.isValid()) {
+						reachable = true;
+						directLvl.add(directR);
+						this.nbRoutesLvl[lvl] += 1;
 					}
-					/* Otherwise, we have found an unreachable client: The instance is not valid and we draw a new location for the unreachable client*/
-					else {
-						this.instLIRP.drawClient(cIndex);
-					}
-
+					uIndex++;
 				}
-				/* Add the routes containing nbStops to the level 1 HashMap */
-				if(!directLvl1.isEmpty()) {
-					this.routes.get(1).put(1, directLvl1);
+				/* If the site is reachable, go to the next site index */
+				if(reachable) {
+					sIndex++;
 				}
-				dIndex++;
+				/* Otherwise, re-position the site randomly and check if the new location is reachable from an upper site */
+				else {
+					if(lvl == Parameters.nb_levels - 1)
+						this.instLIRP.drawClient(sIndex);
+					else
+						this.instLIRP.drawDepot(lvl, sIndex);
+				}
 			}
-			/* Otherwise, we have found an unreachable depot: The instance is not valid and we draw a new location for the unreachable depot*/
-			else {
-				this.instLIRP.drawDepot(0, dIndex);
-			}
-			/* Add the routes containing nbStops to the level 0 HashMap */
-			if(!directLvl0.isEmpty()) {
-				this.routes.get(0).put(1, directLvl0);
-			}
+			/* Add the direct routes to the corresponding level in the HashMap */
+			this.routes.get(lvl).put(1, directLvl);
 		}
 	}
 
-	/**
-	 * Fill the loop routes HashSets at a specific level
-	 * @param lvl			the level at which we want to create the loop routes
-	 * @throws IOException
-	 */
 	/**
 	 * Fill the loop routes HashSets at a specific level
 	 * @param lvl			the level at which we want to create the loop routes
@@ -186,15 +174,15 @@ public class RouteManager {
 	 * @throws IOException
 	 */
 	private void populateLoops(int lvl, int nbStops) throws IOException {
-		/* HashSet to store the loop routes with nbStops+1 stops at level lvl*/
+		/* HashSet to store the loop routes with nbStops+1 stops at level lvl */
 		LinkedHashSet<Route> loopsLvl = new LinkedHashSet<Route>();
 
 		/* Fill an array list with the potential stop candidates to add to the loop routes */
 		int finalIndex = 0;
-		if(lvl > 0)
+		if(lvl == Parameters.nb_levels - 1)
 			finalIndex = this.instLIRP.getNbClients();
 		else
-			finalIndex = this.instLIRP.getNbDepots(0);
+			finalIndex = this.instLIRP.getNbDepots(lvl);
 
 		/* If the stopping time is small enough, build the multi-stops routes for this instance */
 		/* Start from each of the existing direct routes */
@@ -216,143 +204,144 @@ public class RouteManager {
 				}
 			}
 		}
+		/* If some routes have been found for this number of stops, add it to the HashMap */
 		if(!loopsLvl.isEmpty()) {
 			this.routes.get(lvl).put(nbStops + 1, loopsLvl);
 			populateLoops(lvl, nbStops + 1);
 		}
 	}
 
-	
-	/**
-	 * 
-	 * @param Allocation  allocation matrix
-	 * @return list of selected depot indices
-	 * @throws IOException
-	 */
-	private ArrayList<Integer> getListOfSelectedDepots(int[][] Allocation)throws IOException 
-	{
-		ArrayList<Integer> S = new ArrayList<Integer>();
-		int nd = this.instLIRP.getNbDepots(0); 
-		int nc = this.instLIRP.getNbClients(); 
-		
-		// If depot d has at least one client allocated to it, we consider it is selected, otherwise not. 
-		for (int d=0; d<nd;d++){
-			for (int c=0; c<nc;c++) {
-				if (Allocation[c][d] ==1)
-					S.add(d);
-				c=nc; // if at least one client is allocated to depot d, depot d exists and we can check next depot
-			}
-		}
-		return S;
-	}
-	
-	/**
-	 * @param : d : depot index
-	 * @param Allocation  allocation matrix
-	 * @return list of clients allocated to d
-	 * @throws IOException
-	 * **/
-	 
-		private ArrayList<Integer> getListOfAllocatedClients(int d, int[][] Allocation)throws IOException 
-		{
-			ArrayList<Integer> AAA = new ArrayList<Integer>();
-			int nc = this.instLIRP.getNbClients(); 
-			
-			for (int c=0; c<nc;c++) {
-					if (Allocation[c][d] == 1) AAA.add(c);
-			}
-			return AAA;
-		}
-	 
-	
-	
-	
-	/**
-	 * 
-	 * @param loopSD        routes from the supplier to depots
-	 * @param Allocation    matrix with customer allocation. Depot with 0 client = not selected
-	 * @return list of SD routes: SD routes starting from an unselected depot are filtered
-	 * @throws IOException
-	 */
 
-	// GUILLAUME
-	//private HashMap<Integer, HashMap<Integer, LinkedHashSet<Route>>> filterSDRoutes(ArrayList<Route> loopSD, int[][] Allocation) throws IOException {
+	//	/**
+	//	 * 
+	//	 * @param Allocation  allocation matrix
+	//	 * @return list of selected depot indices
+	//	 * @throws IOException
+	//	 */
+	//	private ArrayList<Integer> getListOfSelectedDepots(int[][] Allocation)throws IOException 
+	//	{
+	//		ArrayList<Integer> S = new ArrayList<Integer>();
+	//		int nd = this.instLIRP.getNbDepots(0); 
+	//		int nc = this.instLIRP.getNbClients(); 
+	//		
+	//		// If depot d has at least one client allocated to it, we consider it is selected, otherwise not. 
+	//		for (int d=0; d<nd;d++){
+	//			for (int c=0; c<nc;c++) {
+	//				if (Allocation[c][d] ==1)
+	//					S.add(d);
+	//				c=nc; // if at least one client is allocated to depot d, depot d exists and we can check next depot
+	//			}
+	//		}
+	//		return S;
+	//	}
+	//	
+	//	/**
+	//	 * @param : d : depot index
+	//	 * @param Allocation  allocation matrix
+	//	 * @return list of clients allocated to d
+	//	 * @throws IOException
+	//	 * **/
+	//	 
+	//		private ArrayList<Integer> getListOfAllocatedClients(int d, int[][] Allocation)throws IOException 
+	//		{
+	//			ArrayList<Integer> AAA = new ArrayList<Integer>();
+	//			int nc = this.instLIRP.getNbClients(); 
+	//			
+	//			for (int c=0; c<nc;c++) {
+	//					if (Allocation[c][d] == 1) AAA.add(c);
+	//			}
+	//			return AAA;
+	//		}
+	//	 
+	//	
+	//	
+	//	
+	//	/**
+	//	 * 
+	//	 * @param loopSD        routes from the supplier to depots
+	//	 * @param Allocation    matrix with customer allocation. Depot with 0 client = not selected
+	//	 * @return list of SD routes: SD routes starting from an unselected depot are filtered
+	//	 * @throws IOException
+	//	 */
+	//
+	//	// GUILLAUME
+	//	//private HashMap<Integer, HashMap<Integer, LinkedHashSet<Route>>> filterSDRoutes(ArrayList<Route> loopSD, int[][] Allocation) throws IOException {
+	//
+	//	// OLIVIER
+	//	ArrayList<Route> filterSDRoutes(ArrayList<Route> loopSD, int[][] Allocation) throws IOException {
+	//		
+	//		ArrayList<Route> filteredSD = new ArrayList<Route>();
+	//		ArrayList<Integer> S =  getListOfSelectedDepots(Allocation);
+	//	
+	//		for (int d=0; d<S.size();d++){
+	//			Route r = new Route(this.instLIRP, -1, S.get(d)); // create a new SD route r from s to d
+	//			filteredSD.add(r);
+	//		}
+	//		return filteredSD;
+	//	}
+	//
+	//
+	//	/**
+	//	 * 
+	//	 * @param loopDC        routes from depots to clients
+	//	 * @param Allocation    matrix with customer allocation. 
+	//	 * @return filtered list of DC routes. 
+	//	 * DC route starting from an unselected depot are filtered
+	//	 * @throws IOException
+	//	 */
+	//
+	//		// OLIVIER
+	//	private ArrayList<Route> filterDCRoutes(ArrayList<Route> loopDC, int[][] Allocation) throws IOException {
+	//
+	//		int keep; // indicates if a route must be kept or not in the filtered list
+	//		ArrayList<Route> filteredDC = new ArrayList<Route>();
+	//		ArrayList<Integer> S =  getListOfSelectedDepots(Allocation);
+	//		
+	//		for (int itr=0; itr<loopDC.size();itr++) {
+	//			Route r = loopDC.get(itr);
+	//			instanceManager.Location rdep = r.getStart();
+	//			// Ici ca risque de ne pas fonctionner car rdep est de type Location et S continet des entiers (a vï¿½rifier)
+	//			if (S.contains(rdep)){
+	//					filteredDC.add(r);
+	//			}
+	//		}
+	//		return filteredDC;
+	//	}
+	//	
+	//	
+	//	
+	//	
+	//	/**
+	//	 * 
+	//	 * @param loopDC        routes from depots to clients
+	//	 * @param Allocation    matrix with customer allocation. 
+	//	 * @return filtered list of DC routes. 
+	//	 * DC Routes where all clients not preAllocated to d are filtered
+	//	 * @throws IOException
+	//	 */
+	//
+	//	// GUILLAUME
+	//	//private LinkedHashSet<Route> filterRoutes(ArrayList<Route> loopDC, int[][] Allocation) throws IOException {
+	//
+	//	// OLIVIER
+	//	private ArrayList<Route> filterRoutes(ArrayList<Route> loopDC, int[][] Allocation) throws IOException {
+	//
+	//		int keep; // indicates if a route must be kept or not in the filtered list
+	//		ArrayList<Integer> S =  getListOfSelectedDepots(Allocation);
+	//		ArrayList<Route> filtered = new ArrayList<Route>();
+	//
+	//		for (int itr=0; itr<loopDC.size();itr++) {
+	//			keep=1;
+	//			Route r = loopDC.get(itr);
+	//			ArrayList<Integer> AAA = getListOfAllocatedClients(itr, Allocation);
+	//			if (r.containsAll(AAA)) { // all clients are allocated to the depot of route r
+	//				filtered.add(r);
+	//			}
+	//		}
+	//		return filtered;
+	//	}
 
-	// OLIVIER
-	ArrayList<Route> filterSDRoutes(ArrayList<Route> loopSD, int[][] Allocation) throws IOException {
-		
-		ArrayList<Route> filteredSD = new ArrayList<Route>();
-		ArrayList<Integer> S =  getListOfSelectedDepots(Allocation);
-	
-		for (int d=0; d<S.size();d++){
-			Route r = new Route(this.instLIRP, -1, S.get(d)); // create a new SD route r from s to d
-			filteredSD.add(r);
-		}
-		return filteredSD;
-	}
 
-
-	/**
-	 * 
-	 * @param loopDC        routes from depots to clients
-	 * @param Allocation    matrix with customer allocation. 
-	 * @return filtered list of DC routes. 
-	 * DC route starting from an unselected depot are filtered
-	 * @throws IOException
-	 */
-
-		// OLIVIER
-	private ArrayList<Route> filterDCRoutes(ArrayList<Route> loopDC, int[][] Allocation) throws IOException {
-
-		int keep; // indicates if a route must be kept or not in the filtered list
-		ArrayList<Route> filteredDC = new ArrayList<Route>();
-		ArrayList<Integer> S =  getListOfSelectedDepots(Allocation);
-		
-		for (int itr=0; itr<loopDC.size();itr++) {
-			Route r = loopDC.get(itr);
-			instanceManager.Location rdep = r.getStart();
-			// Ici ca risque de ne pas fonctionner car rdep est de type Location et S continet des entiers (a vérifier)
-			if (S.contains(rdep)){
-					filteredDC.add(r);
-			}
-		}
-		return filteredDC;
-	}
-	
-	
-	
-	
-	/**
-	 * 
-	 * @param loopDC        routes from depots to clients
-	 * @param Allocation    matrix with customer allocation. 
-	 * @return filtered list of DC routes. 
-	 * DC Routes where all clients not preAllocated to d are filtered
-	 * @throws IOException
-	 */
-
-	// GUILLAUME
-	//private LinkedHashSet<Route> filterRoutes(ArrayList<Route> loopDC, int[][] Allocation) throws IOException {
-
-	// OLIVIER
-	private ArrayList<Route> filterRoutes(ArrayList<Route> loopDC, int[][] Allocation) throws IOException {
-
-		int keep; // indicates if a route must be kept or not in the filtered list
-		ArrayList<Integer> S =  getListOfSelectedDepots(Allocation);
-		ArrayList<Route> filtered = new ArrayList<Route>();
-
-		for (int itr=0; itr<loopDC.size();itr++) {
-			keep=1;
-			Route r = loopDC.get(itr);
-			ArrayList<Integer> AAA = getListOfAllocatedClients(itr, Allocation);
-			if (r.containsAll(AAA)) { // all clients are allocated to the depot of route r
-				filtered.add(r);
-			}
-		}
-		return filtered;
-	}
-	
-	
 
 	//			/* Build additional routes from every existing shorter route */
 	//			for(Route startRouteLvl0 : this.routes.get(0).get(nbStops - 1)) {
@@ -457,7 +446,7 @@ public class RouteManager {
 	 * @param filename	the destination file
 	 * @throws IOException
 	 */
-	protected void writeToJSONFile(String filename) throws IOException {
+	public void writeToJSONFile(String filename) throws IOException {
 		System.out.println(filename);
 		JSONParser.writeJSONToFile(this.getJSONRM(), filename);
 	}

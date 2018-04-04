@@ -25,12 +25,13 @@ public class Instance {
 	 */
 	private double gridSize;
 	private int planningHorizon;
-	private double[] vehiclesCapacity;
+	private ArrayList<Pair<Integer, Double>> fleetDesc;
 	private Location supplier;
 	private DepotsMap[] depots;
 	private ClientsMap clients;
 	private DemandsMap demands;
 	private String instID;
+	private int demandProfile;
 	
 	/*
 	 * CONSTRUCTORS
@@ -54,7 +55,7 @@ public class Instance {
 	 * @throws IOException
 	 * @throws NullPointerException
 	 */
-	public Instance(double gridSize, int planningHorizon, int nbDepots, double fc, double[] oc, int nbClients, double[] citiesSizes, double urbanRatio, double holdingRatio, int period, boolean uniformDistrib, int demandProfile, double[] vCapacities) throws IOException, NullPointerException {
+	public Instance(double gridSize, int planningHorizon, int nbDepots, double fc, double[] oc, int nbClients, double[] citiesSizes, double urbanRatio, double holdingRatio, int period, boolean uniformDistrib, int demandProfile, ArrayList<Pair<Integer, Double>> vDesc) throws IOException, NullPointerException {
 		try {
 			this.gridSize = gridSize;
 			this.supplier = new Location(new Point2D.Double(gridSize/2, gridSize/2));
@@ -64,11 +65,13 @@ public class Instance {
 			}
 			this.clients = new ClientsMap(gridSize, nbClients, citiesSizes, urbanRatio, holdingRatio);
 			this.demands = new DemandsMap(this.clients, planningHorizon, period, uniformDistrib);
-			this.clients.assignDemands(this.demands, demandProfile, vCapacities[Parameters.nb_levels-1]);
+			this.demandProfile = demandProfile; 
+			this.fleetDesc = vDesc; 
+			this.clients.assignDemands(this.demands, this.demandProfile, this.fleetDesc.get(Parameters.nb_levels - 1).getR());
 			// Set the planning horizon
 			this.planningHorizon = planningHorizon;
 			// Fill the corresponding attribute
-			this.vehiclesCapacity = vCapacities; 
+
 
 			this.generateID();
 			
@@ -95,26 +98,30 @@ public class Instance {
 	 * @throws IOException
 	 * @throws NullPointerException
 	 */
-	public Instance(int planningHorizon, DepotsMap[] dMaps, ClientsMap cMap, double[] vCapacities, DemandsMap dBoxMap, int demandProfile) throws IOException, NullPointerException {
+	public Instance(int planningHorizon, Mask[] dMasks, Mask cMask, DemandsMap dBoxMap, ArrayList<Pair<Integer, Double>> vDesc, double holdingRatio, double fcFactor, double ocFactor, int demandProfile, int activeProfile) throws IOException, NullPointerException {
 		System.out.println("Creating instance...");
 		try {
 			LinkedHashSet<Pair<Double, ArrayList<Boolean>>> activeDays = new LinkedHashSet<Pair<Double, ArrayList<Boolean>>>();
-			for(int profile = 0; profile < Parameters.proba_profiles.length; profile++) {
-				activeDays.add(new Pair<Double, ArrayList<Boolean>>(Parameters.proba_profiles[profile], new ArrayList<Boolean>(Arrays.asList(Parameters.active_profiles[profile]))));
+			for(int profile = 0; profile < Parameters.proba_actives.length; profile++) {
+				activeDays.add(new Pair<Double, ArrayList<Boolean>>(Parameters.proba_actives[activeProfile][profile], new ArrayList<Boolean>(Arrays.asList(Parameters.active_profiles[profile]))));
 			}
 			this.gridSize = 0;
-			for(DepotsMap dMap: dMaps) {
-				this.gridSize = Math.max(gridSize, dMap.getGridSize());
+			for(Mask dMask: dMasks) {
+				this.gridSize = Math.max(gridSize, dMask.getLayer().getGridSize());
 			}
-			this.gridSize = Math.max(this.gridSize, cMap.getGridSize());
-			this.depots = dMaps;
-			this.clients = cMap;
+			this.gridSize = Math.max(this.gridSize, cMask.getLayer().getGridSize());
+			this.depots = new DepotsMap[dMasks.length];
+			for(int lvl = 0; lvl < this.depots.length; lvl++) {
+				this.depots[lvl] = new DepotsMap(dMasks[lvl]);
+			}
+			this.clients = new ClientsMap(cMask);
 			this.clients.setClientsActiveDays(activeDays);
-			this.clients.assignDemands(dBoxMap, demandProfile, vCapacities[Parameters.nb_levels - 1]);
+			this.fleetDesc = vDesc; 
+			this.clients.assignDemands(dBoxMap, demandProfile, this.fleetDesc.get(Parameters.nb_levels - 1).getR());
 			// Set the planning horizon
 			this.planningHorizon = planningHorizon;
 			// Fill the corresponding attribute
-			this.vehiclesCapacity = vCapacities; 
+
 			this.supplier = new Location(new Point2D.Double(gridSize/2, gridSize/2));
 
 			System.out.println("Instance created successfully.");
@@ -145,11 +152,15 @@ public class Instance {
 			// Set the planning horizon
 			this.planningHorizon = jsonInstanceObject.getInt("planning horizon");
 			// Get the capacity of each vehicle
-			JSONArray jsonCapaVehicles = jsonInstanceObject.getJSONArray("vehicles capacities");
+			JSONArray jsonFleetDesc = jsonInstanceObject.getJSONArray("fleet description");
 			// Fill the corresponding attribute
-			this.vehiclesCapacity = new double[jsonCapaVehicles.length()]; 
-			for(int vIter=0; vIter<jsonCapaVehicles.length(); vIter++) {
-				this.vehiclesCapacity[vIter] = jsonCapaVehicles.isNull(vIter) ? -1 : jsonCapaVehicles.getDouble(vIter); // Set the capacity of vehicle vIter if the field is not null, -1 otherwise (infinite capacity)
+			this.fleetDesc = new ArrayList<Pair<Integer,Double>>();
+			for(int lvl = 0; lvl < jsonFleetDesc.length(); lvl++) {
+				JSONArray jsonFleetLvl = jsonFleetDesc.getJSONArray(lvl);
+				int nbVehicles = jsonFleetLvl.isNull(0) ? -1 : jsonFleetLvl.getInt(0);
+				double capaVehicles = jsonFleetLvl.isNull(1) ? -1 : jsonFleetLvl.getDouble(1);
+				
+				this.fleetDesc.add(new Pair<Integer, Double>(nbVehicles, capaVehicles)); // Set the capacity of vehicle vIter if the field is not null, -1 otherwise (infinite capacity)
 			}
 			// Get the supplier coordinates
 			JSONObject jsonSupplier = jsonInstanceObject.isNull("supplier") ? null : jsonInstanceObject.getJSONObject("supplier");
@@ -196,12 +207,20 @@ public class Instance {
 	public String getID() { 
 		return this.instID;
 	}
-	/**
-	 * 
-	 * @return	the number of depots
-	 */
-	public int getNbDepots(int lvl) { 
-		return this.depots[lvl].getNbSites();
+	public int getNbDepots(int lvl) {
+		if(lvl == -1) {
+			return 0;
+		}
+		if(lvl == Parameters.nb_levels - 1) {
+			return this.clients.getNbSites();
+		}
+		else {
+			return this.depots[lvl].getNbSites();
+		}
+	}
+	
+	public String getDemandProfile() {
+		return this.demands.getPatternDesc() + Parameters.profile_names[this.demandProfile];
 	}
 
 	/**
@@ -255,22 +274,19 @@ public class Instance {
 	 * @param v	the index of the vehicle of interest
 	 * @return	the capacity of the vehicles corresponding to the index
 	 */
-	public double getCapacityVehicle(int v) {
-		if(v<this.vehiclesCapacity.length)
-			if(this.vehiclesCapacity[v]>0)
-				return this.vehiclesCapacity[v];
-			else
-				return Parameters.bigM;
+	public double getCapacityVehicle(int lvl) {
+		if(lvl < Parameters.nb_levels)
+			return (this.fleetDesc.get(lvl).getR() > 0) ? this.fleetDesc.get(lvl).getR() : Parameters.bigM;
 		else
-			throw new IndexOutOfBoundsException("Error: Vehicle " + v + "does not exist");
+			throw new IndexOutOfBoundsException("Error: Level " + lvl + "does not exist");
 	}
 
 	/**
 	 * 
 	 * @return	the number of vehicles in the fleet
 	 */
-	public int getNbVehicles() { 
-		return this.vehiclesCapacity.length;
+	public int getNbVehicles(int lvl) { 
+		return this.fleetDesc.get(lvl).getL();
 	}
 
 	/**
@@ -324,6 +340,10 @@ public class Instance {
 		this.clients.redrawClient(c);
 	}
 
+	public void assignDemands() {
+		this.clients.assignDemands(this.demands, demandProfile, this.fleetDesc.get(Parameters.nb_levels - 1).getR());
+	}
+	
 	/**
 	 * Generate an ID for this instance
 	 */
@@ -334,6 +354,7 @@ public class Instance {
 		}
 		this.instID += this.getNbClients() + "cl" + this.clients.getCitiesMap().getNbSites() + "ci_" + UUID.randomUUID().toString();
 	}
+	
 	/*
 	 * METHODS
 	 */
@@ -353,7 +374,11 @@ public class Instance {
 		}
 		jsonInstance.put("depots layers", jsonLayers);
 		jsonInstance.put("clients", this.clients.getJSONLayer());
-		jsonInstance.put("vehicles capacities", new JSONArray(this.vehiclesCapacity));
+		JSONArray jsonFleet = new JSONArray();
+		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
+			jsonFleet.put(this.fleetDesc.get(lvl).getJSON());
+		}
+		jsonInstance.put("fleet description", jsonFleet);
 
 		return jsonInstance;
 	}
