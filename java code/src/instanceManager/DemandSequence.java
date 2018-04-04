@@ -107,11 +107,12 @@ public class DemandSequence extends Location {
 	 */
 	@Override
 	protected JSONObject getJSONLocSpec() throws IOException {
-		// Create a JSON Object to describe the depots map
+		/* Create a JSON Object to describe the depots map */
 		JSONObject jsonSequence = new JSONObject();
-		if(this.demands != null)
-			jsonSequence.put("demands",new JSONArray(this.demands));
-
+		if(this.demands != null) {
+			jsonSequence.put("demands", new JSONArray(this.demands));
+		}
+		
 		return jsonSequence;
 	}
 

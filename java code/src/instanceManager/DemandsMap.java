@@ -50,10 +50,10 @@ public class DemandsMap extends Layer {
 		this.planningHorizon = jsonDMap.getInt("planning horizon");
 		this.isUniform = jsonDMap.getBoolean("uniform");
 		this.period = jsonDMap.getInt("period");
-		
+
 		JSONArray jsonDBoxes = jsonDMap.getJSONArray("sites");
 		for (int sIndex = 0; sIndex < this.nbSites; sIndex++) {
-				this.sites[sIndex] = new DemandSequence(jsonDBoxes.getJSONObject(sIndex));
+			this.sites[sIndex] = new DemandSequence(jsonDBoxes.getJSONObject(sIndex));
 		}
 	}
 	/*
@@ -137,15 +137,19 @@ public class DemandsMap extends Layer {
 		double citiesInfluence = 0;
 		CitiesMap cities = this.clients.getCitiesMap();
 		double distWithCity, citySize = 0;
-		// Get the cities map from the client map in order to determine the intensity of
-		// the demand on each box
+		/* Get the cities map from the client map in order to determine the intensity of
+		 * the demand on each box */
 		for (int cityIndex = 0; cityIndex < cities.getNbSites(); cityIndex++) {
 			distWithCity = loc.getDistance(this.clients.getCitiesMap().getSite(cityIndex));
 			citySize = cities.getCitySize(cityIndex);
 			citiesInfluence += citySize;
 			intensity += citySize * cdfGaussian(1 / Math.pow(distWithCity, 2), 0, citySize);
 		}
-		return 2.0 * (1.0 - (intensity / citiesInfluence));
+
+		if(citiesInfluence > 0) {
+			return 2.0 * (1.0 - (intensity / citiesInfluence));
+		}
+		return 1.0;
 	}
 
 
@@ -211,10 +215,9 @@ public class DemandsMap extends Layer {
 	}
 
 	@Override
-
 	protected String getDescID() {
 		if(this.period > 0) {
-			/* Change the ID depending on if the demand patter differentiates week days from week end (WD)
+			/* Change the ID depending on if the demand pattern differentiates week days from week end (WD)
 			 * or if it does not exclude any day of the week (AW)
 			 */
 			return "periodic-" + this.clients.getDescID();
@@ -223,13 +226,17 @@ public class DemandsMap extends Layer {
 			return "iid-" + this.clients.getDescID();
 	}
 
+	@Override
+	/**
+	 * Return a JSON Object containing the specificities of the demand map
+	 */
 	protected JSONObject getJSONLayerSpec() throws IOException {
-		JSONObject jsonDMap = new JSONObject();
-		jsonDMap.put("planning horizon", this.planningHorizon);
-		jsonDMap.put("uniform", this.isUniform);
-		jsonDMap.put("period", this.period);
-		
-		return jsonDMap;
+		JSONObject jsonSpec = new JSONObject();
+		jsonSpec.put("planning horizon", this.planningHorizon);
+		jsonSpec.put("uniform", this.isUniform);
+		jsonSpec.put("period", this.period);
+
+		return jsonSpec;
 	}
 
 }

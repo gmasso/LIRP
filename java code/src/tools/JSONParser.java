@@ -32,15 +32,15 @@ public final class JSONParser {
 			jsonFile.createNewFile();
 		}
 		
-		// Create a new FileWriter object
+		/* Create a new FileWriter object */
 		FileWriter fileWriter = new FileWriter(jsonFile);
 
-		// Write the jsonObject into the file
+		/* Write the jsonObject into the file */
 		fileWriter.write(jsonToWrite.toString());
 		fileWriter.close();
 	}
 
-	// To count the number of files in a folder
+	/* To count the number of files in a folder */
 	public static int countFiles(String pathToFolder) {
 		File f = new File(pathToFolder);
 		int count = 0;

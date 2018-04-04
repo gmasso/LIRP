@@ -173,8 +173,9 @@ public class Client extends Location{
 	protected JSONObject getJSONLocSpec() throws IOException {
 		// Create a JSON Object to describe the depots map
 		JSONObject jsonClient = new JSONObject();
-
-		jsonClient.put("demands", new JSONArray(this.demands));
+		if(this.demands != null) {
+			jsonClient.put("demands", new JSONArray(this.demands));
+		}
 
 		return jsonClient;
 	}

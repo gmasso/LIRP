@@ -185,12 +185,11 @@ public class Location {
 	}
 	
 	/**
-	 * Creates a JSON object to store info about this Location object (overriden in subclasses)
+	 * Creates a JSON object to store info about this Location object (overridden in subclasses)
 	 * @return	a new JSON object
 	 * @throws IOException
 	 */
-	protected JSONObject getJSONLocSpec() throws IOException 
-	{
+	protected JSONObject getJSONLocSpec() throws IOException {
 		return new JSONObject();
 	}
 	
