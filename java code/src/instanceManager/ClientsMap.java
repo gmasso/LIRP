@@ -45,6 +45,7 @@ public class ClientsMap extends Layer {
 		for (int cIndex = 0; cIndex < this.nbSites; cIndex++) {
 			this.sites[cIndex] = new Client(drawClient());
 		}
+		this.generateID();
 	}
 	/**
 	 * Create a clientsMap that defines the location and the attributes of the
@@ -71,6 +72,7 @@ public class ClientsMap extends Layer {
 		for (int cIndex = 0; cIndex < this.nbSites; cIndex++) {
 			this.sites[cIndex] = new Client(drawClient(), holdingCost, 0, -1);
 		}
+		this.generateID();
 	}
 
 	/**
@@ -99,6 +101,8 @@ public class ClientsMap extends Layer {
 		// We set the average demand per box as the total demand (avgD/site * nbSites)
 		// divided among the number of demand boxes on the map
 		this.assignDemands(demandsMap, demandProfile, vCapacity);
+		this.generateID();
+
 	}
 
 	/**
@@ -162,7 +166,10 @@ public class ClientsMap extends Layer {
 	}
 
 	protected String getDescID() {
-		return this.cities.getDescID();
+		if(this.cities != null) {
+			return this.cities.getDescID();
+		}
+		return "0c-";
 	}
 
 	public void assignDemands(DemandsMap demandsMap, int demandProfile, double vCapacity) {

@@ -40,6 +40,7 @@ public class DemandsMap extends Layer {
 			}
 		}
 		this.fillDemands();
+		this.generateID();
 	}
 
 	public DemandsMap(JSONObject jsonDMap) throws IOException {
@@ -216,10 +217,10 @@ public class DemandsMap extends Layer {
 			/* Change the ID depending on if the demand patter differentiates week days from week end (WD)
 			 * or if it does not exclude any day of the week (AW)
 			 */
-			return "periodic-" + this.clients.getCitiesMap().getDescID();
+			return "periodic-" + this.clients.getDescID();
 		}
 		else
-			return "iid-" + this.clients.getCitiesMap().getDescID();
+			return "iid-" + this.clients.getDescID();
 	}
 
 	protected JSONObject getJSONLayerSpec() throws IOException {

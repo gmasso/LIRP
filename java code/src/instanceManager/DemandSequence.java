@@ -45,6 +45,7 @@ public class DemandSequence extends Location {
 	 * MUTATORS
 	 */
 	public void fillValues(int planningHorizon, double intensity, boolean isUniform, int period) {
+		this.demands = new double[planningHorizon];
 		// If the demand is uniform the sequence of demands is filled with uniform r.v.
 		if (isUniform) {
 			for (int t = 0; t < planningHorizon; t++)

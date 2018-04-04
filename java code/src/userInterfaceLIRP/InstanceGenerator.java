@@ -53,11 +53,12 @@ public class InstanceGenerator {
 					while(count < nbInstOfType * Parameters.demand_profiles.length) {
 						ArrayList<String> clFNames = selectLayersNames(nbCities + "c", clDirName);
 						String clFName = clFNames.get(Parameters.rand.nextInt(clFNames.size()));		
-						ClientsMap cMap = new ClientsMap(JSONParser.readJSONFromFile(clFName + "/map.json"));
+						ClientsMap cMap = new ClientsMap(JSONParser.readJSONFromFile(clDirName + clFName + "/map.json"));
 
 						DepotsMap[] dMaps = new DepotsMap[1];
 						dMaps[0] = new DepotsMap(JSONParser.readJSONFromFile(dcFName));
 						dcFName = dcFNames.get(Parameters.rand.nextInt(dcFNames.size()));
+						
 						Mask cMask = new Mask(cMap, nbClients);
 						Mask dMask[] = new Mask[1];
 						dMask[0] = new Mask(dMaps[0]);

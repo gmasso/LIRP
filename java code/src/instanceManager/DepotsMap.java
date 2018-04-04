@@ -8,11 +8,11 @@ import org.json.JSONObject;
 import tools.Parameters;
 
 import java.awt.geom.Point2D;
-		
+
 public class DepotsMap extends Layer {
-	
+
 	private double minDist; 
-	
+
 	/**
 	 * Creates a DepotsMap object satisfying separation constraints on the distance between two sites
 	 * @param gridSize	the size of the map
@@ -29,13 +29,13 @@ public class DepotsMap extends Layer {
 		for(int sIndex = 0; sIndex < this.nbSites; sIndex++) {
 			this.sites[sIndex] = new Depot(new Point2D.Double(this.gridSize * 2, this.gridSize * 2), fc, 1, oc, initInv, capa, supplier);
 		}
-        // The minimum distance between two sites must be at least half of the radius of a disk whose area is equal to the average area per site.
-        this.minDist = this.gridSize / Math.sqrt(this.nbSites * Math.PI * 2);
-        // Compute the coordinates of all the sites
-        for(int sIndex = 0; sIndex < this.nbSites; sIndex++) {
-        		this.drawDepot(sIndex);
-        }
-        this.generateID();
+		// The minimum distance between two sites must be at least half of the radius of a disk whose area is equal to the average area per site.
+		this.minDist = this.gridSize / Math.sqrt(this.nbSites * Math.PI * 2);
+		// Compute the coordinates of all the sites
+		for(int sIndex = 0; sIndex < this.nbSites; sIndex++) {
+			this.drawDepot(sIndex);
+		}
+		this.generateID();
 	}
 
 	/**
@@ -45,7 +45,7 @@ public class DepotsMap extends Layer {
 	 */
 	public DepotsMap(JSONObject jsonDepots) throws IOException {
 		super(jsonDepots.getDouble("map size"), jsonDepots.getJSONArray("sites").length());
-		
+
 		JSONArray jsonDepotsArray = jsonDepots.getJSONArray("sites");
 		// Loop through the depots and get the different parameters
 		for(int depotIndex=0; depotIndex<jsonDepotsArray.length(); depotIndex++) {
@@ -53,7 +53,7 @@ public class DepotsMap extends Layer {
 			sites[depotIndex] = new Depot((JSONObject) jsonDepotsArray.get(depotIndex));
 		}
 	}
-	
+
 	public DepotsMap(Mask dMask) throws IOException {
 		super(dMask.getLayer().getGridSize(), dMask.getNbActiveSites());
 
@@ -69,7 +69,7 @@ public class DepotsMap extends Layer {
 			System.exit(1);
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @param d	the index of the depot that we want to position on the map
@@ -83,12 +83,12 @@ public class DepotsMap extends Layer {
 		// Set the coordinates of the new depot to the first valid candidate
 		this.setSiteCoords(d, siteCandidate);
 	}
-	
+
 
 	protected String getDescID() {
 		return "";
 	}
-	
+
 	/**
 	 * Create a new JSON object to store the characteristics of the DepotsMap object  
 	 */

@@ -13,13 +13,13 @@ import tools.Parameters;
 
 public class LayerGenerator {
 
-	private static double capa_loc = 100000;									// Capacity of any location
+	private static double capa_loc = 100000;							// Capacity of any location
 
-	private static int[] nb_depots = {0, 3, 6, 9, 12};					// Possible number of depots on a layer
-	private static double oc_depots = 5;									// Ordering costs for the depots (in addition to routing costs)
+	private static int[] nb_depots = {3, 6, 9, 12};					// Possible number of depots on a layer
+	private static double oc_depots = 5;								// Ordering costs for the depots (in addition to routing costs)
 
 	private static int nb_clients = 300;
-	private static double[] cities_sizes = {3, 6, 9, 12, 18};				// Possible city sizes
+	private static double[] cities_sizes = {3, 6, 9, 12, 18};			// Possible city sizes
 	private static double[] proba_sizes = {0.25, 0.3, 0.2, 0.18, 0.07};	// Probability of each size
 
 
@@ -34,15 +34,15 @@ public class LayerGenerator {
 		Location supplier = new Location(new Point2D.Double(Parameters.grid_size/2, Parameters.grid_size/2));
 		/* Create the layers for each level */
 		/* DC levels */
-		for(int lvl = 0; lvl < Parameters.nb_levels - 1; lvl++) {
-			for(int nbDepots : nb_depots) {
-				for(int i = 0; i < 10; i++) {
-					DepotsMap dMap = new DepotsMap(Parameters.grid_size, nbDepots, Parameters.fixed_cost_dc, oc_depots, 0, capa_loc, supplier);
-					String layerName = layersDir + "Depots/" + dMap.getID() +".json";
-					dMap.writeToJSONFile(layerName);
-				}
-			}
-		}
+//		for(int lvl = 0; lvl < Parameters.nb_levels - 1; lvl++) {
+//			for(int nbDepots : nb_depots) {
+//				for(int i = 0; i < 10; i++) {
+//					DepotsMap dMap = new DepotsMap(Parameters.grid_size, nbDepots, Parameters.fixed_cost_dc, oc_depots, 0, capa_loc, supplier);
+//					String layerName = layersDir + "Depots/" + dMap.getID() +".json";
+//					dMap.writeToJSONFile(layerName);
+//				}
+//			}
+//		}
 		/* Create instances with 3 or 2 cities */
 		for(int nbCities = 0; nbCities < 3; nbCities++) {
 			/* Create 10 layers of each type */
