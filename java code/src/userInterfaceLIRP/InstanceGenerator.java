@@ -19,7 +19,7 @@ public class InstanceGenerator {
 
 	private static ArrayList<Pair<Integer, Double>> vehicles = new ArrayList<Pair<Integer, Double>>(); 				// Number and capacity of vehicles for each level
 	private static int[] nb_depots_inst = {/*3,6, 9, 12, 15,*/ 18};
-	private static int[] nb_clients_inst = {/*10, 25, 50, 75, 100,*/ 150, 200};
+	private static int[] nb_clients_inst = {/*10, 25, 50, 75,*/ 100, 150, 200};
 
 	private static int planning_horizon = 30;
 	private static double fc_factor = 1000;
@@ -59,10 +59,6 @@ public class InstanceGenerator {
 						dMaps[0] = new DepotsMap(JSONParser.readJSONFromFile(dcDirName + dcFName));
 						dcFName = dcFNames.get(Parameters.rand.nextInt(dcFNames.size()));
 
-						Mask cMask = new Mask(cMap, nbClients);
-						Mask dMask[] = new Mask[1];
-						dMask[0] = new Mask(dMaps[0]);
-
 						/* Select all the files associated with the clients map selected */
 						ArrayList<String> demandsFNames = selectLayersNames("", clDirName + clFName + "/");
 						String demandPattern = "";
@@ -71,36 +67,30 @@ public class InstanceGenerator {
 							if(!demandFName.startsWith("map")) {
 								DemandsMap demandsMap = new DemandsMap(JSONParser.readJSONFromFile(clDirName + clFName + "/" + demandFName));
 								demandPattern = demandFName.substring(0, demandFName.lastIndexOf("-"));
+								
+								/* Select some clients and depots randomly on the selected layers */
+								Mask cMask = new Mask(cMap, nbClients);
+								Mask dMask[] = new Mask[1];
+								dMask[0] = new Mask(dMaps[0]);
+								
 								for(int activeProfile = 0; activeProfile < Parameters.proba_actives.length; activeProfile++) {
 									try {
 										String instName = "lirp" + nbClients + "r-" + nbDC + "d-" + demandPattern + count;
 										System.out.print("Creating instance " + instName + "...");
-
+										
 										Instance inst = new Instance(planning_horizon, dMask, cMask, demandsMap, vehicles, holding_ratio, fc_factor, oc_factor, count % 3, activeProfile);
 
 										RouteManager rm = new RouteManager(inst, true);
 										inst.assignDemands(planning_horizon);
 
-										String instDirName = instDir + inst.getID();
-										File instDirectory = new File(instDirName);
-										/* if the directory does not exist, create it */
-										if (!instDirectory.exists()) {
-											boolean result = false;
+										String typeInst = "Medium";
+										if(nbDC > 12 || nbClients > 100 || (nbClients > 75 && nbDC > 9))
+											typeInst = "Big";
+										else if(nbClients < 75 && nbDC < 9)
+											typeInst = "Small";
+										String instFileName = instDir + typeInst + "/" + inst.getID();
 
-											try{
-												instDirectory.mkdir();
-												result = true;
-											} 
-											catch(SecurityException se){
-												/* handle it */
-											}        
-											if(result) {    
-												System.out.println("DIR " + instDirName +" created");  
-											}
-
-											inst.writeToJSONFile(instDirName + "/instance.json");
-											rm.writeToJSONFile(instDirName + "/rm.json");
-										}
+										inst.writeToJSONFile(instFileName + ".json");
 									}
 									catch (IOException ioe) {
 										System.out.println("Error: " + ioe.getMessage());

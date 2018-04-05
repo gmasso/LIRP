@@ -21,10 +21,10 @@ public class RouteManager {
 	/*=====================
 	 *      ATTRIBUTES
 	 ======================*/
-	private Instance instLIRP;											// The instance to which the routes apply
+	private Instance instLIRP;													// The instance to which the routes apply
 	private HashMap<Integer, HashMap<Integer, LinkedHashSet<Route>>> routes; 	// A route is referenced with its level (0 : supplier-depot, 1 : depot-client)
-	// For a given level, routes are ordered according to their number of stops
-	private int[] nbRoutesLvl;												// Total number of routes at each level (0: Supplier to depots, 1: Depots to clients)
+																				// For a given level, routes are ordered according to their number of stops
+	private int[] nbRoutesLvl;													// Total number of routes at each level (0: Supplier to depots, 1: Depots to clients)
 
 	/**
 	 * Create a RouteManager object from an instance and the type of model under investigation
@@ -52,9 +52,12 @@ public class RouteManager {
 
 		System.out.println("Route manager created.");
 	}
+	
 	/**
 	 * Create a RouteManager object from an instance and the type of model under investigation
-	 * @param instLIRP	the instance from which the set of routes is created
+	 * @param instLIRP		The instance from which the set of routes is created
+	 * @param onlyDirect	If we only want to generate direct routes and modify instLIRP so that all clients are reachable
+	 * @throws IOException
 	 */
 	public RouteManager(Instance instLIRP, boolean onlyDirect) throws IOException {
 		/* Create direct routes for the instance */
@@ -72,7 +75,7 @@ public class RouteManager {
 		this.populateDirect();
 		System.out.println("Route manager created.");
 	}
-
+	
 	/*
 	 * ACCESSORS
 	 */
