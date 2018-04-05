@@ -46,21 +46,22 @@ public class DemandSequence extends Location {
 	 */
 	public void fillValues(int planningHorizon, double intensity, boolean isUniform, int period) {
 		this.demands = new double[planningHorizon];
-		// If the demand is uniform the sequence of demands is filled with uniform r.v.
+		/* If the demand is uniform the sequence of demands is filled with uniform r.v. */
 		if (isUniform) {
 			for (int t = 0; t < planningHorizon; t++)
 				this.demands[t] = intensity * Parameters.rand.nextDouble();
 		}
-		// Otherwise the demand is drawn according to a truncated normal distribution,
-		// around its average value (sinus if periodic, constant otherwise)
+		/* Otherwise the demand is drawn according to a truncated normal distribution,
+		 * around its average value (sinus if periodic, constant otherwise)
+		 */
 		else {
 			double avgDemand = 0.5;
 			for (int t = 0; t < planningHorizon; t++) {
 				double currentMean = avgDemand;
 				double currentDemand = -1;
-				// In the periodic case, the average demand follows sinusoidal
+				/* In the periodic case, the average demand follows sinusoidal */
 				if (period > 0)
-					currentMean += 0.5 * Math.sin(2 * Math.PI * t / period);
+					currentMean += avgDemand * Math.sin(2.0 * Math.PI * t / period);
 				while (currentDemand < 0 || currentDemand > currentMean + 0.5) {
 					currentDemand = intensity * (currentMean + Parameters.rand.nextGaussian() / 6);	
 				}

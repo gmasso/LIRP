@@ -16,7 +16,7 @@ import tools.Parameters;
 public class ClientsMap extends Layer {
 
 	private CitiesMap cities;
-	
+
 
 	/**
 	 * Create a clientsMap object that defines the location and the attributes of
@@ -100,7 +100,7 @@ public class ClientsMap extends Layer {
 		}
 		// We set the average demand per box as the total demand (avgD/site * nbSites)
 		// divided among the number of demand boxes on the map
-		this.assignDemands(demandsMap, demandProfile, vCapacity);
+		this.assignDemands(demandsMap, demandsMap.getPlanningHorizon(), demandProfile, vCapacity);
 		this.generateID();
 
 	}
@@ -128,7 +128,7 @@ public class ClientsMap extends Layer {
 		}
 	}
 
-	
+
 	public ClientsMap(Mask cMask) throws IOException {
 		super(cMask);
 
@@ -141,7 +141,7 @@ public class ClientsMap extends Layer {
 			System.exit(1);
 		}
 	}
-	
+
 	/*
 	 * ACCESSORS
 	 */
@@ -171,9 +171,11 @@ public class ClientsMap extends Layer {
 		return "0c-";
 	}
 
-	public void assignDemands(DemandsMap demandsMap, int demandProfile, double vCapacity) {
+	public void assignDemands(DemandsMap demandsMap, int horizon, int demandProfile, double vCapacity) {
+		int planningHorizon = Math.min(horizon, demandsMap.getPlanningHorizon());
+		int startPlanning = Parameters.rand.nextInt(demandsMap.getPlanningHorizon() - planningHorizon);
 		if(this.isCompatible(demandsMap)) {
-			double[][] clientsDemands = new double[this.sites.length][demandsMap.getPlanningHorizon()];
+			double[][] clientsDemands = new double[this.sites.length][planningHorizon];
 
 			/* Assign a weight to each client for the allocation of each demand box */
 			double[][] clientsWeights = new double[demandsMap.getNbSites()][this.sites.length];
@@ -199,7 +201,7 @@ public class ClientsMap extends Layer {
 
 			double normFactor = vCapacity * this.nbSites / demandsMap.getNbSites();
 
-			for(int t = 0; t < demandsMap.getPlanningHorizon(); t++) {
+			for(int t = 0; t < planningHorizon; t++) {
 				// Allocate each box demand to the clients randomly, according
 				// to their respective weights
 				for(int dBoxIndex = 0; dBoxIndex < clientsWeights.length; dBoxIndex++) {
@@ -209,16 +211,16 @@ public class ClientsMap extends Layer {
 						c = selectIndex(clientsWeights[dBoxIndex]); 
 						rnd = Parameters.rand.nextDouble();
 					}
-					clientsDemands[c][t] +=  this.scaleDemand(demandProfile) * demandsMap.getDemandBoxInPeriod(dBoxIndex, t);
+					clientsDemands[c][t] +=  this.scaleDemand(demandProfile) * demandsMap.getDemandBoxInPeriod(dBoxIndex, startPlanning + t);
 				}
-				// Set the clients demands in period t
-				for (int cIndex = 0; cIndex < clientsDemands.length; cIndex++) {
-						((Client) this.sites[cIndex]).setDemands(normFactor, clientsDemands[cIndex]);
-				}
+			}
+			/* Set the clients demands in every period */
+			for (int cIndex = 0; cIndex < clientsDemands.length; cIndex++) {
+				((Client) this.sites[cIndex]).setDemands(normFactor, clientsDemands[cIndex]);
 			}
 		}
 		else {
-			 System.out.println("Trying to assign demands for clients map " + demandsMap.getClients().getID() + " to the clients map " + this.mapID);
+			System.out.println("Trying to assign demands for clients map " + demandsMap.getClients().getID() + " to the clients map " + this.mapID);
 		}
 	}	
 
@@ -276,7 +278,7 @@ public class ClientsMap extends Layer {
 
 		return clientCoords;
 	}
-	
+
 	private boolean isCompatible(DemandsMap dMap) {
 		String dMapID = dMap.getID();
 		int prefix = dMapID.indexOf("s-") + 2;
@@ -309,7 +311,7 @@ public class ClientsMap extends Layer {
 			((Client) client).setActiveDays(activePair.getR());
 		}
 	}
-	
+
 	/**
 	 * Enrich the JSON object containing clients map data
 	 */

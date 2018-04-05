@@ -58,13 +58,13 @@ public class Instance {
 			this.supplier = new Location(new Point2D.Double(gridSize/2, gridSize/2));
 			this.depots = new DepotsMap[Parameters.nb_levels - 1];
 			for(int lvl = 0; lvl < Parameters.nb_levels - 1; lvl++) {
-				this.depots[lvl] = new DepotsMap(gridSize, nbDepots, fc, oc[lvl], 0, -1, this.supplier);
+				this.depots[lvl] = new DepotsMap(gridSize, nbDepots, fc, oc[lvl], 0, -1);
 			}
 			this.clients = new ClientsMap(gridSize, nbClients, citiesSizes, urbanRatio, holdingRatio);
 			this.demands = new DemandsMap(this.clients, planningHorizon, period, uniformDistrib);
 			this.demandProfile = demandProfile; 
 			this.fleetDesc = vDesc; 
-			this.clients.assignDemands(this.demands, this.demandProfile, this.fleetDesc.get(Parameters.nb_levels - 1).getR());
+			this.clients.assignDemands(this.demands, planningHorizon, this.demandProfile, this.fleetDesc.get(Parameters.nb_levels - 1).getR());
 			/* Set the planning horizon */
 			this.planningHorizon = planningHorizon;
 			/* Generate a unique ID */
@@ -119,10 +119,10 @@ public class Instance {
 			this.fleetDesc = vDesc; 
 			this.demands = dBoxMap;
 			this.demandProfile = demandProfile;
-			this.assignDemands();
-			
-			// Set the planning horizon
 			this.planningHorizon = planningHorizon;
+			
+			this.assignDemands(this.planningHorizon);
+
 			this.generateID();
 			
 			System.out.println("Instance created successfully.");
@@ -338,8 +338,8 @@ public class Instance {
 		this.clients.redrawClient(c);
 	}
 
-	public void assignDemands() {
-		this.clients.assignDemands(this.demands, demandProfile, this.fleetDesc.get(Parameters.nb_levels - 1).getR());
+	public void assignDemands(int planningHorizon) {
+		this.clients.assignDemands(this.demands, this.planningHorizon, demandProfile, this.fleetDesc.get(Parameters.nb_levels - 1).getR());
 	}
 	
 	/**

@@ -19,7 +19,7 @@ public class Depot extends Location{
 	 * @param coordDepot	the coordinates of the depot
 	 * @throws IOException
 	 */
-	public Depot(Point2D coordDepot, Location supplier) throws IOException{
+	public Depot(Point2D coordDepot) throws IOException{
 		super(coordDepot);
 		this.fixedCost = 0;
 		this.orderingCost = 0;
@@ -36,7 +36,7 @@ public class Depot extends Location{
 	 * @param capacity			the capacity bound on the inventory level at the depot
 	 * @throws IOException
 	 */
-	public Depot(Point2D coordDepot, double fixedCost, double holdingCost, double orderingCost, double initialInventory, double capacity, Location supplier) throws IOException{
+	public Depot(Point2D coordDepot, double fixedCost, double holdingCost, double orderingCost, double initialInventory, double capacity) throws IOException{
 		super(coordDepot, holdingCost, initialInventory, capacity);
 		this.fixedCost = fixedCost;
 		this.orderingCost = (orderingCost>0) ? orderingCost : 0;

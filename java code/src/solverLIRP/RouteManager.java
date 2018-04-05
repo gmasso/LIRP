@@ -45,9 +45,31 @@ public class RouteManager {
 
 		this.populateDirect();
 		/* Populate loops at both levels */
-		this.populateLoops(0, 1);
-		this.populateLoops(1, 1);
+		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
+			this.populateLoops(lvl, 1);
+			this.populateLoops(lvl, 1);
+		}
 
+		System.out.println("Route manager created.");
+	}
+	/**
+	 * Create a RouteManager object from an instance and the type of model under investigation
+	 * @param instLIRP	the instance from which the set of routes is created
+	 */
+	public RouteManager(Instance instLIRP, boolean onlyDirect) throws IOException {
+		/* Create direct routes for the instance */
+		this.instLIRP = instLIRP;
+		this.routes = new HashMap<Integer, HashMap<Integer, LinkedHashSet<Route>>>();
+
+		/* Create HashMaps to store the sets of routes at level 0 and 1 */
+		this.routes.put(0, new HashMap<Integer, LinkedHashSet<Route>>());
+		this.routes.put(1, new HashMap<Integer, LinkedHashSet<Route>>());
+		this.nbRoutesLvl = new int[Parameters.nb_levels];
+		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
+			this.nbRoutesLvl[lvl] = 0;
+		}
+
+		this.populateDirect();
 		System.out.println("Route manager created.");
 	}
 

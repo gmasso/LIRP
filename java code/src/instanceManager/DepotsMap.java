@@ -20,14 +20,13 @@ public class DepotsMap extends Layer {
 	 * @param oc			the ordering cost for each depots (the length of the array gives the number of sites)
 	 * @param initInv	the initial inventory at each depot
 	 * @param capa		the upper bound on the inventory level for each depot
-	 * @param supplier	the supplier of the distribution network
 	 * @throws IOException
 	 */
-	public DepotsMap(double gridSize, int nbDepots, double fc, double oc, double initInv, double capa, Location supplier) throws IOException{
+	public DepotsMap(double gridSize, int nbDepots, double fc, double oc, double initInv, double capa) throws IOException{
 		super(gridSize, nbDepots);
 		// Start by assigning virtual coordinates to all sites, out of the grid
 		for(int sIndex = 0; sIndex < this.nbSites; sIndex++) {
-			this.sites[sIndex] = new Depot(new Point2D.Double(this.gridSize * 2, this.gridSize * 2), fc, 1, oc, initInv, capa, supplier);
+			this.sites[sIndex] = new Depot(new Point2D.Double(this.gridSize * 2, this.gridSize * 2), fc, 1, oc, initInv, capa);
 		}
 		// The minimum distance between two sites must be at least half of the radius of a disk whose area is equal to the average area per site.
 		this.minDist = this.gridSize / Math.sqrt(this.nbSites * Math.PI * 2);
