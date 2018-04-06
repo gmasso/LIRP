@@ -54,8 +54,8 @@ Throughout the paper, we use the following notations:
         $f_j$ & Fixed cost of opening distribution center $j\in\loc_k$, $k=1,\ldots,L-1$\\ 
         $\kappa_k$ & Capacity of vehicles delivering locations at level $k$\\ 
         $\nu_k$ & fleet size for vehicles delivering locations of level $k$\\ 
-        $d^t_i$ & Demand faced by customer $i\in\cu$ in period $t=1,\ldots,T$\\
-        $h^t_i$ & Per-unit, per-period holding cost of location $i\in\loc$ in period $t=1,\ldots, T$\\
+        $d_{it}$ & Demand faced by customer $i\in\cu$ in period $t=1,\ldots,T$\\
+        $h_{it}$ & Per-unit, per-period holding cost of location $i\in\loc$ in period $t=1,\ldots, T$\\
         $I_{i0}$ & Initial inventory of location $i\in \loc$ at the beginning of the planning horizon\\
         $c_r$ & Cost of route $r\in \ro$\\
         $\alpha_{ir}$ & indicator that route $r$ visits location $i$\\
@@ -67,37 +67,37 @@ Throughout the paper, we use the following notations:
         \hline
         \multicolumn{2}{l}{\textit{Binary Variables}}\\
         $y_{j}$ & $\rightarrow$ 1 if distribution center $j$ is selected \\
-        $z^t_{r}$ & $\rightarrow$ 1 if route $r$ from level is selected in period $t$\\
+        $z_{rt}$ & $\rightarrow$ 1 if route $r$ from level is selected in period $t$\\
         \hline
         \multicolumn{2}{l}{\textit{Continuous variables}}\\
-        $u^t_{ir}$ & $\rightarrow$ quantity delivered by route $r$ to location $i$ in period $t=1,\ldots,T$\\
-        $I^t_i$ & $\rightarrow$ Inventory at location $i$ in period $t=1,\ldots,T$\\
+        $q_{irt}$ & $\rightarrow$ quantity delivered by route $r$ to location $i$ in period $t=1,\ldots,T$\\
+        $I_{it}$ & $\rightarrow$ Inventory at location $i$ in period $t=1,\ldots,T$\\
         \hline
     \end{tabular}
 \end{table}
 
 \subsection{MIP formulation}\label{subsection:MIP}
 \begin{alignat}{3}
-    \text{minimize} &&\sum_{j\in \loc \setminus \cu} f_{j} y_{j} &+\sum_{t=1}^{T} \left( \sum_{r\in \ro} c_r z^t_r + \sum_{i\in \loc} h^t_i I_i^t\right)\label{objfunct}\\ 
-    \text{s.t.}  %&&\sum_{r\in \ro} \gamma_{jr} z^t_r &\leq 1 															&\forall j&\in \, \forall t=1,\ldots,T  \label{const:singleroutedepots}\\
-    &&\sum_{r\in \ro_L} \alpha_{ir} z^t_r &\leq 1 															&\forall i&\in \cu, \forall t=1,\ldots,T  \label{const:singleroutecustomers}\\
-&&\sum_{r\in \ro_k} \alpha_{jr} z^t_r &\leq y_j 															&\forall k&=1,\ldots,L-1, \forall j\in \loc_k, \forall t=1,\ldots,T  \label{const:singleroutedc}\\
-    %&&\gamma_{jr}z^t_r 					&\leq y_j 													&\forall k&=1,\ldots,L, \forall j\in\loc_{k-1}, \forall r\in \ro_k, \forall t=1,\ldots,T\label{const:serveopendepots}\\
-&&z^t_r 					&\leq \sum_{j\in\loc_{k}}\beta_{jr}y_j 													&\forall k&=1,\ldots,L-1,r\in \ro_{k+1}, \forall t=1,\ldots,T\label{const:startfromopendepots}\\
-    &&\sum_{r\in \ro_k} z^t_r &\leq 	\nu_k													&\forall k&=1,\ldots,L, \forall t=1,\ldots,T  \label{const:fleetcapa}\\
-    %            &&\sum_{r\in \roc} z^t_r &\leq 	\nu_{\cu}													&\forall t&=1,\ldots,T  \label{const:fleetcapaclients}\\
-    &&\sum_{i\in \loc_k} u^t_{ir}   		&\leq \kappa_k z^t_r 														&\forall k&=1,\ldots,L, \forall r\in \ro_k, t=1,\ldots,T\label{const:deliveryUB}\\
-    %&&\sum_{i\in \cu} u^t_{ir}   		&\leq \kc z^t_r 														&\forall r&\in \roc, t=1,\ldots,T\label{const:deliveryUBcustomers}\\
-    &&I^{t-1}_j + \sum_{r\in\ro_k} u^t_{jr}   			&=I^t_j +\sum_{r'\in \ro_{k+1}}\left(\beta_{jr'} \sum_{i\in \loc_{k+1}}u^t_{ir'}\right)\quad 			&\forall k&=1,\ldots,L-1, \forall j\in \loc_k, \forall t=1,\ldots,T \label{const:invflowdepots}\\
-    &&I^{t-1}_i+\sum_{r\in \ro_L} u^t_{ir} &= I^t_i +d^t_i 							&\forall i&\in \cu, \forall t=1,\ldots,T\label{const:invflowcustomers}\\
-    &&I^t_j					&\leq I_j^{\max} y_j  									&\forall k&=1,\ldots,L-1, \forall j\in \loc_k,\forall t=1,\ldots,T\label{const:invdepotUB}\\	
-    &&I^t_i 					&\leq \min\left(I_i^{\max}, \sum_{t'\geq t}d^{t'}_i\right)											&\forall i&\in \cu, \forall t=1,\ldots,T\label{const:invcustUB}\\
-    &&u^t_{ir}			&\geq 0 															&\forall k&=1,\ldots,L, \forall i\in \loc_k, \forall r\in \ro_k,\forall t=1,\ldots, T\label{const:upos}	\\
+    \text{minimize} &&\sum_{j\in \loc \setminus \cu} f_{j} y_{j} &+\sum_{t=1}^{T} \left( \sum_{r\in \ro} c_r z_{rt} + \sum_{i\in \loc} h_{it} I_{it}\right)\label{objfunct}\\ 
+    \text{s.t.}  %&&\sum_{r\in \ro} \gamma_{jr} z_{rt} &\leq 1 															&\forall j&\in \, \forall t=1,\ldots,T  \label{const:singleroutedepots}\\
+    &&\sum_{r\in \ro_L} \alpha_{ir} z_{rt} &\leq 1 															&\forall i&\in \cu, \forall t=1,\ldots,T  \label{const:singleroutecustomers}\\
+&&\sum_{r\in \ro_k} \alpha_{jr} z_{rt} &\leq y_j 															&\forall k&=1,\ldots,L-1, \forall j\in \loc_k, \forall t=1,\ldots,T  \label{const:singleroutedc}\\
+    %&&\gamma_{jr}z_{rt} 					&\leq y_j 													&\forall k&=1,\ldots,L, \forall j\in\loc_{k-1}, \forall r\in \ro_k, \forall t=1,\ldots,T\label{const:serveopendepots}\\
+&&z_{rt} 					&\leq \sum_{j\in\loc_{k}}\beta_{jr}y_j 													&\forall k&=1,\ldots,L-1,r\in \ro_{k+1}, \forall t=1,\ldots,T\label{const:startfromopendepots}\\
+    &&\sum_{r\in \ro_k} z_{rt} &\leq 	\nu_k													&\forall k&=1,\ldots,L, \forall t=1,\ldots,T  \label{const:fleetcapa}\\
+    %            &&\sum_{r\in \roc} z_{rt} &\leq 	\nu_{\cu}													&\forall t&=1,\ldots,T  \label{const:fleetcapaclients}\\
+    &&\sum_{i\in \loc_k} q_{irt}   		&\leq \kappa_k z_{rt} 														&\forall k&=1,\ldots,L, \forall r\in \ro_k, t=1,\ldots,T\label{const:deliveryUB}\\
+    %&&\sum_{i\in \cu} u^t_{ir}   		&\leq \kc z_{rt} 														&\forall r&\in \roc, t=1,\ldots,T\label{const:deliveryUBcustomers}\\
+    &&I_{j,t-1} + \sum_{r\in\ro_k} q_{jrt}   			&=I_{jt} +\sum_{r'\in \ro_{k+1}}\left(\beta_{jr'} \sum_{i\in \loc_{k+1}}q_{ir't}\right)\quad 			&\forall k&=1,\ldots,L-1, \forall j\in \loc_k, \forall t=1,\ldots,T \label{const:invflowdepots}\\
+    &&I_{i,t-1}+\sum_{r\in \ro_L} q_{irt} &= I_{it} +d_{it} 							&\forall i&\in \cu, \forall t=1,\ldots,T\label{const:invflowcustomers}\\
+    &&I_{jt}					&\leq I_j^{\max} y_j  									&\forall k&=1,\ldots,L-1, \forall j\in \loc_k,\forall t=1,\ldots,T\label{const:invdepotUB}\\	
+    &&I_{it} 					&\leq \min\left(I_i^{\max}, \sum_{t'\geq t}d_{it'}\right)											&\forall i&\in \cu, \forall t=1,\ldots,T\label{const:invcustUB}\\
+    &&q_{irt}			&\geq 0 															&\forall k&=1,\ldots,L, \forall i\in \loc_k, \forall r\in \ro_k,\forall t=1,\ldots, T\label{const:upos}	\\
     % &&v^t_{jr}			&\geq 0 															&\forall j &\in \dc, \forall r\in \rod,\forall t=1,\ldots, T\label{const:vpos}	\\
-    &&I^t_{i}			&\geq 0 															&\forall i &\in \loc, \forall t=1,\ldots, T\label{const:invCpos}	\\
+    &&I_{it}			&\geq 0 															&\forall i &\in \loc, \forall t=1,\ldots, T\label{const:invCpos}	\\
     %&&I^t_{j}			&\geq 0 															&\forall j &\in \dc, \forall t=1,\ldots, T\label{const:invDpos}	\\
     &&y_{j}					& \in \{0,1\} 														&\forall j&\in \loc\setminus\cu\label{const:ybool}\\	
-    &&z^t_r					&\in \{0,1\} 														&\forall r&\in \ro, \forall t=1,\ldots,T\label{const:zbool}
+    &&z_{rt}					&\in \{0,1\} 														&\forall r&\in \ro, \forall t=1,\ldots,T\label{const:zbool}
 \end{alignat}
 
 The objective function~\eqref{objfunct} aims at minimizing the total cost incurred by the system. 
