@@ -139,7 +139,7 @@ public final class Matheuristics {
 
 			// Call the method from the solver
 			currentSol = solverLIRP.getSolution(printStreamSol);
-			currentSol.setObjValue();
+			currentSol.computeObjValue();
 		}
 
 		return bestSol;

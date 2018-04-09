@@ -1,210 +1,167 @@
 package solverLIRP;
-import java.io.PrintStream;
 
+import java.io.PrintStream;
 import instanceManager.Instance;
 import tools.Parameters;
 
-//import javax.print.attribute.standard.PrinterLocation;
-
 public final class Checker {
-	public static boolean check(Solution sol, Instance instance, Route[][] routes, PrintStream printStreamSol) {
-
-		int[][] Alpha = new int[instance.getNbClients()][routes[1].length]; // =1 if client i is in route r
-		int[][] Beta = new int[instance.getNbDepots(0)][routes[1].length]; // = 1 if depot j is in route r
-		int[][] Gamma = new int[instance.getNbDepots(0)][routes[0].length]; // = 1 if depot j is in route r
-		int verbose=0;
-
-		/* Definition of parameters Alpha and Beta (for the depots-clients routes)*/
-		/* Fill the two arrays by checking for each route which clients and which depots it contains */
-		for(int rIter = 0; rIter < routes[1].length; rIter++) {
-			for(int cIter = 0; cIter < instance.getNbClients(); cIter++)
-				Alpha[cIter][rIter] = routes[1][rIter].containsStop(cIter) ? 1 : 0;
-			for(int dIter = 0; dIter < instance.getNbDepots(0); dIter++)
-				Beta[dIter][rIter] = routes[1][rIter].containsLocation(instance.getDepot(0, dIter)) ? 1 : 0;
-		}
-
-		/* Definition of parameters Gamma (for the supplier-depots routes) */
-		/* Fill the two arrays by checking for each route which clients and which depots it contains */
-		for(int rIter = 0; rIter < routes[0].length; rIter++) {
-			for(int dIter = 0; dIter < instance.getNbDepots(0); dIter++)
-				Gamma[dIter][rIter] = routes[0][rIter].containsStop(dIter) ? 1 : 0;
+	public static boolean check(Solution sol, Instance instLIRP, Route[][] routes, PrintStream printStreamSol) {
+		/* Definition of parameters Alpha and Beta*/
+		/* Alpha_lir = 1 if location i of level l is visited by route r */
+		int[][][] Alpha = new int[Parameters.nb_levels][][]; 
+		/* Beta_lir = 1 if route r with stops at level l starts from location j of level l - 1 */
+		int[][][] Beta = new int[Parameters.nb_levels][][];
+		/* Fill the two arrays by checking for each route which locations it visits and from which depots it starts */
+		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
+			int nbLocLvl = instLIRP.getNbLocations(lvl);
+			Alpha[lvl] = new int[nbLocLvl][routes[lvl].length];							// = 1 if route r stops in location i
+			/* Beta[lvl] is allocated only if we consider routes stopping at a level >= 1 */
+			if(lvl > 0)
+				Beta[lvl] = new int[instLIRP.getNbDepots(lvl - 1)][routes[lvl].length];	// = 1 if route r starts from depot j
+			for(int rIndex = 0; rIndex < routes[lvl].length; rIndex++) {
+				for(int stop = 0; stop < nbLocLvl; stop++)
+					Alpha[lvl][stop][rIndex] = routes[lvl][rIndex].containsStop(stop) ? 1 : 0;
+				if(lvl > 0) {
+					for(int start = 0; start < instLIRP.getNbDepots(lvl - 1); start++)
+						Beta[lvl][start][rIndex] = routes[lvl-1][rIndex].hasStart(start) ? 1 : 0;
+				}
+			}
 		}
 
 		/* The return value of the checker */
 		boolean isFeasible = true;
 
-		for (int t = 0; t < instance.getNbPeriods(); t++) {
-			/* Check constraints on the route for depots */
-			for(int dIter = 0; dIter < instance.getNbDepots(0); dIter++) {
-				/* Each depot is served by at most one route in every period (2) */
-				int routeDepotConst = 0;
-				for (int rIter = 0; rIter < routes[0].length; rIter++) 
-					if(sol.isUsedRoute(0, rIter, t))
-						routeDepotConst += Gamma[dIter][rIter] ;
-				if(routeDepotConst > 1) {
-					System.out.println("ERROR, Constraint 2, depot " + dIter + ",  period "+t);
-					isFeasible = false;
-				}
-				else {
-					if (verbose < 0)
-						System.out.println("BINDING, Constraint 2, depot " + dIter + ",  period "+ t +"         " + routeDepotConst );
-				}
-			}
+		for (int t = 0; t < instLIRP.getNbPeriods(); t++) {
+			/*         =========
+			 * Constraints on routes usage
+		           =========          */
+			for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
+				/* Get the number of locations at this level and at the upper level */
+				int nbLocLvl = instLIRP.getNbLocations(lvl);
+				int nbLocUp = instLIRP.getNbLocations(lvl - 1); 
 
-			/* Each client is served by at most one route in every period (3)*/
-			for(int cIter = 0; cIter < instance.getNbClients(); cIter++) {
-				int routeClientConst = 0;
-				for (int rIter = 0; rIter < routes[1].length; rIter++)
-					if(sol.isUsedRoute(1, rIter, t))
-						routeClientConst += Alpha[cIter][rIter];
-				if(routeClientConst > 1) {
-					System.out.println("ERROR, Constraint 3, client " + cIter + ",  period "+ t);
-					isFeasible = false;
-				}
-				else {
-					if (verbose < 0)
-						System.out.println("BINDING, Constraint 3, client" + cIter + ",  period "+ t +"         " + routeClientConst );
-				}
-			}
-
-			for(int dIter = 0; dIter < instance.getNbDepots(0); dIter++) {
-				for (int rIter = 0; rIter < routes[0].length; rIter++) {
-					/* A supplier-depot route is used only if all depots on this route are opened (4)*/
-					int routeSupplierConst = 0;
-					if(sol.isUsedRoute(0, rIter, t))
-						routeSupplierConst = Gamma[dIter][rIter];
-					if(routeSupplierConst > 0 && !sol.isOpenDepot(dIter)) {
-						System.out.println("ERROR, Constraint 4, depot " + dIter + ",  period "+ t);
-						isFeasible = false;
+				/* Each location is served by at most one route in every period (2-3) */
+				for(int loc = 0; loc < nbLocLvl; loc++) {
+					double lhs23 = 0;
+					double rhs23 = sol.isOpenDepot(lvl, loc) ? 1 : 0;
+					for (int r = 0; r < routes[lvl].length; r++)
+						if(sol.isUsedRoute(lvl, r, t)) {
+							lhs23 += Alpha[lvl][loc][r];
+						}
+					/* If the location is a dc (constraint (3)), the rhs uses the boolean variable y_{j} to check that the location is open */
+					if(lvl < Parameters.nb_levels - 1) {
+						if(lhs23 > rhs23) {
+							isFeasible = false;
+							System.out.println("ERR in constraint (2), depot " + loc + " at level " + lvl + " in period " + t);
+						}
 					}
 					else {
-						if (verbose < 0)
-							System.out.println("BINDING, Constraint 4, depot " + dIter + ",  period "+ t +"         " + routeSupplierConst );
+						if(lhs23 > 1) {
+							isFeasible = false;
+							System.out.println("ERR in constraint (3), client " + loc + " in period " + t);
+						}
 					}
 				}
-			}
 
-			/* Each route delivering customers can only departs from an opened depot (5)*/
-			for (int rIter = 0; rIter < routes[1].length; rIter++) {
-				int routeOpenDepot = 0;
-				for(int dIter = 0; dIter < instance.getNbDepots(0); dIter++) {
-					if(sol.isOpenDepot(dIter))
-						routeOpenDepot += Beta[dIter][rIter];
+				/* Constraints on resources available in period t */
+
+				/* The total number of routes used on a given level must be lower than the number of vehicles available for this level (5) */
+				int lhs5 = 0;
+
+				for (int r = 0; r < routes[lvl].length; r++) {
+					if(lvl > 0) {
+						/* Each active route must start from an open depot (4) */
+						int lhs4 = sol.isUsedRoute(lvl, r, t) ? 1 : 0;
+						int rhs4 = 0;
+						for(int locUp = 0; locUp < nbLocUp; locUp++) {
+							if(sol.isOpenDepot(lvl - 1, locUp)) {
+								rhs4 += Beta[lvl][locUp][r];
+							}
+						}
+						if(lhs4 > rhs4) {
+							isFeasible = false;
+							System.out.println("ERR in constraint (4) at level " + lvl + " in period " + t);
+						}
+					}
+
+					/* The quantity delivered to the locations of the level through a given route cannot exceed the capacity of a vehicle (6) */
+					double lhs6 = 0;
+					double rhs6 = sol.isUsedRoute(lvl, r, t) ? instLIRP.getCapacityVehicle(lvl) : 0 ;
+					for(int loc = 0; loc < nbLocLvl; loc++) {
+						lhs6 += sol.getQuantityDelivered(lvl, loc, r, t);
+					}
+					if(lhs6 > rhs6) {
+						isFeasible = false;
+						System.out.println("ERR in constraint (6), trying to deliver a quantity of " + lhs6 + " at level " + lvl + " in period " + t + ", while the total quandity available is only " + rhs6);
+					}
+					if(sol.isUsedRoute(lvl, r, t)) {
+						lhs5++;
+					}
 				}
-				if(sol.isUsedRoute(1, rIter, t) && routeOpenDepot < 1) {
-					System.out.println("ERROR, Constraint 5,  period "+ t);
+				if(lhs5 > instLIRP.getNbVehicles(lvl)) {
 					isFeasible = false;
+					System.out.println("ERR in constraint (5), trying to use " + lhs5 + " routes at level " + lvl + " in period " + t + " with only " + instLIRP.getNbVehicles(lvl) + " vehicles.");
 				}
-				else {
-					if (verbose < 0)
-						System.out.println("BINDING, Constraint 5,  period "+ t +"         " + routeOpenDepot );
-				}
-			}
 
-			/* Vehicle capacity on each delivery on each opened supplier-depot route (6)*/
-			for (int rIter = 0; rIter < routes[0].length; rIter++) {
-				double routeSumQDepots = 0;
-				for(int dIter = 0; dIter < instance.getNbDepots(0); dIter++)
-					routeSumQDepots += sol.getDeliveryDepot(dIter, rIter, t);
-				// TO MODIFY IN THE FINAL VERSION
-				if((!sol.isUsedRoute(0, rIter, t) && routeSumQDepots > 0) || (sol.isUsedRoute(0, rIter, t) && routeSumQDepots > instance.getCapacityVehicle(0))) {
-					System.out.println("ERROR, Constraint 6, period "+ t);
-					isFeasible = false;
-				}
-				else {
-					if (verbose < 0)
-						System.out.println("BINDING, Constraint 6,  period "+ t +"         " + routeSumQDepots );
-				}
-			}
+				/*         ======
+				 * Constraints on inventory
+			           ======          */
+				/* Flow conservation (7-8) */
+				for(int loc = 0; loc < nbLocLvl; loc++) {
+					/* If we are at a dc level, take into account the incoming and outgoing quantities through routes (7) */
+					if(lvl < Parameters.nb_levels - 1) {
+						int nbLocDown = instLIRP.getNbLocations(lvl + 1);
+						double lhs7 = 0;
+						lhs7 += sol.getInvLoc(lvl, loc, t);
+						double rhs7 = 0;
+						if(t == 0)
+							rhs7 = instLIRP.getDepot(lvl, loc).getInitialInventory();
+						else
+							rhs7 += sol.getInvLoc(lvl, loc, t - 1);
+						for (int r = 0; r < routes[lvl].length; r++) {
+							rhs7 += sol.getQuantityDelivered(lvl,  loc, r, t);
+						}
+						for (int rDown = 0; rDown < routes[lvl + 1].length; rDown++) {
+							for(int locDown = 0; locDown < nbLocDown; locDown++) {
+								lhs7 += Beta[lvl + 1][loc][rDown] * sol.getQuantityDelivered(lvl, locDown, rDown, t);
+							}
+						}
+						if(lhs7 != rhs7) {
+							isFeasible = false;
+							System.out.println("ERR in constraint (7) in the flow conservation of location " + loc + " at level " + lvl + " in period " + t);
+						}
 
+						/* Capacity constraints at depots (9) */
+						double rhs9 = sol.isOpenDepot(lvl,  loc) ? instLIRP.getDepot(lvl, loc).getCapacity() : 0; 
+						if(sol.getInvLoc(lvl,  loc,  t) > rhs9) {
+							isFeasible = false;
+							System.out.println("ERR in constraint (9), inventory at location " + loc + " at level " + lvl + " in period " + t + " violates capacity constraint (max " + instLIRP.getDepot(lvl, loc).getCapacity() +")"); ;
+						}
+					}
+					/* If we are at a clients level, take into account the incoming  quantities through routes and the final customers demands (8) */
+					else {
+						double lhs8 = sol.getInvLoc(lvl, loc, t) + instLIRP.getClient(loc).getDemand(t);
+						double rhs8 = 0;
+						if(t == 0)
+							rhs8 += instLIRP.getClient(loc).getInitialInventory();
+						else
+							rhs8 += sol.getInvLoc(lvl, loc, t - 1);
 
-			/* Vehicle capacity on each delivery on each opened depot-client route (7)*/
-			for (int rIter = 0; rIter < routes[1].length; rIter++) {
-				double routeSumQClients = 0;
-				for(int cIter = 0; cIter < instance.getNbClients(); cIter++)
-					routeSumQClients += sol.getDeliveryClient(cIter, rIter, t);
-				// TO MODIFY IN THE FINAL VERSION
-				if((!sol.isUsedRoute(1, rIter, t) && routeSumQClients > 0) || (sol.isUsedRoute(1, rIter, t) && routeSumQClients > instance.getCapacityVehicle(0))) {
-					System.out.println("ERROR, Constraint 7, period "+ t);
-					isFeasible = false;
-				}
-				else {
-					if (verbose < 0)
-						System.out.println("BINDING, Constraint 7,  period "+ t +"         " + routeSumQClients );
-				}
-			}
+						for (int r = 0; r < routes[lvl].length; r++) {
+							rhs8 += sol.getQuantityDelivered(lvl, loc, r, t);
+						}
+						if(lhs8 != rhs8) {
+							isFeasible = false;
+							System.out.println("ERR in constraint (8) in the flow conservation of client " + loc + " at level " + lvl + " in period " + t);
+						}
 
-			/* Flow conservation at the depots (8) */
-			for(int dIter = 0; dIter < instance.getNbDepots(0); dIter++) {
-				double lastInvDepot;
-				if (t==0)
-					lastInvDepot = instance.getDepot(0, dIter).getInitialInventory();
-				else
-					lastInvDepot = sol.getStockDepot(dIter, t - 1);
-				
-				for(int rSDIter = 0; rSDIter < routes[0].length; rSDIter++)
-					lastInvDepot += sol.getDeliveryDepot(dIter, rSDIter, t);
-				
-				double newInvDepot = sol.getStockDepot(dIter, t);
-				for (int rDCIter = 0; rDCIter < routes[1].length; rDCIter++) {
-					for (int cIter = 0; cIter < instance.getNbClients(); cIter++)
-						newInvDepot += Beta[dIter][rDCIter] * sol.getDeliveryClient(cIter,  rDCIter,  t);
-				}
-				if((lastInvDepot > newInvDepot + Parameters.epsilon) || (lastInvDepot < newInvDepot - Parameters.epsilon)) {
-					System.out.println("ERROR, Constraint 8, period "+ t + ": diff " + (newInvDepot - lastInvDepot));
-					isFeasible = false;
-				}
-				else {
-					if (verbose < 0)
-						System.out.println("BINDING, Constraint 8,  period "+ t +"         " + (newInvDepot - lastInvDepot));
-				}
-			}
-
-			/* Flow conservation at the clients (9) */
-			for(int cIter = 0; cIter < instance.getNbClients(); cIter++) {
-				double lastInvClient;
-				if (t==0)
-					lastInvClient = instance.getClient(cIter).getInitialInventory();
-				else
-					lastInvClient = sol.getStockClient(cIter, t - 1);
-				for(int rIter = 0; rIter < routes[1].length; rIter++)
-					lastInvClient += sol.getDeliveryClient(cIter, rIter, t);
-				double newInvClient = sol.getStockClient(cIter, t) + instance.getClient(cIter).getDemand(t);
-				if((lastInvClient > newInvClient + Parameters.epsilon) || (lastInvClient < newInvClient - Parameters.epsilon)) {
-					System.out.println("ERROR, Constraint 9, period "+ t+ ": diff " + (newInvClient - lastInvClient));
-					isFeasible = false;
-				}
-				else {
-					if (verbose < 0)
-						System.out.println("BINDING, Constraint 9,  period "+ t +"         " + (newInvClient - lastInvClient));
-				}
-			}
-
-			/* Stock capacity at the client or ensuring that the inventory is not greater than the sum of remaining demands (10) */
-			// IS THIS LAST ASPECT OF THE CONSTRAINT REALLY USEFUL? 
-			for (int cIter = 0; cIter < instance.getNbClients(); cIter++) {
-				double ub = Math.min(instance.getClient(cIter).getCumulDemands(t+1, instance.getNbPeriods()), instance.getClient(cIter).getCapacity());
-				double currentInvClient = sol.getStockClient(cIter, t);
-				if(currentInvClient > ub + Parameters.epsilon) {
-					System.out.println("ERROR, Constraint 10, client " + cIter + " in period "+ t);
-					isFeasible = false;
-				}
-				else {
-					if (verbose < 0)
-						System.out.println("BINDING, Constraint 10, client " + cIter + " in  period " + t + "         " + currentInvClient);
-				}
-			}
-
-			/* Capacity constraints at depots (11) */
-			for (int dIter = 0; dIter < instance.getNbDepots(0); dIter++) {
-				double currentInvDepot = sol.getStockDepot(dIter,  t);
-				if(currentInvDepot > instance.getDepot(0, dIter).getCapacity() + Parameters.epsilon) {
-					System.out.println("ERROR, Constraint 11, depot " + dIter + " in period "+ t);
-					isFeasible = false;
-				}
-				else {
-					if (verbose < 0)
-						System.out.println("BINDING, Constraint 10, depot " + dIter + " in  period " + t + "         " + currentInvDepot);
+						/* Stock capacity at the client or ensuring that the inventory is not greater than the sum of remaining demands (10) */
+						double remainingDemand = instLIRP.getClient(loc).getCumulDemands(t + 1, instLIRP.getNbPeriods());
+						if(sol.getInvLoc(lvl,  loc,  t) > Math.min(remainingDemand, instLIRP.getClient(loc).getCapacity())) {
+							isFeasible = false;
+							System.out.println("ERR in constraint (10), inventory at client " + loc + " in period " + t + " violates capacity constraint (max " + instLIRP.getDepot(lvl, loc).getCapacity() +")"); ;
+						}
+					}
 				}
 			}
 		}

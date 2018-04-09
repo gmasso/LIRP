@@ -64,7 +64,7 @@ public class Instance {
 			this.demands = new DemandsMap(this.clients, planningHorizon, period, uniformDistrib);
 			this.demandProfile = demandProfile; 
 			this.fleetDesc = vDesc; 
-			this.clients.assignDemands(this.demands, planningHorizon, this.demandProfile, this.fleetDesc.get(Parameters.nb_levels - 1).getR());
+			//this.clients.assignDemands(this.demands, planningHorizon, this.demandProfile, this.fleetDesc.get(Parameters.nb_levels - 1).getR());
 			/* Set the planning horizon */
 			this.planningHorizon = planningHorizon;
 			/* Generate a unique ID */
@@ -121,8 +121,6 @@ public class Instance {
 			this.demandProfile = demandProfile;
 			this.planningHorizon = planningHorizon;
 			
-			this.assignDemands(this.planningHorizon);
-
 			this.generateID();
 			
 			System.out.println("Instance created successfully.");
@@ -306,6 +304,21 @@ public class Instance {
 				return dIndex;
 		}
 		return -1;
+	}
+
+	/**
+	 * Return the number of location at a given level of the network
+	 * @param lvl	the level of interest in the network
+	 * @return		the number of location at the level of interest (0 if the level corresponds to the external supplier at the root of the distribution network)
+	 */
+	public int getNbLocations(int lvl) {
+		if(lvl < 0)
+			return 0;
+		if(lvl < Parameters.nb_levels - 1) {
+			return this.depots[lvl].getNbSites();
+		}
+		return this.clients.getNbSites();
+
 	}
 
 	/*

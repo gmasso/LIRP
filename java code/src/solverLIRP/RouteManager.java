@@ -23,7 +23,7 @@ public class RouteManager {
 	 ======================*/
 	private Instance instLIRP;													// The instance to which the routes apply
 	private HashMap<Integer, HashMap<Integer, LinkedHashSet<Route>>> routes; 	// A route is referenced with its level (0 : supplier-depot, 1 : depot-client)
-																				// For a given level, routes are ordered according to their number of stops
+	// For a given level, routes are ordered according to their number of stops
 	private int[] nbRoutesLvl;													// Total number of routes at each level (0: Supplier to depots, 1: Depots to clients)
 
 	/**
@@ -35,47 +35,31 @@ public class RouteManager {
 		this.instLIRP = instLIRP;
 		this.routes = new HashMap<Integer, HashMap<Integer, LinkedHashSet<Route>>>();
 
-		/* Create HashMaps to store the sets of routes at level 0 and 1 */
-		this.routes.put(0, new HashMap<Integer, LinkedHashSet<Route>>());
-		this.routes.put(1, new HashMap<Integer, LinkedHashSet<Route>>());
+		/* Create HashMaps to store the sets of routes at each level */
 		this.nbRoutesLvl = new int[Parameters.nb_levels];
 		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
+			this.routes.put(lvl, new HashMap<Integer, LinkedHashSet<Route>>());
 			this.nbRoutesLvl[lvl] = 0;
 		}
-
-		this.populateDirect();
-		/* Populate loops at both levels */
-		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
-			this.populateLoops(lvl, 1);
-			this.populateLoops(lvl, 1);
-		}
-
-		System.out.println("Route manager created.");
 	}
-	
+
 	/**
 	 * Create a RouteManager object from an instance and the type of model under investigation
 	 * @param instLIRP		The instance from which the set of routes is created
 	 * @param onlyDirect	If we only want to generate direct routes and modify instLIRP so that all clients are reachable
 	 * @throws IOException
 	 */
-	public RouteManager(Instance instLIRP, boolean onlyDirect) throws IOException {
-		/* Create direct routes for the instance */
-		this.instLIRP = instLIRP;
-		this.routes = new HashMap<Integer, HashMap<Integer, LinkedHashSet<Route>>>();
-
-		/* Create HashMaps to store the sets of routes at level 0 and 1 */
-		this.routes.put(0, new HashMap<Integer, LinkedHashSet<Route>>());
-		this.routes.put(1, new HashMap<Integer, LinkedHashSet<Route>>());
-		this.nbRoutesLvl = new int[Parameters.nb_levels];
-		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
-			this.nbRoutesLvl[lvl] = 0;
-		}
-
+	public void initialize(boolean onlyDirect) throws IOException {
 		this.populateDirect();
-		System.out.println("Route manager created.");
+		if(!onlyDirect) {
+			/* Populate loops at both levels */
+			for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
+				this.populateLoops(lvl, 1);
+				this.populateLoops(lvl, 1);
+			}
+		}
 	}
-	
+
 	/*
 	 * ACCESSORS
 	 */
@@ -102,47 +86,6 @@ public class RouteManager {
 	public int getNbRoutesOfType(int lvl, int nbStops){
 		return this.routes.get(lvl).get(nbStops).size();
 	}
-
-	//	/**
-	//	 * 
-	//	 * @return	an array containing of all Route objects in the route manager from the supplier to the depots
-	//	 */
-	//	public HashSet<Route> extractSubsetRoutesOfTypes(int lvlKey, int nbStops, HashSet<Integer> indices) {
-	//
-	//		HashSet<Route> routesLvl0 = new HashSet<Route>(); //[indices.size() + indices.size()];
-	//
-	//		int routeIndex = 0;
-	//		for(Route route : this.routes.get(lvlKey).get(nbStops)) {
-	//			if(indices.contains(routeIndex))
-	//				routesSD.add(route);
-	//			routeIndex++;	
-	//		}
-	//
-	//
-	//		for(int loopSDIter : indices) {
-	//			routesSD[this.directSD.length + loopSDIter] = this.loopSD[loopSDIter];
-	//		}
-	//		return routesSD;
-	//	}
-	//
-	//	/**
-	//	 * 
-	//	 * @return	an array containing of all Route objects in the route manager from depots to clients
-	//	 */
-	//	public Route[] getDCRoutes(ArrayList<Integer> indices) {
-	//		Route[] routesDC = new Route[this.directDC.length + indices.size()];
-	//
-	//		for(int directDCIter = 0; directDCIter < this.directDC.length; directDCIter++) {
-	//			routesDC[directDCIter] = this.directDC[directDCIter];
-	//		}
-	//		int pos = 0;
-	//		for(int loopDCIter : indices) {
-	//			routesDC[this.directDC.length + pos] = this.loopDC[loopDCIter];
-	//			pos++;
-	//		}
-	//		return routesDC;
-	//	}
-	//
 
 	/*
 	 * METHODS

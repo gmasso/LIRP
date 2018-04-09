@@ -18,8 +18,8 @@ import tools.Parameters;
 public class InstanceGenerator {
 
 	private static ArrayList<Pair<Integer, Double>> vehicles = new ArrayList<Pair<Integer, Double>>(); 				// Number and capacity of vehicles for each level
-	private static int[] nb_depots_inst = {/*3,6, 9, 12, 15,*/ 18};
-	private static int[] nb_clients_inst = {/*10, 25, 50, 75,*/ 100, 150, 200};
+	private static int[] nb_depots_inst = {3/*,6, 9, 12, 15, 18*/};
+	private static int[] nb_clients_inst = {10, 25, 50/*, 75, 100, 150, 200*/};
 
 	private static int planning_horizon = 30;
 	private static double fc_factor = 1000;
@@ -80,7 +80,12 @@ public class InstanceGenerator {
 										
 										Instance inst = new Instance(planning_horizon, dMask, cMask, demandsMap, vehicles, holding_ratio, fc_factor, oc_factor, count % 3, activeProfile);
 
-										RouteManager rm = new RouteManager(inst, true);
+										RouteManager rm = new RouteManager(inst);
+										/* Initialize the route manager only with direct routes and redraw unreachable clients of inst */
+										rm.initialize(true);
+										/* Use the corrected instance from route manager to assign the demands */
+										inst = rm.getInstance();
+										/* Assign the demands of the map to the clients */
 										inst.assignDemands(planning_horizon);
 
 										String typeInst = "Medium";
