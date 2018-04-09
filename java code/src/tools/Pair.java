@@ -48,7 +48,7 @@ public class Pair<L, R> {
 	    }
 	    
 	    public void decrement() {
-	        this.score = score-1;
+	        this.score = score - 1;
 	    }
 	    
 	    public JSONArray getJSON() {
