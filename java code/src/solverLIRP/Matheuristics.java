@@ -236,14 +236,15 @@ public final class Matheuristics {
 	 */
 	public LinkedHashSet<Route> filterRoutes(LocManager lm, int lvl, LinkedHashSet<Route> setOfRoutes) throws IOException {
 		/* Select a random number of depots among the depots available */
-		int maxNbDC = (int) Math.ceil(0.6 * (lm.getInstance().getNbLocations(lvl)));
-		HashSet<Location> dSelect = lm.depotSelect(Parameters.rand.nextInt(maxNbDC));
+		int maxNbDC = (int) Math.floor(0.6 * (lm.getInstance().getNbLocations(lvl)));
+		HashSet<Location> dSelect = lm.depotSelect(Parameters.rand.nextInt(maxNbDC) + 1);
 		LinkedHashSet<Route> rFilter = new LinkedHashSet<Route>();
 		
 		Iterator<Route> rIter = setOfRoutes.iterator();
 		while(rIter.hasNext()) {
 			Route currentRoute = rIter.next();
-			if(dSelect.contains(currentRoute.getStart())) {
+			Location rStart = currentRoute.getStart();
+			if((rStart == lm.getInstance().getDummy()) || (dSelect.contains(rStart))) {
 				rFilter.add(currentRoute);
 			}
 		}
