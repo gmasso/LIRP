@@ -42,7 +42,7 @@ public class RouteManager {
 			this.nbRoutesLvl[lvl] = 0;
 		}
 	}
-
+	
 	/**
 	 * Create a RouteManager object from an instance and the type of model under investigation
 	 * @param instLIRP		The instance from which the set of routes is created
@@ -108,7 +108,7 @@ public class RouteManager {
 				boolean reachable = false;
 				while(uIndex < nbUpperSites) {
 					/* Create a new direct route from the current upper site (uIndex) to the current lower site (sIndex) */
-					Route directR = new Route(this.instLIRP, uIndex, sIndex);
+					Route directR = new Route(this.instLIRP, lvl, uIndex, sIndex);
 					/* If its duration is lower than the maximum time allowed, add it to the list and mark the lower site as reachable*/
 					if(directR.isValid()) {
 						reachable = true;
@@ -177,205 +177,7 @@ public class RouteManager {
 			populateLoops(lvl, nbStops + 1);
 		}
 	}
-
-
-	//	/**
-	//	 * 
-	//	 * @param Allocation  allocation matrix
-	//	 * @return list of selected depot indices
-	//	 * @throws IOException
-	//	 */
-	//	private ArrayList<Integer> getListOfSelectedDepots(int[][] Allocation)throws IOException 
-	//	{
-	//		ArrayList<Integer> S = new ArrayList<Integer>();
-	//		int nd = this.instLIRP.getNbDepots(0); 
-	//		int nc = this.instLIRP.getNbClients(); 
-	//		
-	//		// If depot d has at least one client allocated to it, we consider it is selected, otherwise not. 
-	//		for (int d=0; d<nd;d++){
-	//			for (int c=0; c<nc;c++) {
-	//				if (Allocation[c][d] ==1)
-	//					S.add(d);
-	//				c=nc; // if at least one client is allocated to depot d, depot d exists and we can check next depot
-	//			}
-	//		}
-	//		return S;
-	//	}
-	//	
-	//	/**
-	//	 * @param : d : depot index
-	//	 * @param Allocation  allocation matrix
-	//	 * @return list of clients allocated to d
-	//	 * @throws IOException
-	//	 * **/
-	//	 
-	//		private ArrayList<Integer> getListOfAllocatedClients(int d, int[][] Allocation)throws IOException 
-	//		{
-	//			ArrayList<Integer> AAA = new ArrayList<Integer>();
-	//			int nc = this.instLIRP.getNbClients(); 
-	//			
-	//			for (int c=0; c<nc;c++) {
-	//					if (Allocation[c][d] == 1) AAA.add(c);
-	//			}
-	//			return AAA;
-	//		}
-	//	 
-	//	
-	//	
-	//	
-	//	/**
-	//	 * 
-	//	 * @param loopSD        routes from the supplier to depots
-	//	 * @param Allocation    matrix with customer allocation. Depot with 0 client = not selected
-	//	 * @return list of SD routes: SD routes starting from an unselected depot are filtered
-	//	 * @throws IOException
-	//	 */
-	//
-	//	// GUILLAUME
-	//	//private HashMap<Integer, HashMap<Integer, LinkedHashSet<Route>>> filterSDRoutes(ArrayList<Route> loopSD, int[][] Allocation) throws IOException {
-	//
-	//	// OLIVIER
-	//	ArrayList<Route> filterSDRoutes(ArrayList<Route> loopSD, int[][] Allocation) throws IOException {
-	//		
-	//		ArrayList<Route> filteredSD = new ArrayList<Route>();
-	//		ArrayList<Integer> S =  getListOfSelectedDepots(Allocation);
-	//	
-	//		for (int d=0; d<S.size();d++){
-	//			Route r = new Route(this.instLIRP, -1, S.get(d)); // create a new SD route r from s to d
-	//			filteredSD.add(r);
-	//		}
-	//		return filteredSD;
-	//	}
-	//
-	//
-	//	/**
-	//	 * 
-	//	 * @param loopDC        routes from depots to clients
-	//	 * @param Allocation    matrix with customer allocation. 
-	//	 * @return filtered list of DC routes. 
-	//	 * DC route starting from an unselected depot are filtered
-	//	 * @throws IOException
-	//	 */
-	//
-	//		// OLIVIER
-	//	private ArrayList<Route> filterDCRoutes(ArrayList<Route> loopDC, int[][] Allocation) throws IOException {
-	//
-	//		int keep; // indicates if a route must be kept or not in the filtered list
-	//		ArrayList<Route> filteredDC = new ArrayList<Route>();
-	//		ArrayList<Integer> S =  getListOfSelectedDepots(Allocation);
-	//		
-	//		for (int itr=0; itr<loopDC.size();itr++) {
-	//			Route r = loopDC.get(itr);
-	//			instanceManager.Location rdep = r.getStart();
-	//			// Ici ca risque de ne pas fonctionner car rdep est de type Location et S continet des entiers (a v�rifier)
-	//			if (S.contains(rdep)){
-	//					filteredDC.add(r);
-	//			}
-	//		}
-	//		return filteredDC;
-	//	}
-	//	
-	//	
-	//	
-	//	
-	//	/**
-	//	 * 
-	//	 * @param loopDC        routes from depots to clients
-	//	 * @param Allocation    matrix with customer allocation. 
-	//	 * @return filtered list of DC routes. 
-	//	 * DC Routes where all clients not preAllocated to d are filtered
-	//	 * @throws IOException
-	//	 */
-	//
-	//	// GUILLAUME
-	//	//private LinkedHashSet<Route> filterRoutes(ArrayList<Route> loopDC, int[][] Allocation) throws IOException {
-	//
-	//	// OLIVIER
-	//	private ArrayList<Route> filterRoutes(ArrayList<Route> loopDC, int[][] Allocation) throws IOException {
-	//
-	//		int keep; // indicates if a route must be kept or not in the filtered list
-	//		ArrayList<Integer> S =  getListOfSelectedDepots(Allocation);
-	//		ArrayList<Route> filtered = new ArrayList<Route>();
-	//
-	//		for (int itr=0; itr<loopDC.size();itr++) {
-	//			keep=1;
-	//			Route r = loopDC.get(itr);
-	//			ArrayList<Integer> AAA = getListOfAllocatedClients(itr, Allocation);
-	//			if (r.containsAll(AAA)) { // all clients are allocated to the depot of route r
-	//				filtered.add(r);
-	//			}
-	//		}
-	//		return filtered;
-	//	}
-
-
-
-	//			/* Build additional routes from every existing shorter route */
-	//			for(Route startRouteLvl0 : this.routes.get(0).get(nbStops - 1)) {
-	//				for(int stopIter = 0; stopIter < stopCandidates.size(); stopIter++) {
-	//					/* Create a new Route object by adding one stop among the candidates to currentRoute */
-	//					Route routeCandidate = currentRoute.extend(stopCandidates.get(stopIter));
-	//					/* If it is valid, add it to the set of routes to add and call recursively */
-	//					if(routeCandidate.isValid()) {
-	//			}
-	//			/* Fill a list with depots candidates for insertion in loops */
-	//			ArrayList<Integer> stopDCandidates = new ArrayList<Integer>();
-	//			for(int dIter = 0; dIter < this.instLIRP.getNbDepots(0); dIter++) {
-	//				stopDCandidates.add(dIter);
-	//			}
-	//			/* Create loops with the different possible combinations of stops */
-	//			for(int dIndex = 0; dIndex < stopDCandidates.size() - 1; dIndex++) {
-	//				Route initSDRoute = new Route(this.instLIRP, -1, dIndex);
-	//				loopsLvl0.addAll(computeAllRoutes(initSDRoute, new ArrayList<Integer>(stopDCandidates.subList(dIndex + 1, stopDCandidates.size())), maxNbStops - 1));
-	//			}
-	//
-	//			/* Fill a list with depots candidates for insertion in loops */
-	//			ArrayList<Integer> stopCCandidates = new ArrayList<Integer>();
-	//			for(int cIter = 0; cIter < this.instLIRP.getNbClients(); cIter++) {
-	//				stopCCandidates.add(cIter);
-	//			}
-	//			/* Create loops starting from each depot */
-	//			for(int dIter = 0; dIter < this.instLIRP.getNbDepots(0); dIter++) {
-	//				/* Routes from the depot dIter are useful only if the depot is reachable from the supplier */
-	//				/* Create loops with the different possible combinations of stops */
-	//				for(int cIndex = 0; cIndex < stopCCandidates.size() - 1; cIndex++) {
-	//					Route initDCRoute = new Route(this.instLIRP, dIter, cIndex);
-	//					loopsLvl1.addAll(computeAllRoutes(initDCRoute, new ArrayList<Integer>(stopCCandidates.subList(cIndex + 1, stopCCandidates.size())), maxNbStops - 1));
-	//				}
-	//			}
-	//		}
-	//	}
-
-	//
-	//	/**
-	//	 * 
-	//	 * @param currentRoute		the current Route object that is considered as a basis to build new ones
-	//	 * @param stopCandidates		the stops that can be added to currentRoute
-	//	 * @param nbRemainingStops	the maximum number of stops that can be added to the currentRoute
-	//	 * @return
-	//	 * @throws IOException
-	//	 */
-	//	private ArrayList<Route> computeAllRoutes(Route currentRoute, ArrayList<Integer> stopCandidates, int nbRemainingStops) throws IOException {
-	//		ArrayList<Route> routesToAdd = new ArrayList<Route>();
-	//		/* If some stop candidates remain to extend the route, try to add them to the route */
-	//		if(nbRemainingStops > 0 && !stopCandidates.isEmpty()) {
-	//			for(int stopIter = 0; stopIter < stopCandidates.size(); stopIter++) {
-	//				/* Create a new Route object by adding one stop among the candidates to currentRoute */
-	//				Route routeCandidate = currentRoute.extend(stopCandidates.get(stopIter));
-	//				/* If it is valid, add it to the set of routes to add and call recursively */
-	//				if(routeCandidate.isValid()) {
-	//					routesToAdd.add(routeCandidate);
-	//					/* If the stop currently added is not the last of the list, call recursively with the remaining candidates */
-	//					if(stopIter < stopCandidates.size() - 1) {
-	//						ArrayList<Integer> newStopCandidates = new ArrayList<Integer>(stopCandidates.subList(stopIter + 1, stopCandidates.size()));
-	//						routesToAdd.addAll(computeAllRoutes(routeCandidate, newStopCandidates, nbRemainingStops - 1));
-	//					}
-	//				}
-	//			}
-	//		}
-	//		return routesToAdd;
-	//	}
-
+	
 	/**
 	 * 
 	 * @return	a JSON object containing the RouteManager object

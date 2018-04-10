@@ -1,21 +1,26 @@
 package solverLIRP;
 
+import java.io.IOException;
 import java.io.PrintStream;
+import java.util.LinkedHashSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 import ilog.concert.IloException;
 import instanceManager.Instance;
+import instanceManager.Location;
 import tools.Parameters;
 
 public final class Matheuristics {
 
 	private Matheuristics() {}
 
-	public static Solution computeSolution(Instance inst, RouteManager rm, int[] rSplit, boolean locSampling, PrintStream printStreamSol)
+	public static Solution computeSolution(Instance inst, RouteManager rm, int[] rSplit, LocManager lm, PrintStream printStreamSol)
 			throws IloException {
 
 		boolean noSampling = true;
@@ -28,10 +33,11 @@ public final class Matheuristics {
 			return routeSamplingSol(inst, rm, rSplit, printStreamSol);
 		}
 
-		HashMap<Integer, ArrayList<Route>> mapRoutes = new HashMap<Integer, ArrayList<Route>>();
+		HashMap<Integer, LinkedHashSet<Route>> mapRoutes = new HashMap<Integer, LinkedHashSet<Route>>();
 		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
-			mapRoutes.put(lvl, new ArrayList<Route>(rm.getAllRoutesOfType(lvl, 1)));
+			mapRoutes.put(lvl, new LinkedHashSet<Route>(rm.getAllRoutesOfType(lvl, 1)));
 		}
+		
 		Solver solverLIRP = new Solver(inst, mapRoutes, null, true);
 		return solverLIRP.getSolution(printStreamSol);
 	}
@@ -54,10 +60,10 @@ public final class Matheuristics {
 		 * split 
 		 * =======================================================
 		 */
-		HashMap<Integer, ArrayList<Route>> setOfRoutes = new HashMap<Integer, ArrayList<Route>>();
+		HashMap<Integer, LinkedHashSet<Route>> setOfRoutes = new HashMap<Integer, LinkedHashSet<Route>>();
 		int[] subsetSizes = new int[Parameters.nb_levels];
 		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
-			ArrayList<Route> lvlRoutes = new ArrayList<Route>();
+			LinkedHashSet<Route> lvlRoutes = new LinkedHashSet<Route>();
 			int nbStops = 1;
 			while(rm.getNbRoutesOfType(lvl, nbStops) > 0){
 				lvlRoutes.addAll(rm.getAllRoutesOfType(lvl, nbStops));
@@ -82,17 +88,17 @@ public final class Matheuristics {
 		Solution bestSol = new Solution();
 		Solution currentSol = new Solution();
 
-		HashMap<Integer, ArrayList<Route>> routesCandidates = new HashMap<Integer, ArrayList<Route>>();
+		HashMap<Integer, LinkedHashSet<Route>> routesCandidates = new HashMap<Integer, LinkedHashSet<Route>>();
 
 		while (bestSol.getObjVal() < 0 || currentSol.getObjVal() < bestSol.getObjVal()) {
 			bestSol = currentSol;
 			System.out.println("Best solution so far : " + bestSol.getObjVal());
 
 			int nbSubsets = 1;
-			HashMap<Integer, HashSet<ArrayList<Route>>> mapSample= new HashMap<Integer, HashSet<ArrayList<Route>>>();
+			HashMap<Integer, HashSet<LinkedHashSet<Route>>> mapSample= new HashMap<Integer, HashSet<LinkedHashSet<Route>>>();
 			for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
 				setOfRoutes.get(lvl).removeAll(routesCandidates.get(lvl));
-				HashSet<ArrayList<Route>> rSample = sampleRoutes(setOfRoutes.get(lvl), subsetSizes[lvl]);
+				HashSet<LinkedHashSet<Route>> rSample = sampleRoutes(setOfRoutes.get(lvl), subsetSizes[lvl]);
 				nbSubsets *= rSample.size();
 				mapSample.put(lvl, rSample);
 			}
@@ -102,14 +108,14 @@ public final class Matheuristics {
 			System.out.println("========================================");
 
 			while (nbSubsets > 1) {
-				HashMap<Integer, ArrayList<Route>> collectedRoutes = new HashMap<Integer, ArrayList<Route>>();
-				for (HashMap<Integer, ArrayList<Route>> mapRoutes : getCombinations(mapSample)) {
+				HashMap<Integer, LinkedHashSet<Route>> collectedRoutes = new HashMap<Integer, LinkedHashSet<Route>>();
+				for (HashMap<Integer, LinkedHashSet<Route>> mapRoutes : getCombinations(mapSample)) {
 					int computeIter = 0;
 					while (computeIter < Parameters.recompute) {
 						Solver solverLIRP = new Solver(inst, mapRoutes, null, false);
 						Solution partialSol = solverLIRP.getSolution(printStreamSol);
 						if (partialSol != null) {
-							HashMap<Integer, ArrayList<Route>> usedRoutes = partialSol.collectUsedRoutes();
+							HashMap<Integer, LinkedHashSet<Route>> usedRoutes = partialSol.collectUsedRoutes();
 							for(int lvl: mapRoutes.keySet()) {
 								if(collectedRoutes.get(lvl) != null)
 									collectedRoutes.get(lvl).addAll(usedRoutes.get(lvl));
@@ -124,14 +130,14 @@ public final class Matheuristics {
 				nbSubsets = 1;
 				for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
 					setOfRoutes.get(lvl).removeAll(routesCandidates.get(lvl));
-					HashSet<ArrayList<Route>> rSample = sampleRoutes(setOfRoutes.get(lvl), subsetSizes[lvl]);
+					HashSet<LinkedHashSet<Route>> rSample = sampleRoutes(setOfRoutes.get(lvl), subsetSizes[lvl]);
 					nbSubsets *= rSample.size();
 					mapSample.put(lvl, rSample);
 				}
 			}
 			
 			for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
-				for(ArrayList<Route> solRoutes: mapSample.get(lvl))
+				for(LinkedHashSet<Route> solRoutes: mapSample.get(lvl))
 					routesCandidates.get(lvl).addAll(solRoutes);
 			}
 			Solver solverLIRP = new Solver(inst, routesCandidates, null, true);
@@ -154,16 +160,17 @@ public final class Matheuristics {
 	 * @return a double-entry containing the indices of the routes contained in each
 	 *         subset
 	 */
-	private static HashSet<ArrayList<Route>> sampleRoutes(ArrayList<Route> setOfRoutes, int subsetSizes) {
+	private static HashSet<LinkedHashSet<Route>> sampleRoutes(LinkedHashSet<Route> setOfRoutes, int subsetSizes) {
 		int nbSubsets = (int) Math.ceil(((double) setOfRoutes.size()) / subsetSizes);
-		HashSet<ArrayList<Route>> rSubsets = new HashSet<ArrayList<Route>>();
+		HashSet<LinkedHashSet<Route>> rSubsets = new HashSet<LinkedHashSet<Route>>();
+		ArrayList<Route> listOfRoutes = new ArrayList<Route>(setOfRoutes);
 
 		/*
 		 * If there is only one subset, return directly the set of indices taken as
 		 * input
 		 */
 		if (nbSubsets < 2) {
-			rSubsets.add(new ArrayList<Route>(setOfRoutes));
+			rSubsets.add(setOfRoutes);
 			return rSubsets;
 		}
 
@@ -172,9 +179,9 @@ public final class Matheuristics {
 		/* Shuffle the array at random */
 		Random rnd = ThreadLocalRandom.current();
 		/* Fill an array with the indices of possible routes */
-		for (int loopIndex = 0; loopIndex < setOfRoutes.size(); loopIndex++)
+		for (int loopIndex = 0; loopIndex < listOfRoutes.size(); loopIndex++)
 			permutDC[loopIndex] = loopIndex;
-		for (int i = setOfRoutes.size(); i > 0; i--) {
+		for (int i = listOfRoutes.size(); i > 0; i--) {
 			int index = rnd.nextInt(i);
 			int permutVal = permutDC[index];
 			permutDC[index] = permutDC[i - 1];
@@ -186,7 +193,7 @@ public final class Matheuristics {
 		int rangeSelect = subsetSizes;
 		/* Define the first index for which we do not have a route index */
 		int missingIndex = nbSubsets * subsetSizes;
-		while (missingIndex > setOfRoutes.size()) {
+		while (missingIndex > listOfRoutes.size()) {
 			/* Select a complete subset at random */
 			int subsetRand = rnd.nextInt(nbSubsets - 1);
 			/* Select the index of the element to copy from this subset at random */
@@ -212,26 +219,46 @@ public final class Matheuristics {
 
 		/* Copy the permutation to the result array */
 		for (int subsetIndex = 0; subsetIndex < nbSubsets; subsetIndex++) {
-			ArrayList<Route> currentSubset = new ArrayList<Route>();
+			LinkedHashSet<Route> currentSubset = new LinkedHashSet<Route>();
 			for (int idIter = 0; idIter < subsetSizes; idIter++) {
-				currentSubset.add(setOfRoutes.get(permutDC[subsetIndex * subsetSizes + idIter]));
+				currentSubset.add(listOfRoutes.get(permutDC[subsetIndex * subsetSizes + idIter]));
 			}
 			rSubsets.add(currentSubset);
 		}
 
 		return rSubsets;
 	}
-	
 
+
+	/**
+	 * Create a RouteManager object from an instance and the type of model under investigation
+	 * @param instLIRP	the instance from which the set of routes is created
+	 */
+	public LinkedHashSet<Route> filterRoutes(LocManager lm, int lvl, LinkedHashSet<Route> setOfRoutes) throws IOException {
+		/* Select a random number of depots among the depots available */
+		int maxNbDC = (int) Math.ceil(0.6 * (lm.getInstance().getNbLocations(lvl)));
+		HashSet<Location> dSelect = lm.depotSelect(Parameters.rand.nextInt(maxNbDC));
+		LinkedHashSet<Route> rFilter = new LinkedHashSet<Route>();
+		
+		Iterator<Route> rIter = setOfRoutes.iterator();
+		while(rIter.hasNext()) {
+			Route currentRoute = rIter.next();
+			if(dSelect.contains(currentRoute.getStart())) {
+				rFilter.add(currentRoute);
+			}
+		}
+		return rFilter;
+	}
+	
 	//	/**
 	//	 * 
 	//	 * @param Allocation  allocation matrix
 	//	 * @return list of selected depot indices
 	//	 * @throws IOException
 	//	 */
-	//	private ArrayList<Integer> getListOfSelectedDepots(int[][] Allocation)throws IOException 
+	//	private LinkedHashSet<Integer> getListOfSelectedDepots(int[][] Allocation)throws IOException 
 	//	{
-	//		ArrayList<Integer> S = new ArrayList<Integer>();
+	//		LinkedHashSet<Integer> S = new LinkedHashSet<Integer>();
 	//		int nd = this.instLIRP.getNbDepots(0); 
 	//		int nc = this.instLIRP.getNbClients(); 
 	//		
@@ -253,9 +280,9 @@ public final class Matheuristics {
 	//	 * @throws IOException
 	//	 * **/
 	//	 
-	//		private ArrayList<Integer> getListOfAllocatedClients(int d, int[][] Allocation)throws IOException 
+	//		private LinkedHashSet<Integer> getListOfAllocatedClients(int d, int[][] Allocation)throws IOException 
 	//		{
-	//			ArrayList<Integer> AAA = new ArrayList<Integer>();
+	//			LinkedHashSet<Integer> AAA = new LinkedHashSet<Integer>();
 	//			int nc = this.instLIRP.getNbClients(); 
 	//			
 	//			for (int c=0; c<nc;c++) {
@@ -276,13 +303,13 @@ public final class Matheuristics {
 	//	 */
 	//
 	//	// GUILLAUME
-	//	//private HashMap<Integer, HashMap<Integer, LinkedHashSet<Route>>> filterSDRoutes(ArrayList<Route> loopSD, int[][] Allocation) throws IOException {
+	//	//private HashMap<Integer, HashMap<Integer, LinkedHashSet<Route>>> filterSDRoutes(LinkedHashSet<Route> loopSD, int[][] Allocation) throws IOException {
 	//
 	//	// OLIVIER
-	//	ArrayList<Route> filterSDRoutes(ArrayList<Route> loopSD, int[][] Allocation) throws IOException {
+	//	LinkedHashSet<Route> filterSDRoutes(LinkedHashSet<Route> loopSD, int[][] Allocation) throws IOException {
 	//		
-	//		ArrayList<Route> filteredSD = new ArrayList<Route>();
-	//		ArrayList<Integer> S =  getListOfSelectedDepots(Allocation);
+	//		LinkedHashSet<Route> filteredSD = new LinkedHashSet<Route>();
+	//		LinkedHashSet<Integer> S =  getListOfSelectedDepots(Allocation);
 	//	
 	//		for (int d=0; d<S.size();d++){
 	//			Route r = new Route(this.instLIRP, -1, S.get(d)); // create a new SD route r from s to d
@@ -302,11 +329,11 @@ public final class Matheuristics {
 	//	 */
 	//
 	//		// OLIVIER
-	//	private ArrayList<Route> filterDCRoutes(ArrayList<Route> loopDC, int[][] Allocation) throws IOException {
+	//	private LinkedHashSet<Route> filterDCRoutes(LinkedHashSet<Route> loopDC, int[][] Allocation) throws IOException {
 	//
 	//		int keep; // indicates if a route must be kept or not in the filtered list
-	//		ArrayList<Route> filteredDC = new ArrayList<Route>();
-	//		ArrayList<Integer> S =  getListOfSelectedDepots(Allocation);
+	//		LinkedHashSet<Route> filteredDC = new LinkedHashSet<Route>();
+	//		LinkedHashSet<Integer> S =  getListOfSelectedDepots(Allocation);
 	//		
 	//		for (int itr=0; itr<loopDC.size();itr++) {
 	//			Route r = loopDC.get(itr);
@@ -332,19 +359,19 @@ public final class Matheuristics {
 	//	 */
 	//
 	//	// GUILLAUME
-	//	//private LinkedHashSet<Route> filterRoutes(ArrayList<Route> loopDC, int[][] Allocation) throws IOException {
+	//	//private LinkedHashSet<Route> filterRoutes(LinkedHashSet<Route> loopDC, int[][] Allocation) throws IOException {
 	//
 	//	// OLIVIER
-	//	private ArrayList<Route> filterRoutes(ArrayList<Route> loopDC, int[][] Allocation) throws IOException {
+	//	private LinkedHashSet<Route> filterRoutes(LinkedHashSet<Route> loopDC, int[][] Allocation) throws IOException {
 	//
 	//		int keep; // indicates if a route must be kept or not in the filtered list
-	//		ArrayList<Integer> S =  getListOfSelectedDepots(Allocation);
-	//		ArrayList<Route> filtered = new ArrayList<Route>();
+	//		LinkedHashSet<Integer> S =  getListOfSelectedDepots(Allocation);
+	//		LinkedHashSet<Route> filtered = new LinkedHashSet<Route>();
 	//
 	//		for (int itr=0; itr<loopDC.size();itr++) {
 	//			keep=1;
 	//			Route r = loopDC.get(itr);
-	//			ArrayList<Integer> AAA = getListOfAllocatedClients(itr, Allocation);
+	//			LinkedHashSet<Integer> AAA = getListOfAllocatedClients(itr, Allocation);
 	//			if (r.containsAll(AAA)) { // all clients are allocated to the depot of route r
 	//				filtered.add(r);
 	//			}
@@ -363,18 +390,18 @@ public final class Matheuristics {
 	//					if(routeCandidate.isValid()) {
 	//			}
 	//			/* Fill a list with depots candidates for insertion in loops */
-	//			ArrayList<Integer> stopDCandidates = new ArrayList<Integer>();
+	//			LinkedHashSet<Integer> stopDCandidates = new LinkedHashSet<Integer>();
 	//			for(int dIter = 0; dIter < this.instLIRP.getNbDepots(0); dIter++) {
 	//				stopDCandidates.add(dIter);
 	//			}
 	//			/* Create loops with the different possible combinations of stops */
 	//			for(int dIndex = 0; dIndex < stopDCandidates.size() - 1; dIndex++) {
 	//				Route initSDRoute = new Route(this.instLIRP, -1, dIndex);
-	//				loopsLvl0.addAll(computeAllRoutes(initSDRoute, new ArrayList<Integer>(stopDCandidates.subList(dIndex + 1, stopDCandidates.size())), maxNbStops - 1));
+	//				loopsLvl0.addAll(computeAllRoutes(initSDRoute, new LinkedHashSet<Integer>(stopDCandidates.subList(dIndex + 1, stopDCandidates.size())), maxNbStops - 1));
 	//			}
 	//
 	//			/* Fill a list with depots candidates for insertion in loops */
-	//			ArrayList<Integer> stopCCandidates = new ArrayList<Integer>();
+	//			LinkedHashSet<Integer> stopCCandidates = new LinkedHashSet<Integer>();
 	//			for(int cIter = 0; cIter < this.instLIRP.getNbClients(); cIter++) {
 	//				stopCCandidates.add(cIter);
 	//			}
@@ -384,7 +411,7 @@ public final class Matheuristics {
 	//				/* Create loops with the different possible combinations of stops */
 	//				for(int cIndex = 0; cIndex < stopCCandidates.size() - 1; cIndex++) {
 	//					Route initDCRoute = new Route(this.instLIRP, dIter, cIndex);
-	//					loopsLvl1.addAll(computeAllRoutes(initDCRoute, new ArrayList<Integer>(stopCCandidates.subList(cIndex + 1, stopCCandidates.size())), maxNbStops - 1));
+	//					loopsLvl1.addAll(computeAllRoutes(initDCRoute, new LinkedHashSet<Integer>(stopCCandidates.subList(cIndex + 1, stopCCandidates.size())), maxNbStops - 1));
 	//				}
 	//			}
 	//		}
@@ -399,8 +426,8 @@ public final class Matheuristics {
 	//	 * @return
 	//	 * @throws IOException
 	//	 */
-	//	private ArrayList<Route> computeAllRoutes(Route currentRoute, ArrayList<Integer> stopCandidates, int nbRemainingStops) throws IOException {
-	//		ArrayList<Route> routesToAdd = new ArrayList<Route>();
+	//	private LinkedHashSet<Route> computeAllRoutes(Route currentRoute, LinkedHashSet<Integer> stopCandidates, int nbRemainingStops) throws IOException {
+	//		LinkedHashSet<Route> routesToAdd = new LinkedHashSet<Route>();
 	//		/* If some stop candidates remain to extend the route, try to add them to the route */
 	//		if(nbRemainingStops > 0 && !stopCandidates.isEmpty()) {
 	//			for(int stopIter = 0; stopIter < stopCandidates.size(); stopIter++) {
@@ -411,7 +438,7 @@ public final class Matheuristics {
 	//					routesToAdd.add(routeCandidate);
 	//					/* If the stop currently added is not the last of the list, call recursively with the remaining candidates */
 	//					if(stopIter < stopCandidates.size() - 1) {
-	//						ArrayList<Integer> newStopCandidates = new ArrayList<Integer>(stopCandidates.subList(stopIter + 1, stopCandidates.size()));
+	//						LinkedHashSet<Integer> newStopCandidates = new LinkedHashSet<Integer>(stopCandidates.subList(stopIter + 1, stopCandidates.size()));
 	//						routesToAdd.addAll(computeAllRoutes(routeCandidate, newStopCandidates, nbRemainingStops - 1));
 	//					}
 	//				}
@@ -427,8 +454,8 @@ public final class Matheuristics {
 	 * @param setOfMaps
 	 * @return
 	 */
-	private static HashSet<HashMap<Integer, ArrayList<Route>>> getCombinations(HashMap<Integer, HashSet<ArrayList<Route>>> setOfMaps) {
-		HashSet<HashMap<Integer, ArrayList<Route>>> rCombos = new HashSet<HashMap<Integer, ArrayList<Route>>>();
+	private static HashSet<HashMap<Integer, LinkedHashSet<Route>>> getCombinations(HashMap<Integer, HashSet<LinkedHashSet<Route>>> setOfMaps) {
+		HashSet<HashMap<Integer, LinkedHashSet<Route>>> rCombos = new HashSet<HashMap<Integer, LinkedHashSet<Route>>>();
 		
 		return rCombos;
 	}

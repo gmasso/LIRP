@@ -6,6 +6,7 @@ import java.io.PrintStream;
 
 import ilog.concert.IloException;
 import instanceManager.Instance;
+import solverLIRP.LocManager;
 import solverLIRP.Matheuristics;
 import solverLIRP.RouteManager;
 import solverLIRP.Solution;
@@ -65,6 +66,7 @@ public class ResolutionMain {
 						System.out.println("Creating the RouteManager...");
 						RouteManager rm = new RouteManager(instLIRP);
 						rm.initialize(false);
+						LocManager lm = new LocManager(instLIRP);
 						System.out.println("OK. Solving...");
 
 						long startChrono = System.currentTimeMillis();

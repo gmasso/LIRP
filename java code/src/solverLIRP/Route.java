@@ -15,12 +15,15 @@ public class Route {
 	/*======================
 	 *      ATTRIBUTES
 	 =======================*/
-	private Instance instLIRP; 			// The instance from which the stops of the route are collected
-	private int start; 					// The start of the route (index of depot in model 1, -1 in model 2 to refer to the supplier)
+	private Instance instLIRP; 				// The instance from which the stops of the route are collected
+	
+	private int lvl;
+	private int start; 						// The start of the route (index of depot in model 1, -1 in model 2 to refer to the supplier)
 	private LinkedHashSet<Integer> stops; 	// Permutation of the stops indices corresponding to the best route
-	private double travelTime; 			// The duration of the route (travel and stopping time)
-	private double stopTime; 			// The total time spent delivering the stops
-	private double cost; 				// The cost of the route
+	
+	private double travelTime; 				// The duration of the route (travel and stopping time)
+	private double stopTime; 				// The total time spent delivering the stops
+	private double cost; 					// The cost of the route
 
 
 	/*======================
@@ -31,8 +34,9 @@ public class Route {
 	 * @param start, points
 	 * @throws IOException
 	 */
-	private Route(Instance instLIRP, int start, LinkedHashSet<Integer> stops) throws IOException {
+	private Route(Instance instLIRP, int lvl, int start, LinkedHashSet<Integer> stops) throws IOException {
 		this.instLIRP = instLIRP;
+		this.lvl = lvl; 
 		this.start = start;
 		this.stops = new LinkedHashSet<Integer>(stops);
 		LinkedHashSet<Integer> startingPermutation = new LinkedHashSet<Integer>(stops);
@@ -47,8 +51,9 @@ public class Route {
 	 * @param start, stop
 	 * @throws IOException
 	 */
-	public Route(Instance instLIRP, int start, int index) throws IOException {
+	public Route(Instance instLIRP, int lvl, int start, int index) throws IOException {
 		this.instLIRP = instLIRP;
+		this.lvl = lvl; 
 		this.start = start;
 		this.stops = new LinkedHashSet<Integer>();
 		this.stops.add(index);
@@ -115,15 +120,6 @@ public class Route {
 
 	/**
 	 * 
-	 * @return	true if the route links the supplier with depots, false if it links a depot with clients
-	 */
-	public boolean isSD() {
-		return this.start < 0;
-	}
-	
-
-	/**
-	 * 
 	 * @return	the duration of the route given its stops sequence
 	 */
 	public int getMaxStop() {
@@ -155,7 +151,7 @@ public class Route {
 	 * @return	True if the duration of the route is less than the maximum time allowed 
 	 */
 	public boolean isValid() {
-		return (this.travelTime + this.stopTime) < Parameters.max_time_route;
+		return (this.instLIRP.getDepot(this.lvl, this.start) == this.instLIRP.getDummy()) || (this.travelTime + this.stopTime) < Parameters.max_time_route;
 	}
 	/**
 	 * Check if the start attribute of the Route object is equal to a given index
@@ -211,10 +207,10 @@ public class Route {
 		LinkedHashSet<Integer> newStops = new LinkedHashSet<Integer> (stops);
 		if(this.getLB(stopIndex) < Parameters.max_time_route) {
 			newStops.add(stopIndex);
-			return new Route(this.instLIRP, this.start, newStops);
+			return new Route(this.instLIRP, this.lvl, this.start, newStops);
 		}
 		else {
-			Route fakeRoute = new Route(this.instLIRP, this.start, stopIndex); 
+			Route fakeRoute = new Route(this.instLIRP, this.lvl, this.start, stopIndex); 
 			fakeRoute.stops.addAll(this.stops);
 			fakeRoute.travelTime = fakeRoute.computeDuration();
 			fakeRoute.stopTime += this.stopTime;

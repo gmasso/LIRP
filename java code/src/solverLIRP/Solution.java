@@ -1,5 +1,5 @@
 package solverLIRP;
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.HashMap;
 
 import org.json.JSONArray;
@@ -149,8 +149,8 @@ public class Solution {
 	 * @param lvl	the level for which routes are studied
 	 * @return		the set of routes used in the solution between the location at level lvl and its upper layer
 	 */
-	public ArrayList<Route> getUsedRoutes(int lvl) {
-		ArrayList<Route> loopUsed = new ArrayList<Route>();
+	public LinkedHashSet<Route> getUsedRoutes(int lvl) {
+		LinkedHashSet<Route> loopUsed = new LinkedHashSet<Route>();
 		for(int r = 0; r < this.routes[lvl].length; r++) {
 			/* Restrict the search only to multi-stops routes */
 			if(this.routes[lvl][r].getNbStops() > 1) {
@@ -366,10 +366,10 @@ public class Solution {
 	 * 
 	 * @return	a HashMap containing the route used in the solution
 	 */
-	public HashMap<Integer, ArrayList<Route>> collectUsedRoutes(){
-		HashMap<Integer, ArrayList<Route>> collectedRoutes = new HashMap<Integer, ArrayList<Route>>();
+	public HashMap<Integer, LinkedHashSet<Route>> collectUsedRoutes(){
+		HashMap<Integer, LinkedHashSet<Route>> collectedRoutes = new HashMap<Integer, LinkedHashSet<Route>>();
 		for(int lvl=0; lvl < Parameters.nb_levels; lvl++) {
-			ArrayList<Route> routesLvl = new ArrayList<Route>();
+			LinkedHashSet<Route> routesLvl = new LinkedHashSet<Route>();
 			for (int rIter = 0; rIter < this.usedRoutes[lvl].length; rIter++){
 				boolean used = false;
 				int t = 0;

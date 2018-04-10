@@ -44,13 +44,21 @@ public class LocManager {
 	/**
 	 * Compute a pre-allocation of all locations of the instance to some locations of the upper level
 	 */
-	public void preAlloc() { 
+	public void init() { 
 		/* First allocation : to the k closest depots of the upper level */
 		this.directAlloc();
 		/*  Second allocation : allocate each location l to depots of the upper level that are already connected to another location of the same level, close to l */
 		this.indirectAlloc();
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
+	public Instance getInstance() {
+		return this.instLIRP;
+	}
+	
 	/**
 	 * Allocate locations to the level dc with direct links
 	 */
@@ -139,12 +147,14 @@ public class LocManager {
 	/* Heuristic depot selection 
 	 * Return a matrix with clients allocation (possibly to a dummy depot)
 	 */
-	public HashMap<Location, HashSet<Location>> depotSelection(int p) throws IOException {
-		this.preAlloc(); 
+	private HashMap<Location, HashSet<Location>> assignLocations(int p) throws IOException {
+		if(this.alloc.isEmpty()) {
+			this.init();
+		}
 		double y; 	/* random value used in roulette wheel selection */
 		HashMap<Location, HashSet<Location>> dSelect = new HashMap<Location, HashSet<Location>>(this.alloc); 
 		/* Add a dummy depot to the map */
-		Location dummy = new Location(-1, -1);
+		Location dummy = instLIRP.getDummy();
 		dSelect.put(dummy, new HashSet<Location>());
 
 		for(int lvl = Parameters.nb_levels - 1; lvl > 0; lvl--) {
@@ -211,6 +221,21 @@ public class LocManager {
 			}
 		}
 		return dSelect;
+	}
+
+	/**
+	 * 
+	 * @param p	maximum number of depots to select from the instance
+	 * @return	A set of depots selected randmly according to how many locations their can serve
+	 */
+	public HashSet<Location> depotSelect(int p) {
+		try {
+			return new HashSet<Location>(this.assignLocations(p).keySet());
+		}
+		catch (IOException ioe) {
+			System.out.println("Exception met while assigning depots");
+		}
+		return new HashSet<Location>();
 	}
 }
 

@@ -1,7 +1,7 @@
 package solverLIRP;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 
 import ilog.concert.IloException;
 import ilog.concert.IloIntVar;
@@ -11,7 +11,6 @@ import ilog.concert.IloNumVar;
 import ilog.concert.IloObjectiveSense;
 import ilog.cplex.IloCplex;
 import ilog.cplex.IloCplex.DoubleParam;
-import ilog.cplex.IloCplex.MIPStartEffort;
 
 import instanceManager.Instance;
 import tools.Parameters;
@@ -42,7 +41,7 @@ public class Solver{
 	 * @param availableRoutes	the direct and multi-stops routes that are available in this model
 	 * @throws IloException
 	 */
-	public Solver(Instance instLIRP, HashMap<Integer, ArrayList<Route>> availRoutes, Solution previousSol, boolean isFinal) throws IloException {
+	public Solver(Instance instLIRP, HashMap<Integer, LinkedHashSet<Route>> availRoutes, Solution previousSol, boolean isFinal) throws IloException {
 
 		/* Data */
 		this.instLIRP = instLIRP;
