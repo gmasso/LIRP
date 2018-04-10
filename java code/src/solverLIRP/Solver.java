@@ -11,6 +11,7 @@ import ilog.concert.IloNumVar;
 import ilog.concert.IloObjectiveSense;
 import ilog.cplex.IloCplex;
 import ilog.cplex.IloCplex.DoubleParam;
+import ilog.cplex.IloCplex.MIPStartEffort;
 
 import instanceManager.Instance;
 import tools.Parameters;
@@ -21,6 +22,7 @@ public class Solver{
 	private Route[][] routes;
 
 	private IloCplex LIRPSolver;
+
 	/*===============
 	 *   VARIABLES 
 	 ================*/
@@ -50,6 +52,7 @@ public class Solver{
 			this.routes[lvl] = new Route[availRoutes.get(lvl).size()];
 			this.routes[lvl] = availRoutes.get(lvl).toArray(this.routes[lvl]);
 		}
+
 		/* Definition of parameters Alpha and Beta*/
 		/* Alpha_lir = 1 if location i of level l is visited by route r */
 		int[][][] Alpha = new int[Parameters.nb_levels][][]; 
@@ -77,7 +80,7 @@ public class Solver{
 		/* CPLEX solver */
 		this.LIRPSolver = new IloCplex();
 
-		// Set the time limit
+		/* Set the time limit */
 		if(isFinal) {
 			this.LIRPSolver.setParam(DoubleParam.TiLim, Parameters.mainTimeLimit);
 		}
@@ -234,12 +237,42 @@ public class Solver{
 				}
 			}
 
+			/* If a starting solution is provided, set the different variables accordingly */
 			if(startSol != null) {
-				this.LIRPSolver.addMIPStart(this.y[0], new double[] {});
-				this.LIRPSolver.addMIPStart(this.q[0][0][0], new double[] {});
+				/* Set the depots opened in the starting solution */
+				double[] oDC = new double[this.instLIRP.getNbLocations(lvl - 1)];
+				for(int dc = 0; dc < this.instLIRP.getNbLocations(lvl - 1); dc++) {
+					oDC[dc] = (startSol.isOpenDepot(lvl, dc)) ? 1 : 0;
+				}
+				this.LIRPSolver.addMIPStart(this.y[lvl], oDC);
+
+				/* Set up the route usage in the starting solution */
+				for(int r = 0; r < this.routes[lvl].length; r++) {
+					double[] rUsed = new double[this.instLIRP.getNbPeriods()];
+					for(int t = 0; t < this.instLIRP.getNbPeriods(); t++) {
+						rUsed[t] = startSol.isUsedRoute(lvl, r, t) ? 1 : 0;
+					}
+					this.LIRPSolver.addMIPStart(this.z[lvl][r], rUsed);
+				}
+				
+				/* Set up the quantities delivered and the inventory levels in the starting solution */
+				for(int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++) {
+					double[] inv = new double[this.instLIRP.getNbPeriods()];
+					for(int t = 0; t < this.instLIRP.getNbPeriods(); t++) {
+						inv[t] = startSol.getInvLoc(lvl, loc, t);
+					}
+					this.LIRPSolver.addMIPStart(this.invLoc[lvl][loc], inv);
+
+					for(int r = 0; r < this.routes[lvl].length; r++) {
+						double[] del = new double[this.instLIRP.getNbPeriods()];
+						for(int t = 0; t < this.instLIRP.getNbPeriods(); t++) {
+							del[t] = startSol.getQuantityDelivered(lvl, loc, r, t);
+						}
+						this.LIRPSolver.addMIPStart(this.q[lvl][loc][r], del);
+					}
+				}
 			}
 		}
-
 	}
 
 	/*=======================

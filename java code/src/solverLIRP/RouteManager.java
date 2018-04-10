@@ -55,7 +55,6 @@ public class RouteManager {
 			/* Populate loops at both levels */
 			for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
 				this.populateLoops(lvl, 1);
-				this.populateLoops(lvl, 1);
 			}
 		}
 	}

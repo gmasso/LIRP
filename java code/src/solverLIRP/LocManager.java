@@ -18,7 +18,7 @@ import tools.Parameters;
 import tools.SortedLocSet;
 
 
-public class LocCluster {
+public class LocManager {
 
 	private static int k = 3; 										//(parameter) number of closest depots considered
 	private static double mu1 = 0.4 * Parameters.max_time_route;	//(parameter) max distance between client and depot for automatic allocation 
@@ -39,7 +39,7 @@ public class LocCluster {
 	 * @param number of client, number of depots
 	 * @throws IOException
 	 */
-	public LocCluster(Instance instLIRP) throws IOException {
+	public LocManager(Instance instLIRP) throws IOException {
 		this.instLIRP = instLIRP;
 		this.alloc = new HashMap<Location, HashSet<Location>>();
 	}
