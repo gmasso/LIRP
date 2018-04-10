@@ -149,7 +149,7 @@ public class LocManager {
 
 		for(int lvl = Parameters.nb_levels - 1; lvl > 0; lvl--) {
 			int nbLocLvl = this.instLIRP.getNbLocations(lvl);
-			int nbLocUp = this.instLIRP.getNbDepots(lvl - 1);
+			int nbLocUp = 0;
 			for (int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++) {
 				Location currentLoc = (lvl < Parameters.nb_levels - 1) ? this.instLIRP.getDepot(lvl, loc) : this.instLIRP.getClient(loc);
 				dSelect.get(dummy).add(currentLoc);
@@ -160,8 +160,10 @@ public class LocManager {
 			/* Store each depot based on how many locations are allocated to it */
 			for (int d = 0; d < this.instLIRP.getNbDepots(lvl - 1); d++) {
 				Depot dc = this.instLIRP.getDepot(lvl - 1, d);
-				if(!dc.isDummy() && dSelect.containsKey(dc))
+				if(!dc.isDummy() && dSelect.containsKey(dc)) {
 					depotScore.add(dc);
+					nbLocUp++;
+				}
 			}
 
 			/* number of depots selected */
@@ -186,11 +188,15 @@ public class LocManager {
 					}
 				});
 
-				/* biased roulette wheel depot selection */
+				/* Biased roulette wheel depot selection */
 				y = Parameters.rand.nextDouble();
 				/* Generate biased random position */
 				int position = 0; 
-				while (position < Math.pow(y, beta) * nbLocUp) 
+				/* The list of depots that can be selected is limited to: 
+				 * Depots object that still have unassigned successors 
+				 * (i.e. that haven't been selected yet)
+				 */
+				while (position < Math.pow(y, beta) * (nbLocUp - selectDC)) 
 					position++; 
 				/* Select Depot object at the position */
 				Depot dnew = depotScore.get(position);
