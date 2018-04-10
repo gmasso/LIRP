@@ -1,11 +1,10 @@
 package solverLIRP;
 
-import java.io.PrintStream;
 import instanceManager.Instance;
 import tools.Parameters;
 
 public final class Checker {
-	public static boolean check(Solution sol, Instance instLIRP, Route[][] routes, PrintStream printStreamSol) {
+	public static boolean check(Solution sol, Instance instLIRP, Route[][] routes) {
 		/* Definition of parameters Alpha and Beta*/
 		/* Alpha_lir = 1 if location i of level l is visited by route r */
 		int[][][] Alpha = new int[Parameters.nb_levels][][]; 

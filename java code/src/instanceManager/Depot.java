@@ -19,6 +19,14 @@ public class Depot extends Location{
 	 * @param coordDepot	the coordinates of the depot
 	 * @throws IOException
 	 */
+	public Depot() throws IOException{
+		super();
+	}
+	/**
+	 * Creates a Depot object located at specific coordinates
+	 * @param coordDepot	the coordinates of the depot
+	 * @throws IOException
+	 */
 	public Depot(Point2D coordDepot) throws IOException{
 		super(coordDepot);
 		this.fixedCost = 0;

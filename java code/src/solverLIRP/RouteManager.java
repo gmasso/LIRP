@@ -101,8 +101,9 @@ public class RouteManager {
 			/* Create a LinkedHashSet to store the feasible routes on the current level as they are computed */
 			LinkedHashSet<Route> directLvl = new LinkedHashSet<Route>();
 			int sIndex = 0;
+			int nbLocLvl = this.instLIRP.getNbLocations(lvl);
 			/* Fill the direct routes first and test that each location of the level is reachable from at least one site on the upper level */
-			while(sIndex < this.instLIRP.getNbDepots(lvl)) {
+			while(sIndex < nbLocLvl) {
 				int nbUpperSites = this.instLIRP.getNbDepots(lvl - 1);
 				int uIndex = (lvl == 0) ? -1 : 0;
 				boolean reachable = false;
@@ -128,6 +129,8 @@ public class RouteManager {
 					else
 						this.instLIRP.drawDepot(lvl, sIndex);
 				}
+				if(lvl > 0)
+					directLvl.add(new Route(this.instLIRP, lvl, -1, sIndex));
 			}
 			/* Add the direct routes to the corresponding level in the HashMap */
 			this.routes.get(lvl).put(1, directLvl);
@@ -154,8 +157,8 @@ public class RouteManager {
 		/* If the stopping time is small enough, build the multi-stops routes for this instance */
 		/* Start from each of the existing direct routes */
 		for(Route startRoute : this.routes.get(lvl).get(nbStops)) {
-			/* If it is possible to add a stop */
-			if(startRoute.getDuration() + Parameters.stopping_time < Parameters.max_time_route) {
+			/* If the route does not start from the dummy depot and it is possible to add a stop */
+			if(!startRoute.isDummy() && startRoute.getDuration() + Parameters.stopping_time < Parameters.max_time_route) {
 				/* Start at the maximum last possible stop */
 				int stopToAdd = finalIndex - 1;
 				int maxStop = startRoute.getMaxStop();

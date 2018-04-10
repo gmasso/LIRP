@@ -13,6 +13,9 @@ public class Client extends Location{
 	private double[] demands; // The demand of the client for each period of the planning horizon
 	private Boolean[] activeDays;
 
+	public Client() throws IOException{
+		super();
+	}
 	/**
 	 * Creates a Client object from its coordinates on the map and its demands sequence
 	 * @param coordClient	the coordinates at which the client is located

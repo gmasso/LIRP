@@ -24,7 +24,7 @@ public class Route {
 	private double travelTime; 				// The duration of the route (travel and stopping time)
 	private double stopTime; 				// The total time spent delivering the stops
 	private double cost; 					// The cost of the route
-
+	private boolean isDummy;
 
 	/*======================
 	 *      CONSTRUCTOR 
@@ -37,6 +37,9 @@ public class Route {
 	private Route(Instance instLIRP, int lvl, int start, LinkedHashSet<Integer> stops) throws IOException {
 		this.instLIRP = instLIRP;
 		this.lvl = lvl; 
+		/* If the start index is negative and the route does not serves the first level, 
+		 * mark it as dummy */
+		this.isDummy =  (start < 0 && lvl > 0);
 		this.start = start;
 		this.stops = new LinkedHashSet<Integer>(stops);
 		LinkedHashSet<Integer> startingPermutation = new LinkedHashSet<Integer>(stops);
@@ -53,15 +56,23 @@ public class Route {
 	 */
 	public Route(Instance instLIRP, int lvl, int start, int index) throws IOException {
 		this.instLIRP = instLIRP;
+
 		this.lvl = lvl; 
+		/* If the start index is negative and the route does not serves the first level, 
+		 * mark it as dummy */
+		this.isDummy =  (start < 0 && lvl > 0);
+
 		this.start = start;
 		this.stops = new LinkedHashSet<Integer>();
 		this.stops.add(index);
 		this.travelTime = computeDuration();
+		if(this.lvl < 0) {
+			this.travelTime += Parameters.max_time_route;
+		}
 		this.stopTime = Parameters.stopping_time;
 		this.cost = Parameters.fixed_cost_route + Parameters.cost_km * Parameters.avg_speed * this.travelTime;
-		if(this.start < 0)
-			this.cost += this.instLIRP.getDepot(0, index).getOrderingCost();
+		if(this.start == -1)
+			this.cost += this.instLIRP.getDepot(-1, index).getOrderingCost();
 	}
 
 	/*
@@ -132,6 +143,9 @@ public class Route {
 		return maxStop;
 	}
 	
+	public boolean isDummy() {
+		return this.isDummy;
+	}
 	/*
 	 * MUTATORS
 	 */
@@ -151,7 +165,7 @@ public class Route {
 	 * @return	True if the duration of the route is less than the maximum time allowed 
 	 */
 	public boolean isValid() {
-		return (this.instLIRP.getDepot(this.lvl, this.start) == this.instLIRP.getDummy()) || (this.travelTime + this.stopTime) < Parameters.max_time_route;
+		return (this.lvl < 0) || (this.travelTime + this.stopTime) < Parameters.max_time_route;
 	}
 	/**
 	 * Check if the start attribute of the Route object is equal to a given index

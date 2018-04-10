@@ -226,7 +226,7 @@ public class LocManager {
 	/**
 	 * 
 	 * @param p	maximum number of depots to select from the instance
-	 * @return	A set of depots selected randmly according to how many locations their can serve
+	 * @return	A set of depots selected randomly according to how many locations their can serve
 	 */
 	public HashSet<Location> depotSelect(int p) {
 		try {

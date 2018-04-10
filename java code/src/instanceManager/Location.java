@@ -22,8 +22,8 @@ public class Location {
 	 * @param y				the y-axis coordinate of the location
 	 * @throws IOException
 	 */
-	public Location(double x, double y) throws IOException {
-		this.locationCoords = new Point2D.Double(x,y);
+	public Location() throws IOException {
+		this.locationCoords = new Point2D.Double(-1, -1);
 	}
 	
 	/**

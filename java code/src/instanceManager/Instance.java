@@ -29,7 +29,7 @@ public class Instance {
 	private DemandsMap demands;
 	private String instID;
 	private int demandProfile;
-	private Location dummy;
+	private Depot dummy;
 	
 	/*
 	 * CONSTRUCTORS
@@ -68,7 +68,7 @@ public class Instance {
 			//this.clients.assignDemands(this.demands, planningHorizon, this.demandProfile, this.fleetDesc.get(Parameters.nb_levels - 1).getR());
 			/* Set the planning horizon */
 			this.planningHorizon = planningHorizon;
-			this.dummy = new Location(-1, -1);
+			this.dummy = new Depot();
 			/* Generate a unique ID */
 			this.generateID();
 			
@@ -121,7 +121,7 @@ public class Instance {
 			this.demands = dBoxMap;
 			this.demandProfile = demandProfile;
 			this.planningHorizon = planningHorizon;
-			this.dummy = new Location(-1, -1);
+			this.dummy = new Depot();
 
 			this.generateID();
 			
@@ -180,7 +180,7 @@ public class Instance {
 				this.gridSize = Math.max(gridSize, dMap.getGridSize());
 			}
 			this.gridSize = Math.max(this.gridSize, this.clients.getGridSize());
-			this.dummy = new Location(-1, -1);
+			this.dummy = new Depot();
 
 			this.instID = jsonInstanceObject.getString("id");
 		}
@@ -256,6 +256,8 @@ public class Instance {
 	 * @return	the Depot object corresponding to the depot index
 	 */
 	public Depot getDepot(int lvl, int d) {
+		if(lvl < 0)
+			return (Depot) this.dummy;
 		return (Depot) this.depots[lvl].getSite(d);
 	}
 

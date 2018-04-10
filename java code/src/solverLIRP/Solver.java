@@ -328,7 +328,7 @@ public class Solver{
 	 * @param printStreamSol	the stream on which to print the solution
 	 * @return				the solution obtained from
 	 */
-	public Solution getSolution(PrintStream printStreamSol) throws IloException {
+	public Solution getSolution() throws IloException {
 
 		/*===============================
 		 *     SAVE THE SOLVER OUTPUT
@@ -392,7 +392,7 @@ public class Solver{
 				}
 			}
 
-			Checker.check(sol, this.instLIRP, this.routes, printStreamSol);
+			Checker.check(sol, this.instLIRP, this.routes);
 		}
 		return sol;
 	}
