@@ -6,14 +6,10 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.TreeSet;
 
-import instanceManager.ClientsMap;
 import instanceManager.Depot;
-import instanceManager.DepotsMap;
 import instanceManager.Instance;
 import instanceManager.Location;
-import tools.Pair;
 import tools.Parameters;
 import tools.SortedLocSet;
 
@@ -24,6 +20,7 @@ public class LocManager {
 	private static double mu1 = 0.4 * Parameters.max_time_route;	//(parameter) max distance between client and depot for automatic allocation 
 	private static double mu2 = 0.1 * Parameters.max_time_route;	//(parameter) max distance between clients in farther allocation
 	private static double mu3 = Parameters.max_time_route;    		//(parameter) max route distance for farther allocation
+	private static int  beta = 3; 									// parameter for roulette wheel selection
 
 	/*======================
 	 *      ATTRIBUTES
@@ -119,8 +116,7 @@ public class LocManager {
 				/* Pre-allocation of the location to the k closest depots in the upper level */
 				Iterator<Location> iterLvl = bestDistToLoc.iterator();
 				boolean tooFar = false;
-				while(!tooFar && iterLvl.hasNext())
-				{
+				while(!tooFar && iterLvl.hasNext()){
 					Location interLoc = iterLvl.next();
 					double distLvl = currentLoc.getDistance(interLoc);
 					if(distLvl > mu2) {
@@ -140,102 +136,77 @@ public class LocManager {
 		}
 	}
 
-	// Heuristic depot selection
-	// Return a matrix with clients allocation (possibly to a dummy depot)
-	private HashMap<Location, HashSet<Location>> depotSelection(int p)
-	{
+	/* Heuristic depot selection 
+	 * Return a matrix with clients allocation (possibly to a dummy depot)
+	 */
+	public HashMap<Location, HashSet<Location>> depotSelection(int p) throws IOException {
 		this.preAlloc(); 
-		int beta = 3; // parameter for roulette wheel selection
+		double y; 	/* random value used in roulette wheel selection */
+		HashMap<Location, HashSet<Location>> dSelect = new HashMap<Location, HashSet<Location>>(this.alloc); 
+		/* Add a dummy depot to the map */
+		Location dummy = new Location(-1, -1);
+		dSelect.put(dummy, new HashSet<Location>());
 
-		double y; 	// random value used in roulette wheel selection
-		HashMap<Location, HashSet<Location>> dSelect = new HashMap<Location, HashSet<Location>>(); 
-		
 		for(int lvl = Parameters.nb_levels - 1; lvl > 0; lvl--) {
 			int nbLocLvl = this.instLIRP.getNbLocations(lvl);
-			int nbLocUp = this.instLIRP.getNbDepots(lvl);
-			
-			int score;
-			int s = 0; // number of depots selected
-			int nbAlloc = 0; // number of clients already allocated
-			ArrayList<Pair<Location, Double>> depotScore = new ArrayList<Pair<Location, Double>>(); // depots and their scores
-
-			// calculate score for each depot
-			for (int d = 0; d < this.instLIRP.getNbDepots(lvl - 1); d++) {
-				Depot dc = this.instLIRP.getDepot(lvl - 1, d);
-				score = this.alloc.get(dc).size();
-				Pair<Location, Double> ds = new Pair<Location, Double>(dc);
-				ds.setScore(score);
-				depotScore.add(ds);
+			int nbLocUp = this.instLIRP.getNbDepots(lvl - 1);
+			for (int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++) {
+				Location currentLoc = (lvl < Parameters.nb_levels - 1) ? this.instLIRP.getDepot(lvl, loc) : this.instLIRP.getClient(loc);
+				dSelect.get(dummy).add(currentLoc);
 			}
 
-			//A[lvl] = new int[this.instLIRP.getNbLocations(lvl)][this.instLIRP.getNbLocations(lvl - 1)]; // nd depots + 1 dummy depot
+			ArrayList<Depot> depotScore = new ArrayList<Depot>(); // depots and their scores
 
-			// Main loop
-			while (s < p && nbAlloc < nbLocLvl){
+			/* Store each depot based on how many locations are allocated to it */
+			for (int d = 0; d < this.instLIRP.getNbDepots(lvl - 1); d++) {
+				Depot dc = this.instLIRP.getDepot(lvl - 1, d);
+				if(!dc.isDummy() && dSelect.containsKey(dc))
+					depotScore.add(dc);
+			}
 
-				// rank depots in decreasing order of scores
-				depotScore.sort(new Comparator<Pair<Location, Double>>() {
+			/* number of depots selected */
+			int selectDC = 0;
+			/* Set of locations already allocated at this level */
+			HashSet<Location> allocated = new HashSet<Location>();
+
+			/* Main loop */
+			while (selectDC < p && allocated.size() < nbLocLvl){
+				/* Rank depots in decreasing order of scores */
+				depotScore.sort(new Comparator<Depot>() {
 					@Override
-					public int compare(Pair<Location, Double> o1, Pair<Location, Double> o2) 
+					public int compare(Depot o1, Depot o2) 
 					{
-						if (o1.getScore() > o2.getScore()) {
+						if (dSelect.get(o1).size() > dSelect.get(o2).size()) {
 							return -1;
 						} 
-						else if (o1.getScore() < o2.getScore()) {
+						else if (dSelect.get(o1).size() < dSelect.get(o2).size()) {
 							return 1; 
 						} 
 						else return 0;
 					}
 				});
 
-				// biased roulette wheel depot selection 
+				/* biased roulette wheel depot selection */
 				y = Parameters.rand.nextDouble();
+				/* Generate biased random position */
 				int position = 0; 
-				while (position < Math.pow(y, beta) * nbLocUp) { position = position +1;} // generate biased random position
-				Location dnew = depotScore.get(position).getL(); // select depot at the generated random position
-				s = s + 1;
+				while (position < Math.pow(y, beta) * nbLocUp) 
+					position++; 
+				/* Select Depot object at the position */
+				Depot dnew = depotScore.get(position);
+				selectDC++;
 
-				// Update allocations and preAllocations
-				for (int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++) {
-					Location currentLoc = (lvl < Parameters.nb_levels - 1) ? this.instLIRP.getDepot(lvl, loc) : this.instLIRP.getClient(loc);
-					if (this.alloc.get(dnew).contains(loc)) {
-						if(!dSelect.containsKey(loc)) {
-							dSelect.put(currentLoc, new HashSet<Location>());
-						}
-						dSelect.get(loc).add(dnew);
-						
-						nbAlloc++;
-						for (int d = 0; d < this.instLIRP.getNbDepots(lvl - 1); d++) {
-							Depot dc = this.instLIRP.getDepot(lvl - 1, d);
-							this.alloc.get(dc).remove(currentLoc)
-							if (dc != dnew)
-							{
-								if (preAlloc[c][dep]==1) {
-									preAlloc[c][dep]=0;
-									depotScore.get(position).decrement();   // decrease scoreof depot dep
-								}
-							}
-						}
-					}
+				allocated.addAll(dSelect.get(dnew));
+				for(Location dc : dSelect.keySet()) {
+					dSelect.get(dc).removeAll(allocated);
+					if(dSelect.get(dc).isEmpty() && dc != dummy)
+						dSelect.remove(dc);
 				}
 			}
-
-
-			// Complete allocation with a dummy depot
-			if (nbclient < nc){
-				for (int c=0;c<nc;c++) {
-					for (int d=0;d<nd;d++) {
-						if (preAlloc[c][d] ==1) {  		// if client c is still PreAllocated to some depot 
-							A[c][nd]=1; // allocate it to the dummy depot (number nd)
-							d=nd;
-							c=c+1;
-						}
-					}
-				}
-			}
-			return A;  // return the allocation matrix (the set of selected depots can be found from this)
 		}
+		return dSelect;
 	}
+}
 
 
 

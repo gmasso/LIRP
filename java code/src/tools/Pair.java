@@ -5,7 +5,6 @@ import org.json.JSONArray;
 public class Pair<L, R> {
 	    private L l;
 	    private R r;
-	    private double score;
 
 	    public Pair(L l, R r) {
 	        this.l = l;
@@ -16,7 +15,6 @@ public class Pair<L, R> {
 	        this.l = l;
 	    }
 	
-
 	    public String toString()
 	    { 
 	           return "<" + this.l.toString() + ", " + this.r.toString() + ">"; 
@@ -33,22 +31,9 @@ public class Pair<L, R> {
 	    public R getR() {
 	        return this.r;
 	    }
-	    
-	    public double getScore() {
-	        return this.score;
-	    }
-	    
 
 	    public void setR(R r) {
 	        this.r = r;
-	    }
-	    
-	    public void setScore(double score) {
-	        this.score = score;
-	    }
-	    
-	    public void decrement() {
-	        this.score = score - 1;
 	    }
 	    
 	    public JSONArray getJSON() {

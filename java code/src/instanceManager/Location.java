@@ -15,6 +15,17 @@ public class Location {
 	/*
 	 * CONSTRUCTOR
 	 */
+
+	/**
+	 * 
+	 * @param x	 			the x-axis coordinate of the location
+	 * @param y				the y-axis coordinate of the location
+	 * @throws IOException
+	 */
+	public Location(double x, double y) throws IOException {
+		this.locationCoords = new Point2D.Double(x,y);
+	}
+	
 	/**
 	 * Create a Location object from a set of coordinates
 	 * @param locationCoord
@@ -104,6 +115,14 @@ public class Location {
 	 */
 	public double getInitialInventory() {
 		return this.initialInventory;
+	}
+	
+	/**
+	 * 
+	 * @return	true if the location is dummy (i.e. doest not correspond to any physical facility of the network)
+	 */
+	public boolean isDummy() {
+		return (this.locationCoords.getX() < 0) || (this.locationCoords.getY() < 0);
 	}
 	
 	/*
