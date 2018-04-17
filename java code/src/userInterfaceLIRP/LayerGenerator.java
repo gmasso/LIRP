@@ -47,7 +47,7 @@ public class LayerGenerator {
 			for(int nbCities = 0; nbCities < 3; nbCities++) {
 				/* Create 10 layers of each type */
 				for(int i = 0; i < 10; i++) {
-					ClientsMap cMap = new ClientsMap(Parameters.grid_size, nb_clients, selectCitiesSizes(nbCities), 0.75);
+					ClientsMap cMap = new ClientsMap(Parameters.grid_size, nb_clients, selectCitiesSizes(nbCities), 0.75, capa_loc);
 					DemandsMap dMapIID = new DemandsMap(cMap, 90, 0, true);
 					DemandsMap dMapNormal = new DemandsMap(cMap, 90, 0, false);
 					DemandsMap dMapPeriodic = new DemandsMap(cMap, 90, 7, false);

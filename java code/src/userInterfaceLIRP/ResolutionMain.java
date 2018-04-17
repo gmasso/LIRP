@@ -25,11 +25,12 @@ public class ResolutionMain {
 		 *********************/
 
 		/* Number of routes in each subset when separating */
-		int[] splitParam = {0, 100}; // Size of the subsets of routes
+		int[] splitParam = {0, 0}; // Size of the subsets of routes
+		boolean[] withLoops = {false, true};
 		//splitParam = 0; // Uncomment to solve the original instance without sampling the routes
 
 
-		String instDir = "../Instances/Complete/";
+		String instDir = "../Instances/Complete/Small/";
 
 		/* Get all the files in the directory */
 		File listInst = new File(instDir);
@@ -43,13 +44,13 @@ public class ResolutionMain {
 				File fileSol = new File(fileNameSol);
 
 				String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
-				if(extension!= null && extension.equals("json")) {
+				if(extension!= null && extension.equals("json") && fileName.startsWith("2l3dc0-10r")) {
 					/* Create the instance from the json file */
 					Instance instLIRP = new Instance(instDir + fileName);
 					System.out.print("Solving instance " + fileName + "...");
 
 					/* Create the log file and solution file to store the results and the trace of the program */
-					String fileNameLog = "../Log/" + fileName.replace(".json", "_log.json");
+					String fileNameLog = "../Log files/" + fileName.replace(".json", "_log.json");
 					File fileLog = new File(fileNameLog);
 					PrintStream printStreamLog = new PrintStream(fileLog);
 					
@@ -61,13 +62,14 @@ public class ResolutionMain {
 					rm.initialize(false);
 					System.out.println("Done.");
 					System.out.print("Creating the LocManager...");
-					LocManager lm = new LocManager(instLIRP);
+					//LocManager lm = new LocManager(instLIRP);
+					LocManager lm = null;
 					System.out.println("Done.");
 					System.out.print("Solving...");
 					System.setOut(printStreamLog);
 					System.setErr(printStreamLog);
 					long startChrono = System.currentTimeMillis();
-					Solution sol = Matheuristics.computeSolution(instLIRP, rm, splitParam, lm);
+					Solution sol = Matheuristics.computeSolution(instLIRP, rm, withLoops,splitParam, lm);
 
 					long stopChrono = System.currentTimeMillis();
 					long duration = (stopChrono - startChrono);

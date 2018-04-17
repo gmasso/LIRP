@@ -30,7 +30,7 @@ public class Instance {
 	private String instID;
 	private int demandProfile;
 	private Depot dummy;
-	
+
 	/*
 	 * CONSTRUCTORS
 	 */
@@ -71,7 +71,7 @@ public class Instance {
 			this.dummy = new Depot();
 			/* Generate a unique ID */
 			this.generateID();
-			
+
 			System.out.println("Instance created successfully.");
 		}
 		catch(IOException ioe) {
@@ -106,17 +106,21 @@ public class Instance {
 				this.gridSize = Math.max(gridSize, dMask.getLayer().getGridSize());
 			}
 			this.gridSize = Math.max(this.gridSize, cMask.getLayer().getGridSize());
-			
+
 			this.supplier = new Location(new Point2D.Double(gridSize/2, gridSize/2));
 
 			this.depots = new DepotsMap[dMasks.length];
 			for(int lvl = 0; lvl < this.depots.length; lvl++) {
 				this.depots[lvl] = new DepotsMap(dMasks[lvl]);
 			}
-			
+
 			this.clients = new ClientsMap(cMask);
 			this.clients.setClientsActiveDays(activeDays);
-			
+			for(int c = 0; c < this.clients.getNbSites(); c++) {
+				this.clients.getSite(c).setHC(holdingRatio * this.depots[Parameters.nb_levels - 2].getSite(0).getHoldingCost());
+				this.clients.getSite(c).setInitInv(0);
+
+			}
 			this.fleetDesc = vDesc; 
 			this.demands = dBoxMap;
 			this.demandProfile = demandProfile;
@@ -124,7 +128,7 @@ public class Instance {
 			this.dummy = new Depot();
 
 			this.generateID();
-			
+
 			System.out.println("Instance created successfully.");
 		}
 		catch(IOException ioe) {
@@ -158,7 +162,7 @@ public class Instance {
 				JSONArray jsonFleetLvl = jsonFleetDesc.getJSONArray(lvl);
 				int nbVehicles = jsonFleetLvl.isNull(0) ? -1 : jsonFleetLvl.getInt(0);
 				double capaVehicles = jsonFleetLvl.isNull(1) ? -1 : jsonFleetLvl.getDouble(1);
-				
+
 				this.fleetDesc.add(new Pair<Integer, Double>(nbVehicles, capaVehicles)); // Set the capacity of vehicle vIter if the field is not null, -1 otherwise (infinite capacity)
 			}
 			// Get the supplier coordinates
@@ -168,8 +172,15 @@ public class Instance {
 
 			// Create a map for the depots by extracting data from the corresponding JSONArray in the JSON file
 			this.depots = new DepotsMap[Parameters.nb_levels-1];
-			for(int lvl = 0; lvl < Parameters.nb_levels - 1; lvl++) {
-				this.depots[lvl] = new DepotsMap(jsonInstanceObject.getJSONObject("depots"));
+			JSONArray jsonDCLayers = jsonInstanceObject.getJSONArray("depots layers");
+			if(jsonDCLayers.length() == Parameters.nb_levels - 1) {
+				for(int lvl = 0; lvl < Parameters.nb_levels - 1; lvl++) {
+					this.depots[lvl] = new DepotsMap(jsonDCLayers.getJSONObject(lvl));
+				}
+			}
+			else {
+				System.out.println("ERR: Number of depots layers and size of the JSONArray do not coincide");
+				System.exit(1);
 			}
 
 			// Extract data from the JSONArrays containing data for the clients
@@ -205,7 +216,7 @@ public class Instance {
 	public String getID() { 
 		return this.instID;
 	}
-	
+
 	public int getNbDepots(int lvl) {
 		if(lvl == -1) {
 			return 0;
@@ -217,7 +228,7 @@ public class Instance {
 			return this.depots[lvl].getNbSites();
 		}
 	}
-	
+
 	public String getDemandProfile() {
 		return this.demands.getPatternDesc() + Parameters.profile_names[this.demandProfile];
 	}
@@ -278,8 +289,8 @@ public class Instance {
 	public double getCapacityVehicle(int lvl) {
 		if(lvl < Parameters.nb_levels)
 			return (this.fleetDesc.get(lvl).getR() > 0) ? this.fleetDesc.get(lvl).getR() : Parameters.bigM;
-		else
-			throw new IndexOutOfBoundsException("Error: Level " + lvl + "does not exist");
+			else
+				throw new IndexOutOfBoundsException("Error: Level " + lvl + "does not exist");
 	}
 
 	/**
@@ -332,7 +343,7 @@ public class Instance {
 	public Location getDummy() {
 		return this.dummy;
 	}
-	
+
 	/*
 	 * MUTATORS
 	 */
@@ -346,7 +357,7 @@ public class Instance {
 		else
 			this.planningHorizon = nbPeriods;
 	}
-	
+
 	/**
 	 * Draw the position of depot d on the depots map
 	 * @param d	the index of the depot to draw
@@ -354,7 +365,7 @@ public class Instance {
 	public void drawDepot(int lvl, int d) {
 		this.depots[lvl].drawDepot(d);
 	}
-	
+
 	/**
 	 * Draw the position of client c on the clients map
 	 * @param c	the index of the client to draw
@@ -366,7 +377,7 @@ public class Instance {
 	public void assignDemands(int planningHorizon) {
 		this.clients.assignDemands(this.demands, this.planningHorizon, demandProfile, this.fleetDesc.get(Parameters.nb_levels - 1).getR());
 	}
-	
+
 	/**
 	 * Generate an ID for this instance
 	 */
@@ -378,7 +389,7 @@ public class Instance {
 		int nbCities = (this.clients.getCitiesMap() == null) ? 0 : this.clients.getCitiesMap().getNbSites();
 		this.instID += this.getNbClients() + "r-" + nbCities + "c-" + this.getDemandProfile() + "_" + UUID.randomUUID().toString();
 	}
-	
+
 	/*
 	 * METHODS
 	 */

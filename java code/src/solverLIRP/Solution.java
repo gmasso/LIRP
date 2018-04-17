@@ -6,6 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import instanceManager.Instance;
+import instanceManager.Location;
 import tools.Parameters;
 
 
@@ -102,7 +103,13 @@ public class Solution {
 	 */
 	public double getQuantityDelivered(int lvl, int loc, int r, int t){
 		if(lvl > -1 && lvl < this.q.length && loc < this.q[lvl].length && r < this.q[lvl][loc].length && t < this.q[lvl][loc][r].length)
-			return this.q[lvl][loc][r][t];
+			if(this.q[lvl][loc][r][t] < this.instLIRP.getCapacityVehicle(lvl) + Parameters.epsilon)
+				return Math.min(this.q[lvl][loc][r][t], this.instLIRP.getCapacityVehicle(lvl));
+			else {
+				System.out.println("Quantity impossible to deliver in period " + t + " (capacity vehicles " + this.instLIRP.getCapacityVehicle(lvl) + " at level" + lvl + ")");
+				System.exit(1);
+				return -1;
+			}
 		else {
 			System.out.println("Impossible to access a quantity delivered to location " + loc + " on level " + lvl + " through route " + r + " in period " + t);
 			System.exit(1);
@@ -118,8 +125,16 @@ public class Solution {
 	 * @return		the inventory level at location loc in period t
 	 */
 	public double getInvLoc(int lvl, int loc, int t){
-		if(lvl > -1 && lvl < this.invLoc.length && loc < this.invLoc[lvl].length && t < this.invLoc[lvl][loc].length)
-			return this.invLoc[lvl][loc][t];
+		if(lvl > -1 && lvl < this.invLoc.length && loc < this.invLoc[lvl].length && t < this.invLoc[lvl][loc].length) {
+			double capaLoc = (lvl < Parameters.nb_levels - 1) ? this.instLIRP.getDepot(lvl, loc).getCapacity() : this.instLIRP.getClient(loc).getCapacity();
+			if(this.invLoc[lvl][loc][t] < capaLoc + Parameters.epsilon)
+				return Math.min(this.invLoc[lvl][loc][t], capaLoc);
+			else {
+				System.out.println("Not enough capacity at location " + loc + " of level " + lvl + "to store " + this.invLoc[lvl][loc][t] + "units in period " + t);
+				System.exit(1);
+				return -1;
+			}
+		}
 		else {
 			System.out.println("Impossible to access the inventory of location " + loc + " on level " + lvl + " in period " + t);
 			System.exit(1);
@@ -252,10 +267,12 @@ public class Solution {
 		this.inventoryCosts = 0;
 
 		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
-			/* Fixed cost for opening the depots */
-			for (int d = 0; d < this.openDepots[lvl].length; d++) {
-				if(this.openDepots[lvl][d])
-					this.openingCosts += this.instLIRP.getDepot(lvl, d).getFixedCost(); 
+			if(lvl < Parameters.nb_levels - 1) {
+				/* Fixed cost for opening the depots */
+				for (int d = 0; d < this.openDepots[lvl].length; d++) {
+					if(this.openDepots[lvl][d])
+						this.openingCosts += this.instLIRP.getDepot(lvl, d).getFixedCost(); 
+				}
 			}
 
 			for (int t = 0; t < this.instLIRP.getNbPeriods(); t++) {

@@ -22,7 +22,7 @@ public final class Checker {
 					Alpha[lvl][stop][rIndex] = routes[lvl][rIndex].containsStop(stop) ? 1 : 0;
 				if(lvl > 0) {
 					for(int start = 0; start < instLIRP.getNbDepots(lvl - 1); start++)
-						Beta[lvl][start][rIndex] = routes[lvl-1][rIndex].hasStart(start) ? 1 : 0;
+						Beta[lvl][start][rIndex] = routes[lvl][rIndex].hasStart(start) ? 1 : 0;
 				}
 			}
 		}
@@ -42,13 +42,13 @@ public final class Checker {
 				/* Each location is served by at most one route in every period (2-3) */
 				for(int loc = 0; loc < nbLocLvl; loc++) {
 					double lhs23 = 0;
-					double rhs23 = sol.isOpenDepot(lvl, loc) ? 1 : 0;
 					for (int r = 0; r < routes[lvl].length; r++)
 						if(sol.isUsedRoute(lvl, r, t)) {
 							lhs23 += Alpha[lvl][loc][r];
 						}
 					/* If the location is a dc (constraint (3)), the rhs uses the boolean variable y_{j} to check that the location is open */
 					if(lvl < Parameters.nb_levels - 1) {
+						double rhs23 = sol.isOpenDepot(lvl, loc) ? 1 : 0;
 						if(lhs23 > rhs23) {
 							isFeasible = false;
 							System.out.println("ERR in constraint (2), depot " + loc + " at level " + lvl + " in period " + t);
@@ -89,7 +89,7 @@ public final class Checker {
 					for(int loc = 0; loc < nbLocLvl; loc++) {
 						lhs6 += sol.getQuantityDelivered(lvl, loc, r, t);
 					}
-					if(lhs6 > rhs6) {
+					if(lhs6 > rhs6 + Parameters.epsilon) {
 						isFeasible = false;
 						System.out.println("ERR in constraint (6), trying to deliver a quantity of " + lhs6 + " at level " + lvl + " in period " + t + ", while the total quandity available is only " + rhs6);
 					}
@@ -121,18 +121,20 @@ public final class Checker {
 							rhs7 += sol.getQuantityDelivered(lvl,  loc, r, t);
 						}
 						for (int rDown = 0; rDown < routes[lvl + 1].length; rDown++) {
-							for(int locDown = 0; locDown < nbLocDown; locDown++) {
-								lhs7 += Beta[lvl + 1][loc][rDown] * sol.getQuantityDelivered(lvl, locDown, rDown, t);
+							if(Beta[lvl + 1][loc][rDown] > 0) {
+								for(int locDown = 0; locDown < nbLocDown; locDown++) {
+									lhs7 +=  sol.getQuantityDelivered(lvl + 1, locDown, rDown, t);
+								}
 							}
 						}
-						if(lhs7 != rhs7) {
+						if(lhs7 < rhs7 - Parameters.epsilon || lhs7 > rhs7 + Parameters.epsilon) {
 							isFeasible = false;
 							System.out.println("ERR in constraint (7) in the flow conservation of location " + loc + " at level " + lvl + " in period " + t);
 						}
 
 						/* Capacity constraints at depots (9) */
 						double rhs9 = sol.isOpenDepot(lvl,  loc) ? instLIRP.getDepot(lvl, loc).getCapacity() : 0; 
-						if(sol.getInvLoc(lvl,  loc,  t) > rhs9) {
+						if(sol.getInvLoc(lvl,  loc,  t) > rhs9 + Parameters.epsilon) {
 							isFeasible = false;
 							System.out.println("ERR in constraint (9), inventory at location " + loc + " at level " + lvl + " in period " + t + " violates capacity constraint (max " + instLIRP.getDepot(lvl, loc).getCapacity() +")"); ;
 						}
@@ -149,16 +151,16 @@ public final class Checker {
 						for (int r = 0; r < routes[lvl].length; r++) {
 							rhs8 += sol.getQuantityDelivered(lvl, loc, r, t);
 						}
-						if(lhs8 != rhs8) {
+						if(lhs8 < rhs8 - Parameters.epsilon || lhs8 > rhs8 + Parameters.epsilon) {
 							isFeasible = false;
 							System.out.println("ERR in constraint (8) in the flow conservation of client " + loc + " at level " + lvl + " in period " + t);
 						}
 
 						/* Stock capacity at the client or ensuring that the inventory is not greater than the sum of remaining demands (10) */
 						double remainingDemand = instLIRP.getClient(loc).getCumulDemands(t + 1, instLIRP.getNbPeriods());
-						if(sol.getInvLoc(lvl,  loc,  t) > Math.min(remainingDemand, instLIRP.getClient(loc).getCapacity())) {
+						if(sol.getInvLoc(lvl,  loc,  t) > Math.min(remainingDemand, instLIRP.getClient(loc).getCapacity()) + Parameters.epsilon) {
 							isFeasible = false;
-							System.out.println("ERR in constraint (10), inventory at client " + loc + " in period " + t + " violates capacity constraint (max " + instLIRP.getDepot(lvl, loc).getCapacity() +")"); ;
+							System.out.println("ERR in constraint (10), inventory at client " + loc + " in period " + t + " violates capacity constraint (max " + instLIRP.getClient(loc).getCapacity() +")"); ;
 						}
 					}
 				}

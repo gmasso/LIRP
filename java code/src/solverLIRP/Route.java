@@ -66,13 +66,15 @@ public class Route {
 		this.stops = new LinkedHashSet<Integer>();
 		this.stops.add(index);
 		this.travelTime = computeDuration();
-		if(this.lvl < 0) {
+		/* If the route is a dummy route, add the maximum time allowed for a route to the travel duration */
+		if(this.isDummy) {
 			this.travelTime += Parameters.max_time_route;
 		}
 		this.stopTime = Parameters.stopping_time;
 		this.cost = Parameters.fixed_cost_route + Parameters.cost_km * Parameters.avg_speed * this.travelTime;
-		if(this.start == -1)
-			this.cost += this.instLIRP.getDepot(-1, index).getOrderingCost();
+		/* If the route visits a DC, add its potential ordering cost to its total cost */
+		if(this.lvl < Parameters.nb_levels - 1)
+			this.cost += this.instLIRP.getDepot(lvl, index).getOrderingCost();
 	}
 
 	/*
@@ -143,9 +145,14 @@ public class Route {
 		return maxStop;
 	}
 	
+	/**
+	 * 
+	 * @return	true if the Route object is dummy
+	 */
 	public boolean isDummy() {
 		return this.isDummy;
 	}
+	
 	/*
 	 * MUTATORS
 	 */

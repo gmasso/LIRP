@@ -63,14 +63,14 @@ public class ClientsMap extends Layer {
 	 *            the holding cost of the clients
 	 * @throws IOException
 	 */
-	public ClientsMap(double gridSize, int nbClients, double[] citiesSizes, double urbanRatio, double holdingCost) throws IOException {
+	public ClientsMap(double gridSize, int nbClients, double[] citiesSizes, double urbanRatio, double capacity) throws IOException {
 		super(gridSize, nbClients);
 		this.sites = new Client[this.nbSites];
 		this.cities = new CitiesMap(this.gridSize, citiesSizes, urbanRatio);
 
 		// Fill the clients array with their respective coordinates
 		for (int cIndex = 0; cIndex < this.nbSites; cIndex++) {
-			this.sites[cIndex] = new Client(drawClient(), holdingCost, 0, -1);
+			this.sites[cIndex] = new Client(drawClient(), 0, 0, capacity);
 		}
 		this.generateID();
 	}

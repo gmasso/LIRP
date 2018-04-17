@@ -83,7 +83,12 @@ public class RouteManager {
 	 * @return	the ArrayList of multi-stops routes from the supplier to the depots
 	 */
 	public int getNbRoutesOfType(int lvl, int nbStops){
-		return this.routes.get(lvl).get(nbStops).size();
+		if(lvl > -1 && lvl < Parameters.nb_levels) {
+			if(this.routes.get(lvl).containsKey(nbStops)) {
+				return this.routes.get(lvl).get(nbStops).size();
+			}
+		}
+		return 0;
 	}
 
 	/*
@@ -100,6 +105,7 @@ public class RouteManager {
 		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
 			/* Create a LinkedHashSet to store the feasible routes on the current level as they are computed */
 			LinkedHashSet<Route> directLvl = new LinkedHashSet<Route>();
+			LinkedHashSet<Route> dummyLvl = new LinkedHashSet<Route>();
 			int sIndex = 0;
 			int nbLocLvl = this.instLIRP.getNbLocations(lvl);
 			/* Fill the direct routes first and test that each location of the level is reachable from at least one site on the upper level */
@@ -120,6 +126,8 @@ public class RouteManager {
 				}
 				/* If the site is reachable, go to the next site index */
 				if(reachable) {
+					if(lvl > 0)
+						dummyLvl.add(new Route(this.instLIRP, lvl, -1, sIndex));
 					sIndex++;
 				}
 				/* Otherwise, re-position the site randomly and check if the new location is reachable from an upper site */
@@ -129,11 +137,11 @@ public class RouteManager {
 					else
 						this.instLIRP.drawDepot(lvl, sIndex);
 				}
-				if(lvl > 0)
-					directLvl.add(new Route(this.instLIRP, lvl, -1, sIndex));
 			}
 			/* Add the direct routes to the corresponding level in the HashMap */
 			this.routes.get(lvl).put(1, directLvl);
+			/* NB : the dummy routes are stored as routes of length 0 */
+			this.routes.get(lvl).put(0, dummyLvl);
 		}
 	}
 
