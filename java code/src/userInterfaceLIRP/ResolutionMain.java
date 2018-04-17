@@ -43,7 +43,7 @@ public class ResolutionMain {
 				File fileSol = new File(fileNameSol);
 
 				String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
-				if(extension!= null && extension.equals("json") && fileName.startsWith("simpleCity_") && fileName.contains("Gau")) {
+				if(extension!= null && extension.equals("json") && fileName.contains("dc0-10r-")) {
 					/* Create the instance from the json file */
 					Instance instLIRP = new Instance(instDir + fileName);
 					System.out.print("Solving instance " + fileName + "...");
