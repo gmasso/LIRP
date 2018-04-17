@@ -19,26 +19,28 @@ public final class Matheuristics {
 
 	private Matheuristics() {}
 
-	public static Solution computeSolution(Instance inst, RouteManager rm, boolean[] withLoops, int[] rSplit, LocManager lm)
+	public static Solution computeSolution(Instance instLIRP, RouteManager rm, boolean[] withLoops, int[] rSplit, LocManager lm)
 			throws IloException {
 
 		boolean noSampling = true;
 		int lvlIter = 0;
-		while(noSampling && lvlIter < Parameters.nb_levels) {
+		while(noSampling && lvlIter < instLIRP.getNbLevels()) {
 			noSampling = (rSplit[lvlIter] < 1);
 			lvlIter++;
 		}
 		if(noSampling) {
-			return routeSamplingSol(inst, rm, withLoops, rSplit, lm);
+			HashMap<Integer, LinkedHashSet<Route>> mapRoutes = new HashMap<Integer, LinkedHashSet<Route>>();
+			for(int lvl = 0; lvl < instLIRP.getNbLevels(); lvl++) {
+				mapRoutes.put(lvl, new LinkedHashSet<Route>(rm.getAllRoutesOfLvl(lvl)));
+			}
+
+			Solver solverLIRP = new Solver(instLIRP, mapRoutes, null, Parameters.noSplitTiLimit);
+			return solverLIRP.getSolution();
+		}
+		else {
+			return routeSamplingSol(instLIRP, rm, withLoops, rSplit, lm);
 		}
 
-		HashMap<Integer, LinkedHashSet<Route>> mapRoutes = new HashMap<Integer, LinkedHashSet<Route>>();
-		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
-			mapRoutes.put(lvl, new LinkedHashSet<Route>(rm.getAllRoutesOfType(lvl, 1)));
-		}
-
-		Solver solverLIRP = new Solver(inst, mapRoutes, null, true);
-		return solverLIRP.getSolution();
 	}
 
 	/**
@@ -50,7 +52,7 @@ public final class Matheuristics {
 	 * @param loopRoutes
 	 * @return
 	 */
-	private static Solution routeSamplingSol(Instance inst, RouteManager rm, boolean[] withLoops, int[] rSplit, LocManager lm) throws IloException {
+	private static Solution routeSamplingSol(Instance instLIRP, RouteManager rm, boolean[] withLoops, int[] rSplit, LocManager lm) throws IloException {
 
 		/*
 		 * ======================================================= 
@@ -60,8 +62,8 @@ public final class Matheuristics {
 		 * =======================================================
 		 */
 		HashMap<Integer, LinkedHashSet<Route>> setOfRoutes = new HashMap<Integer, LinkedHashSet<Route>>();
-		int[] subsetSizes = new int[Parameters.nb_levels];
-		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
+		int[] subsetSizes = new int[instLIRP.getNbLevels()];
+		for(int lvl = 0; lvl < instLIRP.getNbLevels(); lvl++) {
 			if(withLoops[lvl]) {
 				LinkedHashSet<Route> lvlRoutes = new LinkedHashSet<Route>();
 				int nbStops = 1;
@@ -100,7 +102,7 @@ public final class Matheuristics {
 
 			int nbSubsets = 1;
 			HashMap<Integer, HashSet<LinkedHashSet<Route>>> mapSample= new HashMap<Integer, HashSet<LinkedHashSet<Route>>>();
-			for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
+			for(int lvl = 0; lvl < instLIRP.getNbLevels(); lvl++) {
 				if(routesCandidates.containsKey(lvl)) {
 					setOfRoutes.get(lvl).removeAll(routesCandidates.get(lvl));
 				}
@@ -121,7 +123,7 @@ public final class Matheuristics {
 					int computeIter = 0;
 					HashMap<Integer, LinkedHashSet<Route>> firstWave = new HashMap<Integer, LinkedHashSet<Route>>();
 					HashMap<Integer, LinkedHashSet<Route>> secondWave = mapRoutes;
-					for(int lvl = 0; lvl < Parameters.nb_levels - 1; lvl++) {
+					for(int lvl = 0; lvl < instLIRP.getNbLevels() - 1; lvl++) {
 						try {
 							LinkedHashSet<Route> fRoutes = filterRoutes(lm, lvl, secondWave.get(lvl));
 							firstWave.put(lvl, fRoutes);
@@ -134,10 +136,10 @@ public final class Matheuristics {
 					while (computeIter < Parameters.recompute) {
 						Solver solverLIRP;
 						if(computeIter < 1) {
-							solverLIRP = new Solver(inst, firstWave, null, false);
+							solverLIRP = new Solver(instLIRP, firstWave, null, Parameters.auxTimeLimit);
 						}
 						else {
-							solverLIRP = new Solver(inst, secondWave, null, false);
+							solverLIRP = new Solver(instLIRP, secondWave, null, Parameters.auxTimeLimit);
 						}
 						Solution partialSol = solverLIRP.getSolution();
 						if (partialSol != null) {
@@ -150,6 +152,8 @@ public final class Matheuristics {
 								/* Remove the collected routes to the first wave and add the remaining ones to the second wave */
 								firstWave.get(lvl).removeAll(collectedRoutes.get(lvl));
 								secondWave.get(lvl).addAll(firstWave.get(lvl));
+								/* Add the direct routes to the second wave */
+								secondWave.get(lvl).addAll(rm.getAllRoutesOfType(lvl, 1));
 								/* Add the dummy routes to ensure feasibility */
 								secondWave.get(lvl).addAll(rm.getAllRoutesOfType(lvl, 0));
 							}
@@ -159,7 +163,7 @@ public final class Matheuristics {
 				}
 
 				nbSubsets = 1;
-				for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
+				for(int lvl = 0; lvl < instLIRP.getNbLevels(); lvl++) {
 					setOfRoutes.get(lvl).removeAll(routesCandidates.get(lvl));
 					HashSet<LinkedHashSet<Route>> rSample = sampleRoutes(setOfRoutes.get(lvl), subsetSizes[lvl]);
 					nbSubsets *= rSample.size();
@@ -167,7 +171,7 @@ public final class Matheuristics {
 				}
 			}
 
-			for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
+			for(int lvl = 0; lvl < instLIRP.getNbLevels(); lvl++) {
 				for(LinkedHashSet<Route> solRoutes: mapSample.get(lvl))
 					if(routesCandidates.containsKey(lvl)) {
 						routesCandidates.get(lvl).addAll(solRoutes);
@@ -176,7 +180,7 @@ public final class Matheuristics {
 						routesCandidates.put(lvl, solRoutes);
 					}
 			}
-			Solver solverLIRP = new Solver(inst, routesCandidates, null, true);
+			Solver solverLIRP = new Solver(instLIRP, routesCandidates, null, Parameters.mainTimeLimit);
 			System.out.println("done!");
 
 			/* Call the method from the solver */
@@ -283,7 +287,7 @@ public final class Matheuristics {
 		while(rIter.hasNext()) {
 			Route currentRoute = rIter.next();
 			Location rStart = currentRoute.getStart();
-			if((rStart == lm.getInstance().getDummy()) || (dSelect.contains(rStart))) {
+			if((rStart == lm.getInstance().getSupplier()) || (dSelect.contains(rStart))) {
 				rFilter.add(currentRoute);
 			}
 		}
@@ -321,6 +325,13 @@ public final class Matheuristics {
 		}
 
 		return rCombos;
+	}
+
+	private HashMap<Integer, LinkedHashSet<Route>> cleanMapRoutes(HashMap<Integer, LinkedHashSet<Route>> mapRoutes) {
+		HashMap<Integer, LinkedHashSet<Route>> cleanMap = mapRoutes;
+		
+		return cleanMap;
+
 	}
 
 

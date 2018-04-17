@@ -154,7 +154,7 @@ public class LocManager {
 		double y; 	/* random value used in roulette wheel selection */
 		HashMap<Location, HashSet<Location>> dSelect = new HashMap<Location, HashSet<Location>>(this.alloc); 
 		/* Add a dummy depot to the map */
-		Location dummy = instLIRP.getDummy();
+		Location dummy = instLIRP.getSupplier();
 		dSelect.put(dummy, new HashSet<Location>());
 
 		for(int lvl = Parameters.nb_levels - 1; lvl > 0; lvl--) {

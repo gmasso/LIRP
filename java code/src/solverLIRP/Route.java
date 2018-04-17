@@ -172,7 +172,7 @@ public class Route {
 	 * @return	True if the duration of the route is less than the maximum time allowed 
 	 */
 	public boolean isValid() {
-		return (this.lvl < 0) || (this.travelTime + this.stopTime) < Parameters.max_time_route;
+		return (this.start < 0 && this.lvl > 0) || (this.travelTime + this.stopTime) < Parameters.max_time_route;
 	}
 	/**
 	 * Check if the start attribute of the Route object is equal to a given index
@@ -197,14 +197,22 @@ public class Route {
 	 * @param loc	the location of interest
 	 * @return		true if the route contains the location, false otherwise
 	 */
-	public boolean containsLocation(Location loc) {
-		// Start by checking if loc is the starting point of the route
-		boolean inRoute = (this.start < 0 ) ? (this.instLIRP.getSupplier() == loc) : (this.instLIRP.getDepot(0, start) == loc);
+	public boolean containsLocation(int lvl, Location loc) {
+		boolean inRoute = false;
+		/* Start by checking if loc is the starting point of the route */
+		if(lvl > 0) {
+			/* If the start of the route is a dc */
+			inRoute =  (this.instLIRP.getDepot(lvl - 1, start) == loc);
+		}
+		else {
+			/* If the start of the route is the supplier */
+			inRoute =  (this.instLIRP.getSupplier() == loc);
+		}
 		Iterator<Integer> stopsIter = this.stops.iterator();
-		// Loop through the stops and update inRoute if one corresponds to loc
+		/* Loop through the stops and update inRoute if one corresponds to loc */
 		while(!inRoute && stopsIter.hasNext()) {
-			if(start < 0)
-				inRoute = (loc == this.instLIRP.getDepot(0, stopsIter.next()));
+			if(lvl < this.instLIRP.getNbLevels() - 1)
+				inRoute = (loc == this.instLIRP.getDepot(lvl, stopsIter.next()));
 			else
 				inRoute = (loc == this.instLIRP.getClient(stopsIter.next()));
 		}

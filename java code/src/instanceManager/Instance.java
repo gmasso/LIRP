@@ -29,7 +29,6 @@ public class Instance {
 	private DemandsMap demands;
 	private String instID;
 	private int demandProfile;
-	private Depot dummy;
 
 	/*
 	 * CONSTRUCTORS
@@ -58,7 +57,7 @@ public class Instance {
 			this.gridSize = gridSize;
 			this.supplier = new Location(new Point2D.Double(gridSize/2, gridSize/2));
 			this.depots = new DepotsMap[Parameters.nb_levels - 1];
-			for(int lvl = 0; lvl < Parameters.nb_levels - 1; lvl++) {
+			for(int lvl = 0; lvl < this.depots.length; lvl++) {
 				this.depots[lvl] = new DepotsMap(gridSize, nbDepots, fc, oc[lvl], 0, -1);
 			}
 			this.clients = new ClientsMap(gridSize, nbClients, citiesSizes, urbanRatio, holdingRatio);
@@ -68,7 +67,6 @@ public class Instance {
 			//this.clients.assignDemands(this.demands, planningHorizon, this.demandProfile, this.fleetDesc.get(Parameters.nb_levels - 1).getR());
 			/* Set the planning horizon */
 			this.planningHorizon = planningHorizon;
-			this.dummy = new Depot();
 			/* Generate a unique ID */
 			this.generateID();
 
@@ -112,20 +110,21 @@ public class Instance {
 			this.depots = new DepotsMap[dMasks.length];
 			for(int lvl = 0; lvl < this.depots.length; lvl++) {
 				this.depots[lvl] = new DepotsMap(dMasks[lvl]);
+				for(int d = 0; d < this.depots[lvl].getNbSites(); d++) {
+					((Depot) this.depots[lvl].getSite(d)).setFixedCost(fcFactor);
+				}
 			}
 
 			this.clients = new ClientsMap(cMask);
 			this.clients.setClientsActiveDays(activeDays);
 			for(int c = 0; c < this.clients.getNbSites(); c++) {
-				this.clients.getSite(c).setHC(holdingRatio * this.depots[Parameters.nb_levels - 2].getSite(0).getHoldingCost());
+				this.clients.getSite(c).setHC(holdingRatio * this.depots[this.depots.length - 1].getSite(0).getHoldingCost());
 				this.clients.getSite(c).setInitInv(0);
-
 			}
 			this.fleetDesc = vDesc; 
 			this.demands = dBoxMap;
 			this.demandProfile = demandProfile;
 			this.planningHorizon = planningHorizon;
-			this.dummy = new Depot();
 
 			this.generateID();
 
@@ -171,16 +170,10 @@ public class Instance {
 			this.supplier = new Location(jsonSupplier);
 
 			// Create a map for the depots by extracting data from the corresponding JSONArray in the JSON file
-			this.depots = new DepotsMap[Parameters.nb_levels-1];
 			JSONArray jsonDCLayers = jsonInstanceObject.getJSONArray("depots layers");
-			if(jsonDCLayers.length() == Parameters.nb_levels - 1) {
-				for(int lvl = 0; lvl < Parameters.nb_levels - 1; lvl++) {
-					this.depots[lvl] = new DepotsMap(jsonDCLayers.getJSONObject(lvl));
-				}
-			}
-			else {
-				System.out.println("ERR: Number of depots layers and size of the JSONArray do not coincide");
-				System.exit(1);
+			this.depots = new DepotsMap[jsonDCLayers.length()];
+			for(int lvl = 0; lvl < this.depots.length; lvl++) {
+				this.depots[lvl] = new DepotsMap(jsonDCLayers.getJSONObject(lvl));
 			}
 
 			// Extract data from the JSONArrays containing data for the clients
@@ -191,7 +184,6 @@ public class Instance {
 				this.gridSize = Math.max(gridSize, dMap.getGridSize());
 			}
 			this.gridSize = Math.max(this.gridSize, this.clients.getGridSize());
-			this.dummy = new Depot();
 
 			this.instID = jsonInstanceObject.getString("id");
 		}
@@ -221,12 +213,11 @@ public class Instance {
 		if(lvl == -1) {
 			return 0;
 		}
-		if(lvl == Parameters.nb_levels - 1) {
-			return this.clients.getNbSites();
-		}
-		else {
+		if(lvl < this.depots.length) {
 			return this.depots[lvl].getNbSites();
 		}
+		else 
+			return 0;
 	}
 
 	public String getDemandProfile() {
@@ -251,11 +242,19 @@ public class Instance {
 
 	/**
 	 * 
+	 * @return	the number of levels of the instance
+	 */
+	public int getNbLevels() {
+		return this.depots.length + 1;
+	}
+
+	/**
+	 * 
 	 * @return	the total number of sites on the map (depots + clients)
 	 */
 	public int getNbSites() {
 		int nbSites = 0;
-		for(int lvl = 0; lvl < Parameters.nb_levels - 1; lvl++) {
+		for(int lvl = 0; lvl < this.depots.length; lvl++) {
 			nbSites += this.depots[lvl].getNbSites();
 		}
 		return nbSites + this.clients.getNbSites();
@@ -268,7 +267,7 @@ public class Instance {
 	 */
 	public Depot getDepot(int lvl, int d) {
 		if(lvl < 0)
-			return (Depot) this.dummy;
+			return (Depot) this.supplier;
 		return (Depot) this.depots[lvl].getSite(d);
 	}
 
@@ -287,7 +286,7 @@ public class Instance {
 	 * @return	the capacity of the vehicles corresponding to the index
 	 */
 	public double getCapacityVehicle(int lvl) {
-		if(lvl < Parameters.nb_levels)
+		if(lvl < this.depots.length + 1)
 			return (this.fleetDesc.get(lvl).getR() > 0) ? this.fleetDesc.get(lvl).getR() : Parameters.bigM;
 			else
 				throw new IndexOutOfBoundsException("Error: Level " + lvl + "does not exist");
@@ -330,18 +329,10 @@ public class Instance {
 	public int getNbLocations(int lvl) {
 		if(lvl < 0)
 			return 0;
-		if(lvl < Parameters.nb_levels - 1) {
+		if(lvl < this.depots.length) {
 			return this.depots[lvl].getNbSites();
 		}
 		return this.clients.getNbSites();
-	}
-
-	/**
-	 * 
-	 * @return
-	 */
-	public Location getDummy() {
-		return this.dummy;
 	}
 
 	/*
@@ -375,15 +366,15 @@ public class Instance {
 	}
 
 	public void assignDemands(int planningHorizon) {
-		this.clients.assignDemands(this.demands, this.planningHorizon, demandProfile, this.fleetDesc.get(Parameters.nb_levels - 1).getR());
+		this.clients.assignDemands(this.demands, this.planningHorizon, demandProfile, this.fleetDesc.get(this.getNbLevels() - 1).getR());
 	}
 
 	/**
 	 * Generate an ID for this instance
 	 */
 	private void generateID() {
-		this.instID = Parameters.nb_levels + "l";
-		for(int lvl = 0; lvl < Parameters.nb_levels - 1; lvl++) {
+		this.instID = this.getNbLevels() + "l";
+		for(int lvl = 0; lvl < this.depots.length; lvl++) {
 			this.instID += this.getNbDepots(lvl) + "dc" + lvl + "-";
 		}
 		int nbCities = (this.clients.getCitiesMap() == null) ? 0 : this.clients.getCitiesMap().getNbSites();
@@ -405,13 +396,13 @@ public class Instance {
 		jsonInstance.put("planning horizon", this.planningHorizon);
 		jsonInstance.put("supplier", this.supplier.getJSONLoc());
 		JSONArray jsonLayers = new JSONArray();
-		for(int lvl = 0; lvl < Parameters.nb_levels - 1; lvl++) {
+		for(int lvl = 0; lvl < this.depots.length; lvl++) {
 			jsonLayers.put(this.depots[lvl].getJSONLayer());
 		}
 		jsonInstance.put("depots layers", jsonLayers);
 		jsonInstance.put("clients", this.clients.getJSONLayer());
 		JSONArray jsonFleet = new JSONArray();
-		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
+		for(int lvl = 0; lvl < this.depots.length + 1; lvl++) {
 			jsonFleet.put(this.fleetDesc.get(lvl).getJSON());
 		}
 		jsonInstance.put("fleet description", jsonFleet);

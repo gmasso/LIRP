@@ -29,7 +29,6 @@ public class ResolutionMain {
 		boolean[] withLoops = {false, true};
 		//splitParam = 0; // Uncomment to solve the original instance without sampling the routes
 
-
 		String instDir = "../Instances/Complete/Small/";
 
 		/* Get all the files in the directory */
@@ -44,7 +43,7 @@ public class ResolutionMain {
 				File fileSol = new File(fileNameSol);
 
 				String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
-				if(extension!= null && extension.equals("json") && fileName.startsWith("2l3dc0-10r")) {
+				if(extension!= null && extension.equals("json") && fileName.startsWith("simpleCity_") && fileName.contains("Gau")) {
 					/* Create the instance from the json file */
 					Instance instLIRP = new Instance(instDir + fileName);
 					System.out.print("Solving instance " + fileName + "...");
@@ -60,6 +59,7 @@ public class ResolutionMain {
 					System.out.print("Creating the RouteManager...");
 					RouteManager rm = new RouteManager(instLIRP);
 					rm.initialize(false);
+					rm.writeToJSONFile("../Log files/" + fileName.replace(".json", "_rm.json"));
 					System.out.println("Done.");
 					System.out.print("Creating the LocManager...");
 					//LocManager lm = new LocManager(instLIRP);
@@ -69,7 +69,8 @@ public class ResolutionMain {
 					System.setOut(printStreamLog);
 					System.setErr(printStreamLog);
 					long startChrono = System.currentTimeMillis();
-					Solution sol = Matheuristics.computeSolution(instLIRP, rm, withLoops,splitParam, lm);
+					Solution sol = Matheuristics.computeSolution(instLIRP, rm, withLoops, splitParam, lm);
+					sol.computeObjValue();
 
 					long stopChrono = System.currentTimeMillis();
 					long duration = (stopChrono - startChrono);

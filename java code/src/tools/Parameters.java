@@ -32,9 +32,9 @@ public final class Parameters {
 	
 	public static int nb_levels = 2;
 
-	// Granularity for the demand map (split into demand boxes of size nbSteps x nbSteps)
+	/* Granularity for the demand map (split into demand boxes of size nbSteps x nbSteps) */
 	public static int nb_steps = 100;
-	// Possible demand profiles(0: Light, 1: Heavy, 2: Mixture)
+	/* Possible demand profiles(0: Light, 1: Heavy, 2: Mixture) */
 	public static double[][] demand_profiles = {{0.05, 0.15}, {0.2, 0.4}, {0.05, 0.4}};
 	public static String[] profile_names = {"L", "H", "M"};
 	public static double spatial_threshold = 0.3;
@@ -42,29 +42,29 @@ public final class Parameters {
 		{true,true,true,true,true,false,false}, {false,true,true,true,true,true,false}};
 	public static double[][] proba_actives = {{0.1, 0.4, 0.25, 0.25}, {1, 0, 0, 0}, {0, 0, 1, 0}};
 
-	// Routes parameters
-	public static double avg_speed = 50; 			// In km/h
-	public static double stopping_time = 0.25; 		// In hours
-	public static double max_time_route = 4; 		// In hours
-	public static double fixed_cost_route = 100; 	// In euros
-	public static double cost_km = 2; 				// Cost per km, in euros
+	/* Routes parameters */
+	public static double avg_speed = 50; 				// In km/h
+	public static double stopping_time = 0.25; 			// In hours
+	public static double max_time_route = 4; 			// In hours
+	public static double fixed_cost_route = 100; 		// In euros
+	public static double cost_km = 1; 					// Cost per km, in euros
 
 	// Maximum number of locations to open depots on a map
 	public static int max_nb_depots = 10;
-	public static double fixed_cost_dc = 1000;
+	public static double fixed_cost_dc = 2000;
 
-	// The "bigM" if no capacity is given
+	/* The "bigM" if no capacity is given */
 	public static double bigM = 1000000;
 
-	//Solver parameters
-	public static int max_nb_routes = 1000;  		// Maximum number of routes in the mathematical model
-	public static double epsilon = 0.000001; 		// Precision for the constraints
-	public static final double mainTimeLimit = 3600; // Time limit for the solver in seconds
-	
+	/* Solver parameters */
+	public static int max_nb_routes = 1000;  			// Maximum number of routes in the mathematical model
+	public static double epsilon = 0.000001; 			// Precision for the constraints
+	public static final double mainTimeLimit = 3600; 	// Time limit for the solver in seconds
 	
 	public static final double auxTimeLimit = 360;  	// Time limit for the solver in seconds
-	public static final int recompute = 2; 			// Number of recomputations using rejected routes in the route sampling algo
+	public static final int recompute = 2; 				// Number of recomputations using rejected routes in the route sampling algo
 
+	public static final double noSplitTiLimit = 7200;	// Time limit for the solver when no splitting is allowed
 
 	public enum typeModel {
 		direct_direct,

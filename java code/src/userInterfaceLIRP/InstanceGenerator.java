@@ -18,18 +18,18 @@ import tools.Parameters;
 public class InstanceGenerator {
 
 	private static ArrayList<Pair<Integer, Double>> vehicles = new ArrayList<Pair<Integer, Double>>(); 				// Number and capacity of vehicles for each level
-	private static int[] nb_depots_inst = {/*3,6, 9, 12, 15,*/ 18};
-	private static int[] nb_clients_inst = {/*10, 25, 50, 75,*/ 100, 150, 200};
+	private static int[] nb_depots_inst = {/*3,6, 9, 12, */15/*, 18*/};
+	private static int[] nb_clients_inst = {/*10, 25, 50, */75, 100, 150, 200};
 
 	private static int planning_horizon = 30;
-	private static double fc_factor = 1000;
-	private static double oc_factor = 10;
-	private static double holding_ratio = 1.5;
+	private static double fc_factor = 2000;
+	private static double oc_factor = 0;
+	private static double holding_ratio = 1.8;
 
 	public static void main(String[] args) throws IOException, IloException {
 		/* Add the fleet specifications for each level */
 		vehicles.add(new Pair<Integer, Double>(100, 100.0));
-		vehicles.add(new Pair<Integer, Double>(200, 50.0));
+		vehicles.add(new Pair<Integer, Double>(200, 75.0));
 
 		/* Define the directory name to store the complete instances */
 		String instDir = "../Instances/Complete/";

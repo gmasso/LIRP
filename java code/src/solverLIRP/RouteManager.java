@@ -36,13 +36,13 @@ public class RouteManager {
 		this.routes = new HashMap<Integer, HashMap<Integer, LinkedHashSet<Route>>>();
 
 		/* Create HashMaps to store the sets of routes at each level */
-		this.nbRoutesLvl = new int[Parameters.nb_levels];
-		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
+		this.nbRoutesLvl = new int[this.instLIRP.getNbLevels()];
+		for(int lvl = 0; lvl < nbRoutesLvl.length; lvl++) {
 			this.routes.put(lvl, new HashMap<Integer, LinkedHashSet<Route>>());
 			this.nbRoutesLvl[lvl] = 0;
 		}
 	}
-	
+
 	/**
 	 * Create a RouteManager object from an instance and the type of model under investigation
 	 * @param instLIRP		The instance from which the set of routes is created
@@ -52,8 +52,8 @@ public class RouteManager {
 	public void initialize(boolean onlyDirect) throws IOException {
 		this.populateDirect();
 		if(!onlyDirect) {
-			/* Populate loops at both levels */
-			for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
+			/* Populate loops at all levels from the existing direct routes */
+			for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
 				this.populateLoops(lvl, 1);
 			}
 		}
@@ -75,7 +75,28 @@ public class RouteManager {
 	 * @return	the ArrayList of direct routes from the supplier to the depots
 	 */
 	public LinkedHashSet<Route> getAllRoutesOfType(int lvl, int nbStops) {
-		return this.routes.get(lvl).get(nbStops);
+		if(lvl > -1 && lvl < this.instLIRP.getNbLevels()) {
+			if(this.routes.get(lvl).containsKey(nbStops)) {
+				return this.routes.get(lvl).get(nbStops);
+			}
+		}
+		return new LinkedHashSet<Route>();
+	}
+	
+	/**
+	 * 
+	 * @return	the ArrayList of direct routes from the supplier to the depots
+	 */
+	public LinkedHashSet<Route> getAllRoutesOfLvl(int lvl) {
+		LinkedHashSet<Route> setOfRoutes = new LinkedHashSet<Route>();
+		if(lvl > -1 && lvl < this.instLIRP.getNbLevels()) {
+			int nbStops = 0;
+			while(this.routes.get(lvl).containsKey(nbStops)) {
+				setOfRoutes.addAll(this.routes.get(lvl).get(nbStops));
+				nbStops++;
+			}
+		}
+		return setOfRoutes;
 	}
 
 	/**
@@ -83,7 +104,7 @@ public class RouteManager {
 	 * @return	the ArrayList of multi-stops routes from the supplier to the depots
 	 */
 	public int getNbRoutesOfType(int lvl, int nbStops){
-		if(lvl > -1 && lvl < Parameters.nb_levels) {
+		if(lvl > -1 && lvl < this.instLIRP.getNbLevels()) {
 			if(this.routes.get(lvl).containsKey(nbStops)) {
 				return this.routes.get(lvl).get(nbStops).size();
 			}
@@ -156,11 +177,7 @@ public class RouteManager {
 		LinkedHashSet<Route> loopsLvl = new LinkedHashSet<Route>();
 
 		/* Fill an array list with the potential stop candidates to add to the loop routes */
-		int finalIndex = 0;
-		if(lvl == Parameters.nb_levels - 1)
-			finalIndex = this.instLIRP.getNbClients();
-		else
-			finalIndex = this.instLIRP.getNbDepots(lvl);
+		int finalIndex = (lvl == this.instLIRP.getNbLevels() - 1) ? finalIndex = this.instLIRP.getNbClients() : this.instLIRP.getNbDepots(lvl);
 
 		/* If the stopping time is small enough, build the multi-stops routes for this instance */
 		/* Start from each of the existing direct routes */
@@ -188,7 +205,7 @@ public class RouteManager {
 			populateLoops(lvl, nbStops + 1);
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @return	a JSON object containing the RouteManager object

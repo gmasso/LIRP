@@ -1,0 +1,135 @@
+CPXPARAM_TimeLimit                               7200
+CPXPARAM_Read_APIEncoding                        "UTF8"
+Tried aggregator 1 time.
+MIP Presolve eliminated 16875 rows and 12001 columns.
+MIP Presolve added 1428 rows and 0 columns.
+MIP Presolve modified 1475 coefficients.
+Reduced MIP has 2684 rows, 4393 columns, and 16881 nonzeros.
+Reduced MIP has 1413 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.06 sec. (27.65 ticks)
+Found incumbent of value 26178.484960 after 0.09 sec. (36.52 ticks)
+Probing time = 0.07 sec. (4.11 ticks)
+Tried aggregator 1 time.
+Reduced MIP has 2684 rows, 4393 columns, and 16881 nonzeros.
+Reduced MIP has 1413 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.02 sec. (11.65 ticks)
+Probing time = 0.02 sec. (4.14 ticks)
+Clique table members: 400.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 4 threads.
+Root relaxation solution time = 0.09 sec. (76.12 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                        26178.4850        0.0000           100.00%
+*     0+    0                         7945.9131        0.0000           100.00%
+      0     0     2422.5924   102     7945.9131     2422.5924     2240   69.51%
+      0     0     3773.2688   137     7945.9131     Cuts: 343     3148   52.51%
+      0     0     3930.3596   143     7945.9131     Cuts: 408     3938   50.54%
+*     0+    0                         4730.9901     3930.3596            16.92%
+      0     0     4037.3944   119     4730.9901     Cuts: 447     4779   14.66%
+*     0+    0                         4704.1394     4037.3944            14.17%
+*     0+    0                         4687.9304     4037.3944            13.88%
+*     0+    0                         4648.1385     4037.3944            13.14%
+*     0+    0                         4530.3861     4037.3944            10.88%
+      0     0     4099.9038   126     4530.3861     Cuts: 402     5502    9.50%
+      0     0     4166.5856   124     4530.3861     Cuts: 352     6170    8.03%
+      0     0     4191.2544   129     4530.3861     Cuts: 285     6975    7.49%
+      0     0     4209.6772   135     4530.3861     Cuts: 331     7574    7.08%
+*     0+    0                         4466.1705     4209.6772             5.74%
+      0     0     4231.3635   141     4466.1705     Cuts: 286     8189    5.26%
+      0     0     4240.9830   137     4466.1705     Cuts: 203     8570    5.04%
+      0     0     4244.7839   134     4466.1705     Cuts: 188     8889    4.96%
+      0     0     4250.4486   123     4466.1705     Cuts: 154     9145    4.83%
+      0     0     4253.5128   127     4466.1705     Cuts: 133     9329    4.76%
+      0     0     4255.2159   127     4466.1705      Cuts: 99     9517    4.72%
+      0     0     4256.3423   124     4466.1705      Cuts: 82     9658    4.70%
+      0     0     4261.5061   122     4466.1705      Cuts: 50     9921    4.58%
+      0     0     4263.7806   121     4466.1705      Cuts: 84    10064    4.53%
+      0     0     4265.1880   128     4466.1705      Cuts: 48    10164    4.50%
+      0     0     4266.3600   124     4466.1705      Cuts: 60    10322    4.47%
+      0     0     4267.0296   118     4466.1705      Cuts: 37    10430    4.46%
+      0     0     4267.4634   113     4466.1705      Cuts: 36    10541    4.45%
+      0     2     4267.4634   113     4466.1705     4269.2754    10541    4.41%
+Elapsed time = 10.86 sec. (5795.83 ticks, tree = 0.01 MB, solutions = 8)
+      4     6     4280.7958    73     4466.1705     4269.2754    12387    4.41%
+     15    14     4301.8140    76     4466.1705     4272.1299    15139    4.34%
+     30    25     4355.5774    17     4466.1705     4272.1299    19401    4.34%
+     43    41     4331.5127    27     4466.1705     4272.1299    24811    4.34%
+     69    52     4343.0297    64     4466.1705     4272.1299    31678    4.34%
+     80    57     4347.9798    26     4466.1705     4272.1299    35762    4.34%
+*    89+   46                         4414.2342     4272.1299             3.22%
+     94    63        cutoff           4414.2342     4272.1299    40432    3.22%
+    110    61     4338.1749    30     4414.2342     4272.1299    43738    3.22%
+    135    76        cutoff           4414.2342     4272.1299    53751    3.22%
+    204    99        cutoff           4414.2342     4287.5321    74732    2.87%
+Elapsed time = 17.03 sec. (8979.78 ticks, tree = 0.49 MB, solutions = 9)
+    247   121     4382.5108    12     4414.2342     4296.0419    89699    2.68%
+    309   135        cutoff           4414.2342     4297.8085   124551    2.64%
+    396   164     4376.0227    12     4414.2342     4308.2057   146792    2.40%
+    460   195     4336.3924    74     4414.2342     4312.3533   172843    2.31%
+    536   203     4331.1265    39     4414.2342     4314.2390   192953    2.27%
+    612   215        cutoff           4414.2342     4320.1295   223177    2.13%
+    715   190     4361.4569    29     4414.2342     4325.2575   249620    2.02%
+    816   195     4362.6391    11     4414.2342     4330.8327   271600    1.89%
+    897   191     4375.7574    28     4414.2342     4339.2077   286728    1.70%
+    996   184        cutoff           4414.2342     4343.2885   310455    1.61%
+Elapsed time = 37.14 sec. (18662.43 ticks, tree = 1.06 MB, solutions = 9)
+   1091   180        cutoff           4414.2342     4350.7239   325480    1.44%
+   1205   153        cutoff           4414.2342     4358.5323   352511    1.26%
+   1340    97        cutoff           4414.2342     4383.9985   377971    0.68%
+
+Clique cuts applied:  2
+Implied bound cuts applied:  428
+Flow cuts applied:  156
+Mixed integer rounding cuts applied:  141
+Flow path cuts applied:  20
+Zero-half cuts applied:  5
+Gomory fractional cuts applied:  2
+
+Root node processing (before b&c):
+  Real time             =   10.83 sec. (5773.70 ticks)
+Parallel b&c, 4 threads:
+  Real time             =   33.34 sec. (16190.99 ticks)
+  Sync time (average)   =    1.08 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =   44.17 sec. (21964.69 ticks)
+
+===========  RESULTS  ===========
+Status of the solver :   Optimal
+ Best solution found :   4414.23422354074 Best LB : 
+4414.23422354074period 0 route 2(status 1.0) location 2 q 98.95362755677057
+period 3 route 2(status 1.0) location 2 q 58.752505589359714
+period 6 route 2(status 1.0) location 2 q 91.80749899716932
+period 0 route 70(status 1.0) location 1 q 13.995486424571187
+period 0 route 70(status 1.0) location 3 q 10.835447319767837
+period 0 route 111(status 1.0) location 6 q 8.700019021896825
+period 0 route 111(status 1.0) location 7 q 10.824620758617812
+period 0 route 122(status 1.0) location 0 q 7.200235059377587
+period 0 route 122(status 1.0) location 4 q 12.593107880438277
+period 0 route 122(status 1.0) location 8 q 7.672209227730553
+period 0 route 137(status 1.0) location 2 q 5.97931874269271
+period 0 route 137(status 1.0) location 5 q 10.99329089204986
+period 0 route 137(status 1.0) location 9 q 10.159892229628081
+period 3 route 124(status 1.0) location 0 q 7.369970155615111
+period 3 route 124(status 1.0) location 2 q 14.150333958027598
+period 3 route 124(status 1.0) location 8 q 7.46563934059911
+period 3 route 141(status 1.0) location 3 q 10.49857267949126
+period 3 route 141(status 1.0) location 6 q 8.756034733242693
+period 3 route 141(status 1.0) location 7 q 10.511954722384047
+period 6 route 121(status 1.0) location 0 q 9.71671196992687
+period 6 route 121(status 1.0) location 5 q 7.421875496403168
+period 6 route 121(status 1.0) location 9 q 6.755575547671988
+period 6 route 135(status 0.9999999999999998) location 1 q 9.572948654260406
+period 6 route 135(status 0.9999999999999998) location 4 q 8.285858260050125
+period 6 route 135(status 0.9999999999999998) location 8 q 10.143657919614554
+period 6 route 141(status 0.9999999999999954) location 3 q 14.143856197926732
+period 6 route 141(status 0.9999999999999954) location 6 q 11.565576743632773
+period 6 route 141(status 0.9999999999999954) location 7 q 14.201438207682607
+==================================================
+Time to solve the instance: 44737 milliseconds
+=================================================
+

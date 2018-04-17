@@ -6,7 +6,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import instanceManager.Instance;
-import instanceManager.Location;
 import tools.Parameters;
 
 
@@ -30,6 +29,9 @@ public class Solution {
 	private double openingCosts;
 	private double transportationCosts;
 	private double inventoryCosts;
+	
+	private String status;
+	private double bestLB;
 
 	/*==============================
 	 *        CONSTRUCTEUR  
@@ -55,13 +57,13 @@ public class Solution {
 		this.routes = routes;
 
 		/* Variables of the model */
-		this.openDepots = new boolean[Parameters.nb_levels - 1][];
-		this.q = new double[Parameters.nb_levels][][][];
-		this.invLoc = new double[Parameters.nb_levels][][];
-		this.usedRoutes = new boolean[Parameters.nb_levels][][];
+		this.openDepots = new boolean[this.instLIRP.getNbLevels() - 1][];
+		this.q = new double[this.instLIRP.getNbLevels()][][][];
+		this.invLoc = new double[this.instLIRP.getNbLevels()][][];
+		this.usedRoutes = new boolean[this.instLIRP.getNbLevels()][][];
 
-		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
-			if(lvl < Parameters.nb_levels - 1) {
+		for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
+			if(lvl < this.instLIRP.getNbLevels() - 1) {
 				this.openDepots[lvl] = new boolean[this.instLIRP.getNbDepots(lvl)];
 			}
 			this.q[lvl] = new double[this.instLIRP.getNbLocations(lvl)][this.routes[lvl].length][this.instLIRP.getNbPeriods()];
@@ -72,6 +74,8 @@ public class Solution {
 		this.openingCosts = -1;
 		this.transportationCosts = -1;
 		this.inventoryCosts = -1;
+		
+		this.status = "Feasible";
 	}
 
 	/*==============================
@@ -84,7 +88,7 @@ public class Solution {
 	 * @return			the value of the binary variable stating if the depot is opened
 	 */
 	public boolean isOpenDepot(int lvl, int d){
-		if(lvl < Parameters.nb_levels - 1 && d < this.openDepots[lvl].length)
+		if(lvl < this.instLIRP.getNbLevels() - 1 && d < this.openDepots[lvl].length)
 			return this.openDepots[lvl][d];
 		else {
 			System.out.println("Impossible to determine if depot " + d + " on level " + lvl + " is opened.");
@@ -126,7 +130,7 @@ public class Solution {
 	 */
 	public double getInvLoc(int lvl, int loc, int t){
 		if(lvl > -1 && lvl < this.invLoc.length && loc < this.invLoc[lvl].length && t < this.invLoc[lvl][loc].length) {
-			double capaLoc = (lvl < Parameters.nb_levels - 1) ? this.instLIRP.getDepot(lvl, loc).getCapacity() : this.instLIRP.getClient(loc).getCapacity();
+			double capaLoc = (lvl < this.instLIRP.getNbLevels() - 1) ? this.instLIRP.getDepot(lvl, loc).getCapacity() : this.instLIRP.getClient(loc).getCapacity();
 			if(this.invLoc[lvl][loc][t] < capaLoc + Parameters.epsilon)
 				return Math.min(this.invLoc[lvl][loc][t], capaLoc);
 			else {
@@ -208,7 +212,6 @@ public class Solution {
 			System.out.println("Impossible to set the boolean variable y for depot " + d + " on level " + lvl);
 			System.exit(1);
 		}
-
 	}
 
 	/**
@@ -266,8 +269,8 @@ public class Solution {
 		this.transportationCosts = 0;
 		this.inventoryCosts = 0;
 
-		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
-			if(lvl < Parameters.nb_levels - 1) {
+		for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
+			if(lvl < this.instLIRP.getNbLevels() - 1) {
 				/* Fixed cost for opening the depots */
 				for (int d = 0; d < this.openDepots[lvl].length; d++) {
 					if(this.openDepots[lvl][d])
@@ -284,11 +287,27 @@ public class Solution {
 
 				/* Inventory costs */
 				for (int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++) {
-					double hc = (lvl < Parameters.nb_levels - 1) ? this.instLIRP.getDepot(lvl, loc).getHoldingCost() : this.instLIRP.getClient(loc).getHoldingCost();
+					double hc = (lvl < this.instLIRP.getNbLevels() - 1) ? this.instLIRP.getDepot(lvl, loc).getHoldingCost() : this.instLIRP.getClient(loc).getHoldingCost();
 					this.inventoryCosts += hc * this.invLoc[lvl][loc][t]; 
 				}
 			}
 		}
+	}
+	
+	/**
+	 * 
+	 * @param status
+	 */
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	
+	/**
+	 * 
+	 * @param status
+	 */
+	public void setLB(double lb) {
+		this.bestLB = lb;
 	}
 
 	/*==========================
@@ -336,7 +355,7 @@ public class Solution {
 	 */
 	private JSONArray storeDeliveries(){
 		JSONArray jsonDeliveries = new JSONArray();
-		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
+		for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
 			JSONArray jsonDeliveriesLvl = new JSONArray();
 			for(int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++) {
 				JSONArray jsonDeliveriesLoc = new JSONArray();
@@ -357,22 +376,24 @@ public class Solution {
 	 */
 	private JSONObject storeRoutes() {
 		JSONObject jsonRoutes = new JSONObject();
-		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
+		for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
 			JSONArray jsonRoutesLvl = new JSONArray();
 			for(int r = 0; r < this.routes[lvl].length; r++) {
-				JSONObject jsonRoute =new JSONObject();
-				if(lvl > 0)
-					jsonRoute.put("start", this.instLIRP.getDepotIndex(lvl - 1, this.routes[lvl][r].getStart()));
-				else
-					jsonRoute.put("start", -1);
-				jsonRoute.put("stops", new JSONArray(this.routes[lvl][r].getStops()));
-				JSONArray jsonPeriods = new JSONArray();
+				JSONArray jsonUsagePeriods = new JSONArray();
 				for(int t = 0; t < this.instLIRP.getNbPeriods(); t++) {
 					if(this.usedRoutes[lvl][r][t])
-						jsonPeriods.put(t);
+						jsonUsagePeriods.put(t);
 				}
-				jsonRoute.put("usage periods", jsonPeriods);
-				jsonRoutesLvl.put(jsonRoute);
+				if(jsonUsagePeriods.length() > 0) {
+					JSONObject jsonRoute = new JSONObject();
+					if(lvl > 0)
+						jsonRoute.put("start", this.instLIRP.getDepotIndex(lvl - 1, this.routes[lvl][r].getStart()));
+					else
+						jsonRoute.put("start", -1);
+					jsonRoute.put("stops", new JSONArray(this.routes[lvl][r].getStops()));
+					jsonRoute.put("usage periods", jsonUsagePeriods);
+					jsonRoutesLvl.put(jsonRoute);
+				}
 			}
 			jsonRoutes.put("lvl"+lvl, jsonRoutesLvl);
 		}
@@ -385,7 +406,7 @@ public class Solution {
 	 */
 	public HashMap<Integer, LinkedHashSet<Route>> collectUsedRoutes(){
 		HashMap<Integer, LinkedHashSet<Route>> collectedRoutes = new HashMap<Integer, LinkedHashSet<Route>>();
-		for(int lvl=0; lvl < Parameters.nb_levels; lvl++) {
+		for(int lvl=0; lvl < this.instLIRP.getNbLevels(); lvl++) {
 			LinkedHashSet<Route> routesLvl = new LinkedHashSet<Route>();
 			for (int rIter = 0; rIter < this.usedRoutes[lvl].length; rIter++){
 				boolean used = false;
@@ -427,6 +448,8 @@ public class Solution {
 		jsonSol.put("inventories", this.storeInvLoc());
 		jsonSol.put("routes", this.storeRoutes());
 		jsonSol.put("objective value", this.storeObj());
+		jsonSol.put("status", this.status);
+		jsonSol.put("LB", this.bestLB);
 		return jsonSol;
 	}
 
