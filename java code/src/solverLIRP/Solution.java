@@ -29,9 +29,11 @@ public class Solution {
 	private double openingCosts;
 	private double transportationCosts;
 	private double inventoryCosts;
-	
+
 	private String status;
 	private double bestLB;
+	private double solTime;
+	private JSONArray interSol = new JSONArray();
 
 	/*==============================
 	 *        CONSTRUCTEUR  
@@ -74,7 +76,7 @@ public class Solution {
 		this.openingCosts = -1;
 		this.transportationCosts = -1;
 		this.inventoryCosts = -1;
-		
+
 		this.status = "Feasible";
 	}
 
@@ -293,7 +295,7 @@ public class Solution {
 			}
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @param status
@@ -301,7 +303,7 @@ public class Solution {
 	public void setStatus(String status) {
 		this.status = status;
 	}
-	
+
 	/**
 	 * 
 	 * @param status
@@ -310,9 +312,48 @@ public class Solution {
 		this.bestLB = lb;
 	}
 
+	/**
+	 * Set the time to get the solution (in seconds)
+	 * @param timeMillis	the solving time in milliseconds
+	 */
+	public void setSolvingTime(long timeMillis) {
+		this.solTime = ((double) timeMillis) / 1000.0;
+	}
+
+	/**
+	 * 
+	 * @param interResults
+	 */
+	public void setInterResults(JSONObject interResults) {
+		this.interSol.put(interResults);
+	}
+
 	/*==========================
 	 *         METHODS
 	 ===========================*/
+	/**
+	 * 
+	 * @return	a HashMap containing the route used in the solution
+	 */
+	public HashMap<Integer, LinkedHashSet<Route>> collectUsedRoutes(){
+		HashMap<Integer, LinkedHashSet<Route>> collectedRoutes = new HashMap<Integer, LinkedHashSet<Route>>();
+		for(int lvl=0; lvl < this.instLIRP.getNbLevels(); lvl++) {
+			LinkedHashSet<Route> routesLvl = new LinkedHashSet<Route>();
+			for (int rIter = 0; rIter < this.usedRoutes[lvl].length; rIter++){
+				boolean used = false;
+				int t = 0;
+				while (!used && t < this.instLIRP.getNbPeriods()){
+					used = this.usedRoutes[lvl][rIter][t];
+					t++;
+				}
+				if(used)
+					routesLvl.add(this.routes[lvl][rIter]);
+			}
+			collectedRoutes.put(lvl, routesLvl);
+		}
+		return collectedRoutes;
+	}
+
 	/**
 	 * Print the open depots
 	 * @param printStreamSol
@@ -324,8 +365,6 @@ public class Solution {
 			for (int d = 0; d < this.openDepots[lvl].length; d++){
 				if (this.openDepots[lvl][d]) 
 					jsonOpenDCLvl.put(1);
-				else
-					jsonOpenDCLvl.put(0);
 			}
 			jsonOpenDC.put(jsonOpenDCLvl);
 		}
@@ -341,8 +380,14 @@ public class Solution {
 		for(int lvl = 0; lvl < this.openDepots.length; lvl++) {
 			JSONArray jsonInvLvl = new JSONArray();
 			for (int d = 0; d < this.openDepots[lvl].length; d++) {
-				jsonInvLvl.put(this.instLIRP.getDepot(lvl, d).getInitialInventory());	
-				jsonInvLvl.put(new JSONArray(invLoc[lvl][d]));
+				if(this.openDepots[lvl][d]) {
+					JSONObject jsonInvLoc = new JSONObject();
+					jsonInvLoc.put("dc", d);
+					jsonInvLoc.put("init", this.instLIRP.getDepot(lvl, d).getInitialInventory());	
+					jsonInvLoc.put("seq", new JSONArray(invLoc[lvl][d]));
+					
+					jsonInvLvl.put(jsonInvLoc);
+				}
 			}
 			jsonInv.put(jsonInvLvl);
 		}
@@ -356,17 +401,26 @@ public class Solution {
 	private JSONArray storeDeliveries(){
 		JSONArray jsonDeliveries = new JSONArray();
 		for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
-			JSONArray jsonDeliveriesLvl = new JSONArray();
+			JSONObject jsonDeliveriesLvl = new JSONObject();
+			jsonDeliveriesLvl.put("lvl", lvl);
+			JSONArray jsonDeliverListLvl = new JSONArray();
 			for(int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++) {
-				JSONArray jsonDeliveriesLoc = new JSONArray();
+				JSONObject jsonDeliveriesLoc = new JSONObject();
+				jsonDeliveriesLoc.put("loc", loc);
+				JSONArray jsonDeliverListLoc = new JSONArray();
 				for(int r = 0; r < this.routes[lvl].length; r++) {
-					jsonDeliveriesLoc.put(new JSONArray(this.q[lvl][loc][r]));
+					for(int t = 0; t < this.q[lvl][loc][r].length; t++) {
+						if(this.q[lvl][loc][r][t] > Parameters.epsilon) {
+							double quantity = ((double) Math.floor(this.q[lvl][loc][r][t] * 100)) / 100.0;
+							jsonDeliverListLoc.put("{" + (t + 1) + ", route " + r + ", " +  quantity + ")");
+						}
+					}
 				}
-				jsonDeliveriesLvl.put(jsonDeliveriesLoc);
+				jsonDeliveriesLoc.put("deliveries", jsonDeliverListLoc);
+				jsonDeliverListLvl.put(jsonDeliveriesLoc);
 			}
 			jsonDeliveries.put(jsonDeliveriesLvl);
 		}
-
 		return jsonDeliveries;
 	}
 
@@ -401,30 +455,6 @@ public class Solution {
 	}	
 
 	/**
-	 * 
-	 * @return	a HashMap containing the route used in the solution
-	 */
-	public HashMap<Integer, LinkedHashSet<Route>> collectUsedRoutes(){
-		HashMap<Integer, LinkedHashSet<Route>> collectedRoutes = new HashMap<Integer, LinkedHashSet<Route>>();
-		for(int lvl=0; lvl < this.instLIRP.getNbLevels(); lvl++) {
-			LinkedHashSet<Route> routesLvl = new LinkedHashSet<Route>();
-			for (int rIter = 0; rIter < this.usedRoutes[lvl].length; rIter++){
-				boolean used = false;
-				int t = 0;
-				while (!used && t < this.instLIRP.getNbPeriods()){
-					used = this.usedRoutes[lvl][rIter][t];
-					t++;
-				}
-				if(used)
-					routesLvl.add(this.routes[lvl][rIter]);
-			}
-			collectedRoutes.put(lvl, routesLvl);
-		}
-		return collectedRoutes;
-	}
-
-
-	/**
 	 * Recomputes the objective function from the Solution object attributes		
 	 * @param printStreamSol
 	 */
@@ -443,13 +473,19 @@ public class Solution {
 	 */
 	public JSONObject getJSONSol() { 
 		JSONObject jsonSol = new JSONObject();
+
+		jsonSol.put("status", this.status);
+		jsonSol.put("objective value", this.storeObj());
+		jsonSol.put("LB", this.bestLB);
+		jsonSol.put("resolution time", this.solTime);
+		jsonSol.put("intermediate stages", this.interSol);
+
 		jsonSol.put("open depots", this.storeOpenDepots());
+
+		jsonSol.put("routes", this.storeRoutes());
 		jsonSol.put("deliveries", this.storeDeliveries());
 		jsonSol.put("inventories", this.storeInvLoc());
-		jsonSol.put("routes", this.storeRoutes());
-		jsonSol.put("objective value", this.storeObj());
-		jsonSol.put("status", this.status);
-		jsonSol.put("LB", this.bestLB);
+
 		return jsonSol;
 	}
 

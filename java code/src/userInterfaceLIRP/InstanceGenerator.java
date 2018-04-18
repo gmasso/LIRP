@@ -18,10 +18,13 @@ import tools.Parameters;
 public class InstanceGenerator {
 
 	private static ArrayList<Pair<Integer, Double>> vehicles = new ArrayList<Pair<Integer, Double>>(); 				// Number and capacity of vehicles for each level
-	private static int[] nb_depots_inst = {/*3,6, 9, 12, */15/*, 18*/};
-	private static int[] nb_clients_inst = {/*10, 25, 50, */75, 100, 150, 200};
-
-	private static int planning_horizon = 30;
+	private static int[] nb_depots_inst = {3/*,6, 9, 12, 15, 18*/};
+	private static int[] nb_clients_inst = {10/*, 25, 50, 75, 100, 150, 200*/};
+	
+	private static int planning_horizon = 10;
+	/* CHANGE */
+	//private static int planning_horizon = 30;
+	
 	private static double fc_factor = 2000;
 	private static double oc_factor = 0;
 	private static double holding_ratio = 1.8;
@@ -45,12 +48,15 @@ public class InstanceGenerator {
 				ArrayList<String> dcFNames = selectLayersNames(nbDC + "s", dcDirName);
 				String dcFName = dcFNames.get(Parameters.rand.nextInt(dcFNames.size()));
 
-				for(int nbCities = 0; nbCities < 3; nbCities++) {
+				for(int nbCities = 1; nbCities < 2; nbCities++) {
+					/* CHANGE */
+					//for(int nbCities = 0; nbCities < 3; nbCities++) {
+
 					/* Initialize the counter for the number of instances of this type */
 					int count = 0;
 					/* Generate 3 instances for each demand profile (light, heavy of mixture */
 					int nbInstOfType = 3;
-					while(count < nbInstOfType * Parameters.demand_profiles.length) {
+					while(count < /*CHANGE*/1) {//nbInstOfType * Parameters.demand_profiles.length) {
 						ArrayList<String> clFNames = selectLayersNames(nbCities + "c", clDirName);
 						String clFName = clFNames.get(Parameters.rand.nextInt(clFNames.size()));		
 						ClientsMap cMap = new ClientsMap(JSONParser.readJSONFromFile(clDirName + clFName + "/map.json"));
@@ -73,7 +79,7 @@ public class InstanceGenerator {
 								Mask dMask[] = new Mask[1];
 								dMask[0] = new Mask(dMaps[0]);
 								
-								for(int activeProfile = 0; activeProfile < Parameters.proba_actives.length; activeProfile++) {
+								for(int activeProfile = 0; activeProfile < /*CHANGE*/1; activeProfile++) {//Parameters.proba_actives.length; activeProfile++) {
 									try {
 										String instName = "lirp" + nbClients + "r-" + nbDC + "d-" + demandPattern + count;
 										System.out.print("Creating instance " + instName + "...");
@@ -93,7 +99,9 @@ public class InstanceGenerator {
 											typeInst = "Big";
 										else if(nbClients < 75 && nbDC < 9)
 											typeInst = "Small";
-										String instFileName = instDir + typeInst + "/" + inst.getID();
+										String instFileName = instDir + typeInst + "/simpleCity_" + inst.getID();
+										/* CHANGE */
+										//String instFileName = instDir + typeInst + "/" + inst.getID();
 
 										inst.writeToJSONFile(instFileName + ".json");
 									}
