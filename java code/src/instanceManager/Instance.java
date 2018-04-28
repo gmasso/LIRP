@@ -9,7 +9,7 @@ import org.json.JSONObject;
 
 import tools.JSONParser;
 import tools.Pair;
-import tools.Parameters;
+import tools.Config;
 
 import org.json.JSONArray;
 
@@ -56,7 +56,7 @@ public class Instance {
 		try {
 			this.gridSize = gridSize;
 			this.supplier = new Location(new Point2D.Double(gridSize/2, gridSize/2));
-			this.depots = new DepotsMap[Parameters.nb_levels - 1];
+			this.depots = new DepotsMap[Config.NB_LEVELS - 1];
 			for(int lvl = 0; lvl < this.depots.length; lvl++) {
 				this.depots[lvl] = new DepotsMap(gridSize, nbDepots, fc, oc[lvl], 0, -1);
 			}
@@ -96,8 +96,8 @@ public class Instance {
 	public Instance(int planningHorizon, Mask[] dMasks, Mask cMask, DemandsMap dBoxMap, ArrayList<Pair<Integer, Double>> vDesc, double holdingRatio, double fcFactor, double ocFactor, int demandProfile, int activeProfile) throws IOException, NullPointerException {
 		try {
 			LinkedHashSet<Pair<Double, ArrayList<Boolean>>> activeDays = new LinkedHashSet<Pair<Double, ArrayList<Boolean>>>();
-			for(int profile = 0; profile < Parameters.proba_actives.length; profile++) {
-				activeDays.add(new Pair<Double, ArrayList<Boolean>>(Parameters.proba_actives[activeProfile][profile], new ArrayList<Boolean>(Arrays.asList(Parameters.active_profiles[profile]))));
+			for(int profile = 0; profile < Config.proba_actives.length; profile++) {
+				activeDays.add(new Pair<Double, ArrayList<Boolean>>(Config.proba_actives[activeProfile][profile], new ArrayList<Boolean>(Arrays.asList(Config.active_profiles[profile]))));
 			}
 			this.gridSize = 0;
 			for(Mask dMask: dMasks) {
@@ -221,7 +221,7 @@ public class Instance {
 	}
 
 	public String getDemandProfile() {
-		return this.demands.getPatternDesc() + Parameters.profile_names[this.demandProfile];
+		return this.demands.getPatternDesc() + Config.profile_names[this.demandProfile];
 	}
 
 	/**
@@ -287,7 +287,7 @@ public class Instance {
 	 */
 	public double getCapacityVehicle(int lvl) {
 		if(lvl < this.depots.length + 1)
-			return (this.fleetDesc.get(lvl).getR() > 0) ? this.fleetDesc.get(lvl).getR() : Parameters.bigM;
+			return (this.fleetDesc.get(lvl).getR() > 0) ? this.fleetDesc.get(lvl).getR() : Config.BIGM;
 			else
 				throw new IndexOutOfBoundsException("Error: Level " + lvl + "does not exist");
 	}
@@ -365,10 +365,25 @@ public class Instance {
 		this.clients.redrawClient(c);
 	}
 
-	public void assignDemands(int planningHorizon) {
+	public void assignDemands() {
 		this.clients.assignDemands(this.demands, this.planningHorizon, demandProfile, this.fleetDesc.get(this.getNbLevels() - 1).getR());
 	}
 
+	/**
+	 * Adjust the capacity of vehicles at the DC levels depending on the demands faced by the clients
+	 */
+	public void adjustCapaFleet() {
+		double totalDemand = 0;
+		for(int c = 0; c < this.clients.getNbSites(); c++) {
+			totalDemand += this.getClient(c).getCumulDemands(0, this.planningHorizon);
+		}
+		
+		for(int lvl = 0; lvl < this.depots.length; lvl++) {
+			double scaleParam = Config.demand_profiles[0][0] + Config.RAND.nextDouble() * (Config.demand_profiles[0][1] - Config.demand_profiles[0][0]);
+			this.fleetDesc.get(lvl).setR(Math.max(this.fleetDesc.get(lvl).getR(), totalDemand / (scaleParam *  this.planningHorizon)));
+		}
+	}
+	
 	/**
 	 * Generate an ID for this instance
 	 */
@@ -378,7 +393,7 @@ public class Instance {
 			this.instID += this.getNbDepots(lvl) + "dc" + lvl + "-";
 		}
 		int nbCities = (this.clients.getCitiesMap() == null) ? 0 : this.clients.getCitiesMap().getNbSites();
-		this.instID += this.getNbClients() + "r-" + nbCities + "c-" + this.getDemandProfile() + "_" + UUID.randomUUID().toString();
+		this.instID += this.getNbClients() + "r-" + nbCities + "c-" + this.planningHorizon + "p-" + this.getDemandProfile() + "_" + UUID.randomUUID().toString();
 	}
 
 	/*

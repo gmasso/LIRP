@@ -1,0 +1,26 @@
+CPXPARAM_TimeLimit                               7200
+Tried aggregator 2 times.
+MIP Presolve eliminated 1383863 rows and 1170326 columns.
+MIP Presolve added 2324 rows and 0 columns.
+MIP Presolve modified 5404 coefficients.
+Aggregator did 3 substitutions.
+Reduced MIP has 58339 rows, 214595 columns, and 860636 nonzeros.
+Reduced MIP has 53313 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 6.98 sec. (6838.29 ticks)
+Probing fixed 0 vars, tightened 4179 bounds.
+Probing time = 6.39 sec. (2448.68 ticks)
+Tried aggregator 1 time.
+Reduced MIP has 58339 rows, 214595 columns, and 860636 nonzeros.
+Reduced MIP has 53313 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.93 sec. (924.37 ticks)
+Probing time = 0.30 sec. (71.94 ticks)
+Clique table members: 2964.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 4 threads.
+Root relaxation solution time = 10.59 sec. (5447.78 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+      0     0    41463.7507   841                  41463.7507       51         

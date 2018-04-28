@@ -13,25 +13,23 @@ import instanceManager.Mask;
 import solverLIRP.RouteManager;
 import tools.JSONParser;
 import tools.Pair;
-import tools.Parameters;
+import tools.Config;
 
 public class InstanceGenerator {
 
-	private static ArrayList<Pair<Integer, Double>> vehicles = new ArrayList<Pair<Integer, Double>>(); 				// Number and capacity of vehicles for each level
-	private static int[] nb_depots_inst = {3/*,6, 9, 12, 15, 18*/};
-	private static int[] nb_clients_inst = {10/*, 25, 50, 75, 100, 150, 200*/};
-	
-	private static int planning_horizon = 10;
-	/* CHANGE */
-	//private static int planning_horizon = 30;
-	
+	private static ArrayList<Pair<Integer, Double>> vehicles = new ArrayList<Pair<Integer, Double>>(); 	// Number and capacity of vehicles for each level
+	private static int[] nb_depots_inst = {/*3,6,9,*/ 12/*, 15, 18*/};
+	private static int[] nb_clients_inst = {/*10, 25,*/ 50, 75, 100, 150, 200};
+
+	private static int[] planning_horizon = {7, 14, 30};
+
 	private static double fc_factor = 2000;
 	private static double oc_factor = 0;
 	private static double holding_ratio = 1.8;
 
 	public static void main(String[] args) throws IOException, IloException {
 		/* Add the fleet specifications for each level */
-		vehicles.add(new Pair<Integer, Double>(100, 100.0));
+		vehicles.add(new Pair<Integer, Double>(100, 200.0));
 		vehicles.add(new Pair<Integer, Double>(200, 75.0));
 
 		/* Define the directory name to store the complete instances */
@@ -46,69 +44,70 @@ public class InstanceGenerator {
 			/* Loop through the number of depots corresponding to this number of clients */
 			for(int nbDC : nb_depots_inst) {
 				ArrayList<String> dcFNames = selectLayersNames(nbDC + "s", dcDirName);
-				String dcFName = dcFNames.get(Parameters.rand.nextInt(dcFNames.size()));
+				String dcFName = dcFNames.get(Config.RAND.nextInt(dcFNames.size()));
+				for(int nbPeriods : planning_horizon) {
+					for(int nbCities = 0; nbCities < 3; nbCities++) {
+						/* Initialize the counter for the number of instances of this type */
+						int count = 0;
+						/* Generate 3 instances for each demand profile (light, heavy of mixture */
+						int nbInstOfType = 3;
+						while(count < nbInstOfType * Config.demand_profiles.length) {
+							ArrayList<String> clFNames = selectLayersNames(nbCities + "c", clDirName);
+							String clFName = clFNames.get(Config.RAND.nextInt(clFNames.size()));		
+							ClientsMap cMap = new ClientsMap(JSONParser.readJSONFromFile(clDirName + clFName + "/map.json"));
 
-				for(int nbCities = 1; nbCities < 2; nbCities++) {
-					/* CHANGE */
-					//for(int nbCities = 0; nbCities < 3; nbCities++) {
+							DepotsMap[] dMaps = new DepotsMap[1];
+							dMaps[0] = new DepotsMap(JSONParser.readJSONFromFile(dcDirName + dcFName));
+							dcFName = dcFNames.get(Config.RAND.nextInt(dcFNames.size()));
 
-					/* Initialize the counter for the number of instances of this type */
-					int count = 0;
-					/* Generate 3 instances for each demand profile (light, heavy of mixture */
-					int nbInstOfType = 3;
-					while(count < /*CHANGE*/1) {//nbInstOfType * Parameters.demand_profiles.length) {
-						ArrayList<String> clFNames = selectLayersNames(nbCities + "c", clDirName);
-						String clFName = clFNames.get(Parameters.rand.nextInt(clFNames.size()));		
-						ClientsMap cMap = new ClientsMap(JSONParser.readJSONFromFile(clDirName + clFName + "/map.json"));
+							/* Select all the files associated with the clients map selected */
+							ArrayList<String> demandsFNames = selectLayersNames("", clDirName + clFName + "/");
+							String demandPattern = "";
+							/* All files that do not describe the clients map are demands maps */
+							for(String demandFName : demandsFNames) {
+								if(!demandFName.startsWith("map")) {
+									DemandsMap demandsMap = new DemandsMap(JSONParser.readJSONFromFile(clDirName + clFName + "/" + demandFName));
+									demandPattern = demandFName.substring(0, demandFName.lastIndexOf("-"));
 
-						DepotsMap[] dMaps = new DepotsMap[1];
-						dMaps[0] = new DepotsMap(JSONParser.readJSONFromFile(dcDirName + dcFName));
-						dcFName = dcFNames.get(Parameters.rand.nextInt(dcFNames.size()));
+									/* Select some clients and depots randomly on the selected layers */
+									Mask cMask = new Mask(cMap, nbClients);
+									Mask dMask[] = new Mask[1];
+									dMask[0] = new Mask(dMaps[0]);
 
-						/* Select all the files associated with the clients map selected */
-						ArrayList<String> demandsFNames = selectLayersNames("", clDirName + clFName + "/");
-						String demandPattern = "";
-						/* All files that do not describe the clients map are demands maps */
-						for(String demandFName : demandsFNames) {
-							if(!demandFName.startsWith("map")) {
-								DemandsMap demandsMap = new DemandsMap(JSONParser.readJSONFromFile(clDirName + clFName + "/" + demandFName));
-								demandPattern = demandFName.substring(0, demandFName.lastIndexOf("-"));
-								
-								/* Select some clients and depots randomly on the selected layers */
-								Mask cMask = new Mask(cMap, nbClients);
-								Mask dMask[] = new Mask[1];
-								dMask[0] = new Mask(dMaps[0]);
-								
-								for(int activeProfile = 0; activeProfile < /*CHANGE*/1; activeProfile++) {//Parameters.proba_actives.length; activeProfile++) {
-									try {
-										String instName = "lirp" + nbClients + "r-" + nbDC + "d-" + demandPattern + count;
-										System.out.print("Creating instance " + instName + "...");
-										
-										Instance inst = new Instance(planning_horizon, dMask, cMask, demandsMap, vehicles, holding_ratio, fc_factor, oc_factor, count % 3, activeProfile);
+									for(int activeProfile = 0; activeProfile < Config.proba_actives.length; activeProfile++) {
+										/*CHANGE*/
+										//for(int activeProfile = 0; activeProfile < 1; activeProfile++) {
+										try {
+											String instName = "lirp" + nbClients + "r-" + nbDC + "d-" + demandPattern + count;
+											System.out.print("Creating instance " + instName + "...");
 
-										RouteManager rm = new RouteManager(inst);
-										/* Initialize the route manager only with direct routes and redraw unreachable clients of inst */
-										rm.initialize(true);
-										/* Use the corrected instance from route manager to assign the demands */
-										inst = rm.getInstance();
-										/* Assign the demands of the map to the clients */
-										inst.assignDemands(planning_horizon);
+											Instance inst = new Instance(nbPeriods, dMask, cMask, demandsMap, vehicles, holding_ratio, fc_factor, oc_factor, count % 3, activeProfile);
 
-										String typeInst = "Medium";
-										if(nbDC > 12 || nbClients > 100 || (nbClients > 75 && nbDC > 9))
-											typeInst = "Big";
-										else if(nbClients < 75 && nbDC < 9)
-											typeInst = "Small";
-										String instFileName = instDir + typeInst + "/simpleCity_" + inst.getID();
-										/* CHANGE */
-										//String instFileName = instDir + typeInst + "/" + inst.getID();
+											RouteManager rm = new RouteManager(inst);
+											/* Initialize the route manager only with direct routes and redraw unreachable clients of inst */
+											rm.initialize(true);
+											/* Use the corrected instance from route manager to assign the demands */
+											inst = rm.getInstance();
+											/* Assign the demands of the map to the clients */
+											inst.assignDemands();
+											inst.adjustCapaFleet();
 
-										inst.writeToJSONFile(instFileName + ".json");
+											String typeInst = "Medium";
+											if(nbDC > 12 || nbClients > 100 || (nbClients > 75 && nbDC > 9))
+												typeInst = "Big";
+											else if(nbClients < 75 && nbDC < 9)
+												typeInst = "Small";
+											//String instFileName = instDir + typeInst + "/simpleCity_" + inst.getID();
+											/* CHANGE */
+											String instFileName = instDir + typeInst + "/" + inst.getID();
+
+											inst.writeToJSONFile(instFileName + ".json");
+										}
+										catch (IOException ioe) {
+											System.out.println("Error: " + ioe.getMessage());
+										}
+										count++;
 									}
-									catch (IOException ioe) {
-										System.out.println("Error: " + ioe.getMessage());
-									}
-									count++;
 								}
 							}
 						}

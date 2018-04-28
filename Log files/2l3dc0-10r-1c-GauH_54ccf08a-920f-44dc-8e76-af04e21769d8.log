@@ -1,0 +1,44 @@
+CPXPARAM_TimeLimit                               7200
+Tried aggregator 2 times.
+MIP Presolve eliminated 50371 rows and 36071 columns.
+MIP Presolve added 480 rows and 0 columns.
+MIP Presolve modified 1362 coefficients.
+Aggregator did 1 substitutions.
+Reduced MIP has 6539 rows, 14962 columns, and 55538 nonzeros.
+Reduced MIP has 4683 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.20 sec. (139.58 ticks)
+Probing fixed 1 vars, tightened 378 bounds.
+Probing changed sense of 11 constraints.
+Probing time = 0.10 sec. (25.61 ticks)
+Cover probing fixed 0 vars, tightened 55 bounds.
+Tried aggregator 2 times.
+MIP Presolve eliminated 300 rows and 1 columns.
+MIP Presolve modified 37 coefficients.
+Aggregator did 1 substitutions.
+Reduced MIP has 6238 rows, 14960 columns, and 50166 nonzeros.
+Reduced MIP has 4681 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.07 sec. (55.19 ticks)
+Probing time = 0.03 sec. (7.13 ticks)
+Cover probing fixed 0 vars, tightened 10 bounds.
+Clique table members: 917.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 4 threads.
+Root relaxation solution time = 0.40 sec. (309.31 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+      0     0    17661.0289   353                  17661.0289       32         
+*     0+    0                        43990.8114    17661.0289            59.85%
+      0     0    21951.7843   376    43990.8114     Cuts: 976     2049   50.10%
+      0     0    22749.6526   398    43990.8114    Cuts: 1062     3817   48.29%
+      0     0    23116.5002   419    43990.8114    Cuts: 1050     5641   47.45%
+      0     0    23252.6079   428    43990.8114     Cuts: 981     7575   47.14%
+      0     0    23329.1998   476    43990.8114     Cuts: 821     9396   46.97%
+*     0+    0                        31224.4501    23329.1998            25.29%
+      0     0    23381.2445   499    31224.4501     Cuts: 795    11085   25.12%
+*     0+    0                        30538.2905    23381.2445            23.44%
+      0     0    23422.9382   506    30538.2905     Cuts: 670    12801   23.30%
+      0     0    23453.4916   534    30538.2905     Cuts: 596    14613   23.20%
+      0     0    23483.2051   497    30538.2905     Cuts: 610    16294   23.10%

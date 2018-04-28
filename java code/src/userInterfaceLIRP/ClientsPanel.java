@@ -17,7 +17,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
 import instanceManager.ClientsMap;
-import tools.Parameters;
+import tools.Config;
 
 public class ClientsPanel extends JPanel implements ActionListener{
 
@@ -295,7 +295,7 @@ public class ClientsPanel extends JPanel implements ActionListener{
 		for(int cIndex = 0; cIndex < citiesSizes.length; cIndex++) {
 			int sizeIndex = 0;
 			// Draw a random number
-			double proba = Parameters.rand.nextDouble();
+			double proba = Config.RAND.nextDouble();
 			// Determine to which size it corresponds
 			while(proba > this.sizesCDF[sizeIndex]) {
 				sizeIndex++;
@@ -336,7 +336,7 @@ public class ClientsPanel extends JPanel implements ActionListener{
 	 */
 	public ClientsMap generateClientsMap() {
 		try {
-			return new ClientsMap(Parameters.grid_size, this.getNbSites(), this.getCitySizes(), this.getUrbanRatio(), this.getHoldingCost(), this.getHorizon(), this.getPeriod(), this.isUniform(), this.getMinDemand(), this.getMaxDemand());
+			return new ClientsMap(Config.grid_size, this.getNbSites(), this.getCitySizes(), this.getUrbanRatio(), this.getHoldingCost(), this.getHorizon(), this.getPeriod(), this.isUniform(), this.getMinDemand(), this.getMaxDemand());
 		}
 		catch (IOException ioe) {
 			System.out.println("ERROR :" + ioe.getMessage());

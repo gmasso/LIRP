@@ -6,7 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import tools.JSONParser;
-import tools.Parameters;
+import tools.Config;
 
 import java.awt.geom.Point2D;
 
@@ -177,8 +177,8 @@ public abstract class Layer {
 	 */
 	protected Point2D drawLocation(double siteSize) {
 		double distWithBoundaries = 2 * siteSize;
-		double xCoord = distWithBoundaries + Parameters.rand.nextDouble() * (this.gridSize - distWithBoundaries);
-		double yCoord = distWithBoundaries + Parameters.rand.nextDouble() * (this.gridSize - distWithBoundaries);
+		double xCoord = distWithBoundaries + Config.RAND.nextDouble() * (this.gridSize - distWithBoundaries);
+		double yCoord = distWithBoundaries + Config.RAND.nextDouble() * (this.gridSize - distWithBoundaries);
 		return new Point2D.Double(xCoord, yCoord);
 	}
 

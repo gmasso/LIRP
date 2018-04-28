@@ -6,7 +6,7 @@ import java.io.IOException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import tools.Parameters;
+import tools.Config;
 
 public class DemandsMap extends Layer {
 
@@ -24,7 +24,7 @@ public class DemandsMap extends Layer {
 	 * @throws IOException
 	 */
 	public DemandsMap(ClientsMap clientsMap, int planningHorizon, int period, boolean isUniform) throws IOException {
-		super(clientsMap.getGridSize(), Parameters.nb_steps * Parameters.nb_steps);
+		super(clientsMap.getGridSize(), Config.nb_steps * Config.nb_steps);
 
 		/* Set up the shared characteristics of the demands sequences */
 		this.planningHorizon = planningHorizon;
@@ -32,11 +32,11 @@ public class DemandsMap extends Layer {
 		this.clients = clientsMap;
 		this.period = period;
 
-		double boxStep = gridSize / Parameters.nb_steps;
-		for (int x = 0; x < Parameters.nb_steps; x++) {
-			for (int y = 0; y < Parameters.nb_steps; y++) {
+		double boxStep = gridSize / Config.nb_steps;
+		for (int x = 0; x < Config.nb_steps; x++) {
+			for (int y = 0; y < Config.nb_steps; y++) {
 				Point2D boxLoc = new Point2D.Double((x + 0.5) * boxStep, (y + 0.5) * boxStep);
-				this.sites[x * Parameters.nb_steps + y] = new DemandSequence(boxLoc);
+				this.sites[x * Config.nb_steps + y] = new DemandSequence(boxLoc);
 			}
 		}
 		this.fillDemands();

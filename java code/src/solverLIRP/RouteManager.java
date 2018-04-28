@@ -14,7 +14,7 @@ import org.json.JSONObject;
 
 import instanceManager.Instance;
 import tools.JSONParser;
-import tools.Parameters;
+import tools.Config;
 
 public class RouteManager {
 
@@ -90,7 +90,7 @@ public class RouteManager {
 	public LinkedHashSet<Route> getAllRoutesOfLvl(int lvl) {
 		LinkedHashSet<Route> setOfRoutes = new LinkedHashSet<Route>();
 		if(lvl > -1 && lvl < this.instLIRP.getNbLevels()) {
-			int nbStops = 0;
+			int nbStops = 1;
 			while(this.routes.get(lvl).containsKey(nbStops)) {
 				setOfRoutes.addAll(this.routes.get(lvl).get(nbStops));
 				nbStops++;
@@ -112,6 +112,38 @@ public class RouteManager {
 		return 0;
 	}
 
+	public Route getDummy(int lvl, int loc) {
+		if(lvl == 0 || lvl >= this.instLIRP.getNbLevels() || loc < 0 || loc > this.instLIRP.getNbLocations(lvl)) {
+			System.out.println("Impossible to get a dummy route for location " + loc + " in level " + lvl);
+			System.exit(1);
+		}
+		
+		if(this.routes.get(lvl).containsKey(0)) {
+			Iterator<Route> rIter = this.routes.get(lvl).get(0).iterator();
+			while(rIter.hasNext()) {
+				Route nextRoute = rIter.next();
+				if(nextRoute.containsStop(loc)) {
+					return nextRoute;
+				}
+			}
+		}
+		else {
+			this.routes.get(lvl).put(0, new LinkedHashSet<Route>());
+		}
+		
+		try {
+			Route dummyRoute = new Route(this.instLIRP, lvl, -1, loc);
+			this.routes.get(lvl).get(0).add(dummyRoute);
+			return dummyRoute;
+		}
+		catch (IOException ioe) {
+			System.out.println("ERR while trying to add a dummy route for location " + loc + " of level " + lvl + " to the route manager");
+			System.out.println(ioe.getMessage());
+			System.exit(1);
+		}
+		return null;
+	}
+	
 	/*
 	 * METHODS
 	 */
@@ -123,10 +155,10 @@ public class RouteManager {
 	 */
 	private void populateDirect() throws IOException {
 		/* Loop through the different levels */
-		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
+		for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
 			/* Create a LinkedHashSet to store the feasible routes on the current level as they are computed */
 			LinkedHashSet<Route> directLvl = new LinkedHashSet<Route>();
-			LinkedHashSet<Route> dummyLvl = new LinkedHashSet<Route>();
+			//LinkedHashSet<Route> dummyLvl = new LinkedHashSet<Route>();
 			int sIndex = 0;
 			int nbLocLvl = this.instLIRP.getNbLocations(lvl);
 			/* Fill the direct routes first and test that each location of the level is reachable from at least one site on the upper level */
@@ -147,13 +179,13 @@ public class RouteManager {
 				}
 				/* If the site is reachable, go to the next site index */
 				if(reachable) {
-					if(lvl > 0)
-						dummyLvl.add(new Route(this.instLIRP, lvl, -1, sIndex));
+				/*	if(lvl > 0)
+						dummyLvl.add(new Route(this.instLIRP, lvl, -1, sIndex));*/
 					sIndex++;
 				}
 				/* Otherwise, re-position the site randomly and check if the new location is reachable from an upper site */
 				else {
-					if(lvl == Parameters.nb_levels - 1)
+					if(lvl == this.instLIRP.getNbLevels() - 1)
 						this.instLIRP.drawClient(sIndex);
 					else
 						this.instLIRP.drawDepot(lvl, sIndex);
@@ -162,7 +194,7 @@ public class RouteManager {
 			/* Add the direct routes to the corresponding level in the HashMap */
 			this.routes.get(lvl).put(1, directLvl);
 			/* NB : the dummy routes are stored as routes of length 0 */
-			this.routes.get(lvl).put(0, dummyLvl);
+			//this.routes.get(lvl).put(0, dummyLvl);
 		}
 	}
 
@@ -183,7 +215,7 @@ public class RouteManager {
 		/* Start from each of the existing direct routes */
 		for(Route startRoute : this.routes.get(lvl).get(nbStops)) {
 			/* If the route does not start from the dummy depot and it is possible to add a stop */
-			if(!startRoute.isDummy() && startRoute.getDuration() + Parameters.stopping_time < Parameters.max_time_route) {
+			if(!startRoute.isDummy() && startRoute.getDuration() + Config.STOPPING_TIME < Config.MAX_TIME_ROUTE) {
 				/* Start at the maximum last possible stop */
 				int stopToAdd = finalIndex - 1;
 				int maxStop = startRoute.getMaxStop();
@@ -216,9 +248,8 @@ public class RouteManager {
 		JSONObject jsonRM = new JSONObject();
 		jsonRM.put("instance id", this.instLIRP.getID());
 
-		JSONObject jsonLvls = new JSONObject();
-		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
-			//JSONArray jsonLvlRoutes = new JSONArray();
+		JSONArray jsonLvls = new JSONArray();
+		for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
 			Iterator<Map.Entry<Integer, LinkedHashSet<Route>>> mapRouteIter = this.routes.get(lvl).entrySet().iterator();
 			JSONObject jsonLvlRoutes = new JSONObject();
 			while (mapRouteIter.hasNext()) {
@@ -228,9 +259,9 @@ public class RouteManager {
 				while(routesIter.hasNext()) {
 					jsonRouteArray.put(routesIter.next().getJSONRoute());
 				}
-				jsonLvlRoutes.put(setPair.getKey().toString(), jsonRouteArray);
+				jsonLvlRoutes.put((int) setPair.getKey() + " stops", jsonRouteArray);
 			}
-			jsonLvls.put(String.valueOf(lvl), jsonLvlRoutes);
+			jsonLvls.put(jsonLvlRoutes);
 
 		}
 		jsonRM.put("routes", jsonLvls);

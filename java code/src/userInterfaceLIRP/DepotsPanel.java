@@ -18,7 +18,7 @@ import javax.swing.JRadioButton;
 
 import instanceManager.DepotsMap;
 import instanceManager.Location;
-import tools.Parameters;
+import tools.Config;
 
 public class DepotsPanel extends JPanel implements ActionListener {
 
@@ -175,7 +175,7 @@ public class DepotsPanel extends JPanel implements ActionListener {
 		this.customOCPane.removeAll();
 		this.customOCPane.add(this.customButton, BorderLayout.NORTH);
 		this.ocFields = new JFormattedTextField[this.getNbSites()];
-		JPanel ocFieldsPane = new JPanel(new GridLayout(Parameters.max_nb_depots, 2));
+		JPanel ocFieldsPane = new JPanel(new GridLayout(Config.MAX_NB_DC, 2));
 		for(int dIndex = 0; dIndex < this.ocFields.length; dIndex++) {
 			ocFieldsPane.add(new JLabel("Depot " + (dIndex+1) + ":"));
 			this.ocFields[dIndex] = new JFormattedTextField(doubleFormat);
@@ -206,7 +206,7 @@ public class DepotsPanel extends JPanel implements ActionListener {
 	 */
 	public DepotsMap generateDepotsMap(){
 		try {
-			return new DepotsMap(Parameters.grid_size, this.getFC(), this.getOCs(), 0, -1, new Location(new Point2D.Double(Parameters.grid_size/2, Parameters.grid_size/2)));
+			return new DepotsMap(Config.grid_size, this.getFC(), this.getOCs(), 0, -1, new Location(new Point2D.Double(Config.grid_size/2, Config.grid_size/2)));
 		}
 		catch (IOException ioe) {
 			System.out.println("ERROR :" + ioe.getMessage());

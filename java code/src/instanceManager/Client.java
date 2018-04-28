@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import tools.Parameters;
+import tools.Config;
 
 import java.awt.geom.Point2D;
 
@@ -155,7 +155,7 @@ public class Client extends Location{
 			}
 			
 			/* Assign the demand to one one the two closest period with probability proportional to their distance */
-			double rnd = Parameters.rand.nextDouble();
+			double rnd = Config.RAND.nextDouble();
 			System.out.println(rnd);
 			if(period - closestBefore < 0) {
 				closestBefore = 0;

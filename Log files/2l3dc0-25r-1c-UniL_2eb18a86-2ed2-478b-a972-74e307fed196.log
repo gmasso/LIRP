@@ -1,0 +1,121 @@
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+1000000.0
+CPXPARAM_TimeLimit                               7200
+Tried aggregator 2 times.
+MIP Presolve eliminated 1386548 rows and 1170326 columns.
+MIP Presolve added 7694 rows and 0 columns.
+MIP Presolve modified 13809 coefficients.
+Aggregator did 3 substitutions.
+Reduced MIP has 61024 rows, 214595 columns, and 863321 nonzeros.
+Reduced MIP has 53313 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 7.72 sec. (6864.06 ticks)
+Found incumbent of value 125662.373827 after 9.54 sec. (7731.87 ticks)
+Probing fixed 0 vars, tightened 4143 bounds.
+Probing time = 6.40 sec. (2438.66 ticks)
+Tried aggregator 1 time.
+Reduced MIP has 61024 rows, 214595 columns, and 863321 nonzeros.
+Reduced MIP has 53313 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.97 sec. (915.32 ticks)
+Probing time = 0.29 sec. (71.88 ticks)
+Clique table members: 2962.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 4 threads.
+Root relaxation solution time = 8.26 sec. (5767.87 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                       125662.3738        0.0000           100.00%
+*     0+    0                       111369.2812        0.0000           100.00%
+      0     0    15279.1111   771   111369.2812    15279.1111       55   86.28%
+      0     0    18854.8852   924   111369.2812    Cuts: 2164     5756   83.07%
+      0     0    20158.1111  1040   111369.2812    Cuts: 2661    14528   81.90%

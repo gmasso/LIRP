@@ -2,6 +2,7 @@ package userInterfaceLIRP;
 
 import java.io.IOException;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import tools.JSONParser;
@@ -14,7 +15,10 @@ public class CreateInput {
 		jsonInput.put("inst dir", "Instances/Complete/Small/");
 		jsonInput.put("log dir", "Log files/");
 		jsonInput.put("sol dir", "Solutions/");
-		jsonInput.put("desc", "simpleCity_");
+		JSONArray jsonMarkers = new JSONArray();
+		jsonMarkers.put("2l3dc0-10r-");
+		jsonMarkers.put("2l3dc0-25r-");
+		jsonInput.put("desc", jsonMarkers);
 
 		try {
 			JSONParser.writeJSONToFile(jsonInput, "../input.json");

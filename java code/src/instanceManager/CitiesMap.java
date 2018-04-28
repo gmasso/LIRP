@@ -6,7 +6,7 @@ import java.io.IOException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import tools.Parameters;
+import tools.Config;
 
 public class CitiesMap extends Layer {
 	private double[] sizes;
@@ -140,7 +140,7 @@ public class CitiesMap extends Layer {
 		{
 			Point2D cityCoords = this.getSite(cityIndex).getCoordinates();
 			double std = this.sizes[cityIndex];
-			return new Point2D.Double(cityCoords.getX() + Parameters.rand.nextGaussian() * std, cityCoords.getY() + Parameters.rand.nextGaussian() * std);
+			return new Point2D.Double(cityCoords.getX() + Config.RAND.nextGaussian() * std, cityCoords.getY() + Config.RAND.nextGaussian() * std);
 
 		}
 	}

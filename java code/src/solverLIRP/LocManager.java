@@ -10,16 +10,16 @@ import java.util.Iterator;
 import instanceManager.Depot;
 import instanceManager.Instance;
 import instanceManager.Location;
-import tools.Parameters;
+import tools.Config;
 import tools.SortedLocSet;
 
 
 public class LocManager {
 
 	private static int k = 3; 										//(parameter) number of closest depots considered
-	private static double mu1 = 0.4 * Parameters.max_time_route;	//(parameter) max distance between client and depot for automatic allocation 
-	private static double mu2 = 0.1 * Parameters.max_time_route;	//(parameter) max distance between clients in farther allocation
-	private static double mu3 = Parameters.max_time_route;    		//(parameter) max route distance for farther allocation
+	private static double mu1 = 0.4 * Config.MAX_TIME_ROUTE;	//(parameter) max distance between client and depot for automatic allocation 
+	private static double mu2 = 0.1 * Config.MAX_TIME_ROUTE;	//(parameter) max distance between clients in farther allocation
+	private static double mu3 = Config.MAX_TIME_ROUTE;    		//(parameter) max route distance for farther allocation
 	private static int  beta = 3; 									// parameter for roulette wheel selection
 
 	/*======================
@@ -64,11 +64,11 @@ public class LocManager {
 	 */
 	private void directAlloc() {
 		/* For each location, calculate the distance to all depots of the upper level */
-		for(int lvl = Parameters.nb_levels - 1; lvl > 0; lvl--) {
+		for(int lvl = this.instLIRP.getNbLevels() - 1; lvl > 0; lvl--) {
 			int nbLocLvl = this.instLIRP.getNbLocations(lvl);
 			int nbLocUp = this.instLIRP.getNbLocations(lvl - 1);
 			for (int loc  = 0; loc < nbLocLvl; loc++) {
-				Location currentLoc = (lvl < Parameters.nb_levels - 1) ? (Location) this.instLIRP.getDepot(lvl, loc) : (Location) this.instLIRP.getClient(loc);
+				Location currentLoc = (lvl < this.instLIRP.getNbLevels() - 1) ? (Location) this.instLIRP.getDepot(lvl, loc) : (Location) this.instLIRP.getClient(loc);
 				/* The TreeSet stores each pair of location and distance to a given location according to their distance to the location of interest */
 				SortedLocSet bestDistToLoc = new SortedLocSet(currentLoc);
 
@@ -106,17 +106,17 @@ public class LocManager {
 	 */
 	private void indirectAlloc() {
 		/* For each location, calculate the distance to all depots of the upper level */
-		for(int lvl = Parameters.nb_levels - 1; lvl > 0; lvl--) {
+		for(int lvl = this.instLIRP.getNbLevels() - 1; lvl > 0; lvl--) {
 			int nbLocLvl = this.instLIRP.getNbLocations(lvl);
 			for (int loc  = 0; loc < nbLocLvl; loc++) {
-				Location currentLoc = (lvl < Parameters.nb_levels - 1) ? (Location) this.instLIRP.getDepot(lvl, loc) : (Location) this.instLIRP.getClient(loc);
+				Location currentLoc = (lvl < this.instLIRP.getNbLevels() - 1) ? (Location) this.instLIRP.getDepot(lvl, loc) : (Location) this.instLIRP.getClient(loc);
 				/* The TreeSet stores each pair of location and distance to a given location according to their distance to the location of interest */
 				SortedLocSet bestDistToLoc = new SortedLocSet(currentLoc);
 
 				/* Sort locations on the same level according to their distance to the current location considered */
 				for (int locInter = 0; locInter < nbLocLvl; locInter++) {
 					if(locInter != loc) {
-						Location otherLoc = (lvl < Parameters.nb_levels - 1) ? (Location) this.instLIRP.getDepot(lvl, locInter) : (Location) this.instLIRP.getClient(locInter);
+						Location otherLoc = (lvl < this.instLIRP.getNbLevels() - 1) ? (Location) this.instLIRP.getDepot(lvl, locInter) : (Location) this.instLIRP.getClient(locInter);
 						bestDistToLoc.add(otherLoc);
 					}
 				}
@@ -157,11 +157,11 @@ public class LocManager {
 		Location dummy = instLIRP.getSupplier();
 		dSelect.put(dummy, new HashSet<Location>());
 
-		for(int lvl = Parameters.nb_levels - 1; lvl > 0; lvl--) {
+		for(int lvl = this.instLIRP.getNbLevels() - 1; lvl > 0; lvl--) {
 			int nbLocLvl = this.instLIRP.getNbLocations(lvl);
 			int nbLocUp = 0;
 			for (int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++) {
-				Location currentLoc = (lvl < Parameters.nb_levels - 1) ? this.instLIRP.getDepot(lvl, loc) : this.instLIRP.getClient(loc);
+				Location currentLoc = (lvl < this.instLIRP.getNbLevels() - 1) ? this.instLIRP.getDepot(lvl, loc) : this.instLIRP.getClient(loc);
 				dSelect.get(dummy).add(currentLoc);
 			}
 
@@ -199,7 +199,7 @@ public class LocManager {
 				});
 
 				/* Biased roulette wheel depot selection */
-				y = Parameters.rand.nextDouble();
+				y = Config.RAND.nextDouble();
 				/* Generate biased random position */
 				int position = 0; 
 				/* The list of depots that can be selected is limited to: 

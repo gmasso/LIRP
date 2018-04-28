@@ -10,7 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import tools.Pair;
-import tools.Parameters;
+import tools.Config;
 
 
 public class ClientsMap extends Layer {
@@ -173,7 +173,7 @@ public class ClientsMap extends Layer {
 
 	public void assignDemands(DemandsMap demandsMap, int horizon, int demandProfile, double vCapacity) {
 		int planningHorizon = Math.min(horizon, demandsMap.getPlanningHorizon());
-		int startPlanning = Parameters.rand.nextInt(demandsMap.getPlanningHorizon() - planningHorizon);
+		int startPlanning = Config.RAND.nextInt(demandsMap.getPlanningHorizon() - planningHorizon);
 		if(this.isCompatible(demandsMap)) {
 			double[][] clientsDemands = new double[this.sites.length][planningHorizon];
 
@@ -206,10 +206,10 @@ public class ClientsMap extends Layer {
 				// to their respective weights
 				for(int dBoxIndex = 0; dBoxIndex < clientsWeights.length; dBoxIndex++) {
 					int c = selectIndex(clientsWeights[dBoxIndex]); 
-					double rnd = Parameters.rand.nextDouble();
-					while(!((Client) this.sites[c]).isActiveDay(t) && rnd < Parameters.spatial_threshold){
+					double rnd = Config.RAND.nextDouble();
+					while(!((Client) this.sites[c]).isActiveDay(t) && rnd < Config.spatial_threshold){
 						c = selectIndex(clientsWeights[dBoxIndex]); 
-						rnd = Parameters.rand.nextDouble();
+						rnd = Config.RAND.nextDouble();
 					}
 					clientsDemands[c][t] +=  this.scaleDemand(demandProfile) * demandsMap.getDemandBoxInPeriod(dBoxIndex, startPlanning + t);
 				}
@@ -233,7 +233,7 @@ public class ClientsMap extends Layer {
 	 * @return
 	 */
 	private double scaleDemand(int demandProfile) {
-		return (Parameters.demand_profiles[demandProfile][0] + (Parameters.demand_profiles[demandProfile][1] - Parameters.demand_profiles[demandProfile][0]) * Parameters.rand.nextDouble());
+		return (Config.demand_profiles[demandProfile][0] + (Config.demand_profiles[demandProfile][1] - Config.demand_profiles[demandProfile][0]) * Config.RAND.nextDouble());
 	}
 	//Select an index in the range of the array size with a probability
 	//proportional to the associated weight of each index
@@ -248,7 +248,7 @@ public class ClientsMap extends Layer {
 	private static int selectIndex(double[] weights) {
 
 		int index = -1;
-		double randSelect = Parameters.rand.nextDouble();
+		double randSelect = Config.RAND.nextDouble();
 		double cumProba = 0;
 		while (randSelect > cumProba)
 			cumProba += weights[++index];
@@ -262,7 +262,7 @@ public class ClientsMap extends Layer {
 	 */
 	private Point2D drawClient() {
 		// Fill the coordinates of the clients at random according to the position of urban areas
-		double urbanProba = Parameters.rand.nextDouble();
+		double urbanProba = Config.RAND.nextDouble();
 		Point2D clientCoords = this.cities.drawLocation(urbanProba);
 
 		// Compute the coordinates of the client in the selected city, using a normal distribution with mean the city coordinates and standard deviation the city size
@@ -302,7 +302,7 @@ public class ClientsMap extends Layer {
 		Pair<Double, ArrayList<Boolean>> activePair = new Pair<Double, ArrayList<Boolean>> (0.0, new ArrayList<Boolean>());
 		for(Location client : this.sites) {
 			cumSum = 0;
-			rnd = Parameters.rand.nextDouble();
+			rnd = Config.RAND.nextDouble();
 			Iterator<Pair<Double, ArrayList<Boolean>>> pairIter = activeDays.iterator();
 			while(cumSum < rnd && pairIter.hasNext()) {
 				activePair = pairIter.next();

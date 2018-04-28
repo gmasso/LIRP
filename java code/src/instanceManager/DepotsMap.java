@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import tools.Parameters;
+import tools.Config;
 
 import java.awt.geom.Point2D;
 
@@ -74,7 +74,7 @@ public class DepotsMap extends Layer {
 		Point2D siteCandidate = drawLocation(0);
 		// Draw new coordinates while the minimum distance with other sites is not respected
 		while(getMinDist(siteCandidate) < this.minDist) 
-			siteCandidate.setLocation(Parameters.rand.nextDouble() * this.gridSize, Parameters.rand.nextDouble() * this.gridSize);
+			siteCandidate.setLocation(Config.RAND.nextDouble() * this.gridSize, Config.RAND.nextDouble() * this.gridSize);
 		// Set the coordinates of the new depot to the first valid candidate
 		this.setSiteCoords(d, siteCandidate);
 	}

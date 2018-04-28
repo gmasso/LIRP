@@ -12,7 +12,7 @@ import ilog.cplex.IloCplex;
 import ilog.cplex.IloCplex.DoubleParam;
 
 import instanceManager.Instance;
-import tools.Parameters;
+import tools.Config;
 
 public class Solver{
 
@@ -51,32 +51,6 @@ public class Solver{
 			this.routes[lvl] = availRoutes.get(lvl).toArray(this.routes[lvl]);
 		}
 
-		/* Definition of parameters Alpha and Beta*/
-		/* Alpha_lir = 1 if location i of level l is visited by route r */
-		int[][][] Alpha = new int[this.instLIRP.getNbLevels()][][]; 
-		/* Beta_lir = 1 if route r with stops at level l starts from location j of level l - 1 */
-		int[][][] Beta = new int[this.instLIRP.getNbLevels()][][];
-		/* Fill the two arrays by checking for each route which locations it visits and from which depots it starts */
-		for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
-			int nbLocLvl = this.instLIRP.getNbLocations(lvl);
-			Alpha[lvl] = new int[nbLocLvl][this.routes[lvl].length];								// = 1 if route r stops in location i
-			/* Beta[lvl] is allocated only if we consider routes stopping at a level >= 1 */
-			if(lvl > 0) {
-				Beta[lvl] = new int[this.instLIRP.getNbDepots(lvl - 1)][this.routes[lvl].length];	// = 1 if route r starts from depot j
-			}
-			else {
-				Beta[lvl] = new int[0][0];
-			}
-			for(int rIndex = 0; rIndex < this.routes[lvl].length; rIndex++) {
-				for(int stop = 0; stop < nbLocLvl; stop++)
-					Alpha[lvl][stop][rIndex] = this.routes[lvl][rIndex].containsStop(stop) ? 1 : 0;
-				if(lvl > 0) {
-					for(int start = 0; start < this.instLIRP.getNbDepots(lvl - 1); start++)
-						Beta[lvl][start][rIndex] = this.routes[lvl][rIndex].hasStart(start) ? 1 : 0;
-				}
-			}
-		}
-
 		this.isSolved = false;
 
 		/* CPLEX solver */
@@ -84,10 +58,10 @@ public class Solver{
 
 		/* Set the time limit */
 		this.LIRPSolver.setParam(DoubleParam.TiLim, timeLimit);
+		this.LIRPSolver.setParam(IloCplex.IntParam.Threads, Config.MAX_THREADS);
 
 		/* Initialization of the variables */
 		this.initVariables(previousSol);
-
 
 		/*=================
 		 *   CONSTRAINTS 
@@ -100,56 +74,56 @@ public class Solver{
 			for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
 				/* Get the number of locations at this level and at the upper level */
 				int nbLocLvl = this.instLIRP.getNbLocations(lvl);
-				int nbLocUp = this.instLIRP.getNbLocations(lvl - 1); 
-
+				
 				/* Each location is served by at most one route in every period (2-3) */
 				for(int loc = 0; loc < nbLocLvl; loc++) {
-					IloLinearIntExpr expr2 = this.LIRPSolver.linearIntExpr();
+					IloLinearIntExpr lhs2 = this.LIRPSolver.linearIntExpr();
 					for (int r = 0; r < this.routes[lvl].length; r++)
-						expr2.addTerm(Alpha[lvl][loc][r], this.z[lvl][r][t]);
+						if(this.routes[lvl][r].containsStop(loc))
+							lhs2.addTerm(1,  this.z[lvl][r][t]);
 					/* If the location is a dc (constraint (3)), the rhs uses the boolean variable y_{j} to check that the location is open */
 					if(lvl < this.instLIRP.getNbLevels() - 1) {
-						expr2.addTerm(-1, this.y[lvl][loc]);
-						this.LIRPSolver.addLe(expr2, 0);
+						lhs2.addTerm(-1, this.y[lvl][loc]);
+						this.LIRPSolver.addLe(lhs2, 0);
 					}
 					else {
-						this.LIRPSolver.addLe(expr2, 1);
+						this.LIRPSolver.addLe(lhs2, 1);
 					}
 				}
 
 				/* Constraints on resources available in period t */
 
 				/* The total number of routes used on a given level must be lower than the number of vehicles available for this level (5) */
-				IloLinearIntExpr expr5 = this.LIRPSolver.linearIntExpr();
+				IloLinearIntExpr lhs5 = this.LIRPSolver.linearIntExpr();
 
 				for (int r = 0; r < this.routes[lvl].length; r++) {
 					if(lvl > 0) {
 						/* Each active route must start from an open depot (4) */
-						IloLinearIntExpr expr4 = this.LIRPSolver.linearIntExpr();
-						expr4.addTerm(1, this.z[lvl][r][t]);
+						IloLinearIntExpr lhs4 = this.LIRPSolver.linearIntExpr();
+						lhs4.addTerm(1, this.z[lvl][r][t]);
 						/* NB : if lvl == 0 locUP = 0 and we do not explore the following loop */
-						for(int locUp = 0; locUp < nbLocUp; locUp++) {
-							expr4.addTerm(- Beta[lvl][locUp][r], this.y[lvl - 1][locUp]);
-						}
-						this.LIRPSolver.addLe(expr4, 0);
+						lhs4.addTerm(-1, this.y[lvl - 1][this.routes[lvl][r].getStartIndex()]);
+
+						this.LIRPSolver.addLe(lhs4, 0);
 					}
 
 					/* The quantity delivered to the locations of the level through a given route cannot exceed the capacity of a vehicle (6) */
-					IloLinearNumExpr expr6 = this.LIRPSolver.linearNumExpr();
-					expr6.addTerm(-this.instLIRP.getCapacityVehicle(lvl), this.z[lvl][r][t]);
+					IloLinearNumExpr lhs6 = this.LIRPSolver.linearNumExpr();
+					lhs6.addTerm(-this.instLIRP.getCapacityVehicle(lvl), this.z[lvl][r][t]);
 					for(int loc = 0; loc < nbLocLvl; loc++) {
-						expr6.addTerm(1, this.q[lvl][loc][r][t]);
+						lhs6.addTerm(1, this.q[lvl][loc][r][t]);
 						/* A positive quantity can be delivered to location loc using route r only if loc belongs to route r (7) */
-						IloLinearNumExpr expr7 = this.LIRPSolver.linearNumExpr();
-						expr7.addTerm(1, this.q[lvl][loc][r][t]);
-						this.LIRPSolver.addLe(expr7, this.instLIRP.getCapacityVehicle(lvl) * Alpha[lvl][loc][r]);
+						IloLinearNumExpr lhs7 = this.LIRPSolver.linearNumExpr();
+						lhs7.addTerm(1, this.q[lvl][loc][r][t]);
+						double rhs7 = (this.routes[lvl][r].containsStop(loc)) ? this.instLIRP.getCapacityVehicle(lvl) : 0;
+						this.LIRPSolver.addLe(lhs7, rhs7);
 					}
-					this.LIRPSolver.addLe(expr6, 0);
+					this.LIRPSolver.addLe(lhs6, 0);
 
-					expr5.addTerm(1, this.z[lvl][r][t]);
+					lhs5.addTerm(1, this.z[lvl][r][t]);
 				}
 				/* The sum of all the routes used at this level in period t must be lower than the fleet size at this level */
-				this.LIRPSolver.addLe(expr5, this.instLIRP.getNbVehicles(lvl));
+				this.LIRPSolver.addLe(lhs5, this.instLIRP.getNbVehicles(lvl));
 
 				/*         ======
 				 * Constraints on inventory
@@ -159,49 +133,53 @@ public class Solver{
 					/* If we are at a dc level, take into account the incoming and outgoing quantities through routes (8) */
 					if(lvl < this.instLIRP.getNbLevels() - 1) {
 						int nbLocDown = this.instLIRP.getNbLocations(lvl + 1);
-						IloLinearNumExpr expr7 = this.LIRPSolver.linearNumExpr();
-						expr7.addTerm(-1, this.invLoc[lvl][loc][t]);
-						double rhs7 = 0;
+						IloLinearNumExpr lhs8 = this.LIRPSolver.linearNumExpr();
+						lhs8.addTerm(-1, this.invLoc[lvl][loc][t]);
+						double rhs8 = 0;
 						if(t == 0)
-							rhs7 -= this.instLIRP.getDepot(lvl, loc).getInitialInventory();
+							rhs8 -= this.instLIRP.getDepot(lvl, loc).getInitialInventory();
 						else
-							expr7.addTerm(1, this.invLoc[lvl][loc][t - 1]);
+							lhs8.addTerm(1, this.invLoc[lvl][loc][t - 1]);
 						for (int r = 0; r < this.routes[lvl].length; r++) {
-							expr7.addTerm(1, q[lvl][loc][r][t]);
+							if(this.routes[lvl][r].containsStop(loc)) {
+								lhs8.addTerm(1, q[lvl][loc][r][t]);
+							}
+
 						}
 						for (int rDown = 0; rDown < this.routes[lvl + 1].length; rDown++) {
 							for(int locDown = 0; locDown < nbLocDown; locDown++) {
-								expr7.addTerm(-Beta[lvl + 1][loc][rDown], q[lvl + 1][locDown][rDown][t]);
+								if(this.routes[lvl + 1][rDown].hasStart(loc))
+									lhs8.addTerm(-1, q[lvl + 1][locDown][rDown][t]);
 							}
 						}
-						LIRPSolver.addEq(expr7, rhs7);
+						LIRPSolver.addEq(lhs8, rhs8);
 
 						/* Capacity constraints at depots (10) */
-						IloLinearNumExpr expr9 = this.LIRPSolver.linearNumExpr();
-						expr9.addTerm(1, this.invLoc[lvl][loc][t]);
-						expr9.addTerm(- this.instLIRP.getDepot(lvl, loc).getCapacity(), y[lvl][loc]);
-						this.LIRPSolver.addLe(expr9, 0);
+						IloLinearNumExpr lhs10 = this.LIRPSolver.linearNumExpr();
+						lhs10.addTerm(1, this.invLoc[lvl][loc][t]);
+						lhs10.addTerm(-this.instLIRP.getDepot(lvl, loc).getCapacity(), y[lvl][loc]);
+						this.LIRPSolver.addLe(lhs10, 0);
 					}
 					/* If we are at a clients level, take into account the incoming quantities through routes and the final customers demands (9) */
 					else {
-						IloLinearNumExpr expr8 = this.LIRPSolver.linearNumExpr();
-						expr8.addTerm(-1, this.invLoc[lvl][loc][t]);
-						double rhs8 = this.instLIRP.getClient(loc).getDemand(t);
+						IloLinearNumExpr lhs9 = this.LIRPSolver.linearNumExpr();
+						lhs9.addTerm(-1, this.invLoc[lvl][loc][t]);
+						double rhs9 = this.instLIRP.getClient(loc).getDemand(t);
 						if(t == 0)
-							rhs8 -= this.instLIRP.getClient(loc).getInitialInventory();
+							rhs9 -= this.instLIRP.getClient(loc).getInitialInventory();
 						else
-							expr8.addTerm(1, this.invLoc[lvl][loc][t - 1]);
+							lhs9.addTerm(1, this.invLoc[lvl][loc][t - 1]);
 
 						for (int r = 0; r < this.routes[lvl].length; r++) {
-							expr8.addTerm(1, q[lvl][loc][r][t]);
+							lhs9.addTerm(1, q[lvl][loc][r][t]);
 						}
-						LIRPSolver.addEq(expr8, rhs8);
+						LIRPSolver.addEq(lhs9, rhs9);
 
 						/* Stock capacity at the client or ensuring that the inventory is not greater than the sum of remaining demands (11) */
 						double remainingDemand = this.instLIRP.getClient(loc).getCumulDemands(t + 1, this.instLIRP.getNbPeriods());
-						IloLinearNumExpr expr10 = this.LIRPSolver.linearNumExpr();
-						expr10.addTerm(1, this.invLoc[lvl][loc][t]);
-						this.LIRPSolver.addLe(expr10, Math.min(remainingDemand, this.instLIRP.getClient(loc).getCapacity()));
+						IloLinearNumExpr lhs11 = this.LIRPSolver.linearNumExpr();
+						lhs11.addTerm(1, this.invLoc[lvl][loc][t]);
+						this.LIRPSolver.addLe(lhs11, Math.min(remainingDemand, this.instLIRP.getClient(loc).getCapacity()));
 					}
 				}
 			}
@@ -292,28 +270,28 @@ public class Solver{
 		IloNumVar obj = this.LIRPSolver.numVar(0, Double.MAX_VALUE, "obj"); // objective function
 
 		/* Definition of the objective function */
-		IloLinearNumExpr objExpr = this.LIRPSolver.linearNumExpr();
+		IloLinearNumExpr objexpr = this.LIRPSolver.linearNumExpr();
 
 		for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
 			/* Fixed opening costs */
 			if(lvl < this.instLIRP.getNbLevels() - 1) {
 				for (int loc = 0; loc < this.instLIRP.getNbDepots(lvl); loc++) {
-					objExpr.addTerm(this.instLIRP.getDepot(lvl, loc).getFixedCost(), this.y[lvl][loc]);
+					objexpr.addTerm(this.instLIRP.getDepot(lvl, loc).getFixedCost(), this.y[lvl][loc]);
 				}
 			}
 
 			for (int t = 0; t < this.instLIRP.getNbPeriods(); t++) {
 				/* Delivering costs */
 				for (int r = 0; r < this.routes[lvl].length; r++)
-					objExpr.addTerm(this.routes[lvl][r].getCost(), this.z[lvl][r][t]);
+					objexpr.addTerm(this.routes[lvl][r].getCost(), this.z[lvl][r][t]);
 				for (int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++) {
 					if(lvl < this.instLIRP.getNbLevels() - 1) {
 						/* Holding cost incurred by the depots */
-						objExpr.addTerm(this.instLIRP.getDepot(lvl, loc).getHoldingCost(), this.invLoc[lvl][loc][t]);
+						objexpr.addTerm(this.instLIRP.getDepot(lvl, loc).getHoldingCost(), this.invLoc[lvl][loc][t]);
 					}
 					else {
 						/* Holding cost incurred by the clients */
-						objExpr.addTerm(this.instLIRP.getClient(loc).getHoldingCost(), this.invLoc[lvl][loc][t]);
+						objexpr.addTerm(this.instLIRP.getClient(loc).getHoldingCost(), this.invLoc[lvl][loc][t]);
 					}
 				}
 			}
@@ -322,7 +300,7 @@ public class Solver{
 		/*================
 		 *   RESOLUTION 
 		 =================*/
-		this.LIRPSolver.addLe(objExpr, obj);
+		this.LIRPSolver.addLe(objexpr, obj);
 		this.LIRPSolver.addObjective(IloObjectiveSense.Minimize, obj);
 		this.LIRPSolver.solve();
 
@@ -344,8 +322,13 @@ public class Solver{
 		if(!this.isSolved)
 			this.solveMIP();
 
-		if (this.LIRPSolver.getStatus().equals(IloCplex.Status.Infeasible))
+		/* Get the best LB on the problem */
+		double bestLB = this.LIRPSolver.getBestObjValue();
+		System.out.println(" Best LB : " + bestLB);
+
+		if (this.LIRPSolver.getStatus().equals(IloCplex.Status.Infeasible)) {
 			System.out.println("There is no solution");
+		}
 		else {
 			System.out.println();
 			System.out.println("===========  RESULTS  ===========");
@@ -356,8 +339,6 @@ public class Solver{
 			double bestFeasible = this.LIRPSolver.getObjValue();
 			System.out.print(bestFeasible);
 			System.out.println(" Best LB : ");
-			/* Get the best LB on the problem */
-			double bestLB = this.LIRPSolver.getBestObjValue();
 			System.out.print(bestLB);
 
 
@@ -368,7 +349,7 @@ public class Solver{
 			for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
 				if(lvl < this.instLIRP.getNbLevels() - 1) {
 					for(int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++) {
-						if (this.LIRPSolver.getValue(this.y[lvl][loc]) > Parameters.epsilon)
+						if (this.LIRPSolver.getValue(this.y[lvl][loc]) > Config.EPSILON)
 							sol.setOpenDepot(lvl, loc, true);
 						else
 							sol.setOpenDepot(lvl, loc, false);
@@ -378,15 +359,11 @@ public class Solver{
 				/* Save the quantities delivered to each location in each period */
 				for (int t = 0; t < this.instLIRP.getNbPeriods(); t++){
 					for(int r = 0; r < this.routes[lvl].length; r++) {
-						if (this.LIRPSolver.getValue(this.z[lvl][r][t]) > 1 - Parameters.epsilon) {
+						if (this.LIRPSolver.getValue(this.z[lvl][r][t]) > 1 - Config.EPSILON) {
 							sol.setUsedRoute(lvl, r, t, true);
 							for (int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++){
 								double q = this.LIRPSolver.getValue(this.q[lvl][loc][r][t]);
-								if(this.routes[lvl][r].containsStop(loc))
-									System.out.println("period " + t + " route " + r + "(status " +this.LIRPSolver.getValue(this.z[lvl][r][t])  +") location " + loc + " q " + q);
-								else if(!this.routes[lvl][r].containsStop(loc) && q > 0)
-									System.out.println("PROBLEM! In period " + t + " route " + r + "delivers location " + loc + " for " + q + "units, but does not contain this stop");
-								if(q > Parameters.epsilon) {
+								if(q > Config.EPSILON) {
 									sol.setDeliveryLocation(lvl, loc, r, t, q);
 								}
 								else {
@@ -398,7 +375,7 @@ public class Solver{
 							sol.setUsedRoute(lvl, r, t, false);
 							for (int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++){
 								double q = this.LIRPSolver.getValue(this.q[lvl][loc][r][t]);
-								if(q > Parameters.epsilon) {
+								if(q > Config.EPSILON) {
 									sol.setDeliveryLocation(lvl, loc, r, t, q);
 								}
 								else {
@@ -409,7 +386,7 @@ public class Solver{
 					}
 					/* Save the inventory in each location in each period */
 					for (int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++){
-						if(this.LIRPSolver.getValue(this.invLoc[lvl][loc][t]) > Parameters.epsilon)
+						if(this.LIRPSolver.getValue(this.invLoc[lvl][loc][t]) > Config.EPSILON)
 							sol.setInvLoc(lvl, loc, t, this.LIRPSolver.getValue(this.invLoc[lvl][loc][t]));
 						else
 							sol.setInvLoc(lvl, loc, t, 0);
@@ -417,12 +394,13 @@ public class Solver{
 
 				}
 			}
-			
-			sol.setStatus(this.LIRPSolver.getStatus().toString());
-			sol.setLB(bestLB);
-
-			Checker.check(sol, this.instLIRP, this.routes);
 		}
+
+		sol.setStatus(this.LIRPSolver.getStatus().toString());
+		sol.setLB(bestLB);
+
+		Checker.check(sol, this.instLIRP, this.routes);
+
 		return sol;
 	}
 }

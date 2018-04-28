@@ -8,7 +8,7 @@ import org.json.JSONObject;
 
 import instanceManager.Instance;
 import instanceManager.Location;
-import tools.Parameters;
+import tools.Config;
 
 public class Route {
 
@@ -42,11 +42,19 @@ public class Route {
 		this.isDummy =  (start < 0 && lvl > 0);
 		this.start = start;
 		this.stops = new LinkedHashSet<Integer>(stops);
-		LinkedHashSet<Integer> startingPermutation = new LinkedHashSet<Integer>(stops);
+		ArrayList<Integer> startingPermutation = new ArrayList<Integer>(stops);
 		this.stops = bruteForceFindBestRoute(new ArrayList<Integer>(), startingPermutation);
-		this.travelTime = computeDuration();
-		this.stopTime = Parameters.stopping_time * this.stops.size();
-		this.cost = Parameters.fixed_cost_route + Parameters.cost_km * Parameters.avg_speed * this.travelTime;
+		this.travelTime = computeTravelTime();
+		this.stopTime = Config.STOPPING_TIME * this.stops.size();
+		this.cost = Config.FIXED_COST_ROUTE + Config.COST_KM * Config.AVG_SPEED * this.travelTime;
+		/* If this route is dummy, add to its cost the fixed opening costs of all the depots of the instance */
+		if(this.isDummy) {
+			for(int l = 0; l < this.instLIRP.getNbLevels() - 1; l++) {
+				for(int d = 0; d < this.instLIRP.getNbDepots(l); d++) {
+					this.cost += this.instLIRP.getDepot(l, d).getFixedCost();
+				}
+			}
+		}
 	}
 
 	/**
@@ -65,16 +73,24 @@ public class Route {
 		this.start = start;
 		this.stops = new LinkedHashSet<Integer>();
 		this.stops.add(index);
-		this.travelTime = computeDuration();
+		this.travelTime = computeTravelTime();
 		/* If the route is a dummy route, add the maximum time allowed for a route to the travel duration */
 		if(this.isDummy) {
-			this.travelTime += Parameters.max_time_route;
+			this.travelTime += Config.MAX_TIME_ROUTE;
 		}
-		this.stopTime = Parameters.stopping_time;
-		this.cost = Parameters.fixed_cost_route + Parameters.cost_km * Parameters.avg_speed * this.travelTime;
+		this.stopTime = Config.STOPPING_TIME;
+		this.cost = Config.FIXED_COST_ROUTE + Config.COST_KM * Config.AVG_SPEED * this.travelTime;
 		/* If the route visits a DC, add its potential ordering cost to its total cost */
-		if(this.lvl < Parameters.nb_levels - 1)
+		if(this.lvl < this.instLIRP.getNbLevels() - 1)
 			this.cost += this.instLIRP.getDepot(lvl, index).getOrderingCost();
+		/* If this route is dummy, add to its cost the fixed opening costs of all the depots of the instance */
+		if(this.isDummy) {
+			for(int l = 0; l < this.instLIRP.getNbLevels() - 1; l++) {
+				for(int d = 0; d < this.instLIRP.getNbDepots(l); d++) {
+					this.cost += this.instLIRP.getDepot(l, d).getFixedCost();
+				}
+			}
+		}
 	}
 
 	/*
@@ -93,11 +109,20 @@ public class Route {
 	 * @return	the location at the start of the route
 	 */
 	public Location getStart() {
-		if(this.start < 0)
-			return this.instLIRP.getSupplier();
-		return this.instLIRP.getDepot(0, start);
+		if(this.lvl > 0)
+			return this.instLIRP.getDepot(this.lvl - 1, start);
+		
+		return this.instLIRP.getSupplier();
+
 	}
 
+	/**
+	 * 
+	 * @return	the location at the start of the route
+	 */
+	public int getStartIndex() {
+			return start;
+	}
 	/**
 	 * 
 	 * @return	the array of locations corresponding to the stops
@@ -172,7 +197,7 @@ public class Route {
 	 * @return	True if the duration of the route is less than the maximum time allowed 
 	 */
 	public boolean isValid() {
-		return (this.start < 0 && this.lvl > 0) || (this.travelTime + this.stopTime) < Parameters.max_time_route;
+		return (this.start < 0 && this.lvl > 0) || (this.travelTime + this.stopTime) < Config.MAX_TIME_ROUTE;
 	}
 	/**
 	 * Check if the start attribute of the Route object is equal to a given index
@@ -233,15 +258,15 @@ public class Route {
 		}
 
 		/* Create a new array to list the stops of the new Route object */
-		LinkedHashSet<Integer> newStops = new LinkedHashSet<Integer> (stops);
-		if(this.getLB(stopIndex) < Parameters.max_time_route) {
+		LinkedHashSet<Integer> newStops = new LinkedHashSet<Integer> (this.stops);
+		if(this.getLB(stopIndex) < Config.MAX_TIME_ROUTE) {
 			newStops.add(stopIndex);
 			return new Route(this.instLIRP, this.lvl, this.start, newStops);
 		}
 		else {
 			Route fakeRoute = new Route(this.instLIRP, this.lvl, this.start, stopIndex); 
 			fakeRoute.stops.addAll(this.stops);
-			fakeRoute.travelTime = fakeRoute.computeDuration();
+			fakeRoute.travelTime = this.computeDuration(fakeRoute.getStops());
 			fakeRoute.stopTime += this.stopTime;
 			return fakeRoute;
 		}
@@ -253,7 +278,7 @@ public class Route {
 	 * @param indicesNotInRoute	the indices that have not been included in the route yet
 	 * @return
 	 */
-	private LinkedHashSet<Integer> bruteForceFindBestRoute(ArrayList<Integer> partialPermutation, LinkedHashSet<Integer> indicesNotInRoute)
+	private LinkedHashSet<Integer> bruteForceFindBestRoute(ArrayList<Integer> partialPermutation, ArrayList<Integer> indicesNotInRoute)
 	{
 		/* Create a candidate for best route starting with the stops in r */
 		LinkedHashSet<Integer> bestRoute = new LinkedHashSet<Integer>(partialPermutation);
@@ -263,34 +288,32 @@ public class Route {
 
 		/* If the start of the route is already greater than the maximum time allowed, 
 		 stop computations and return the current candidate */
-		if(computeDuration(partialPermutation) + Parameters.stopping_time * partialPermutation.size() > Parameters.max_time_route)
+		if(computeDuration(partialPermutation) + Config.STOPPING_TIME * partialPermutation.size() > Config.MAX_TIME_ROUTE)
 			return bestRoute;
 
 		/* If there are stops that are not included in the route, try to add them one by one */
-		if(!indicesNotInRoute.isEmpty())
-		{
+		if(!indicesNotInRoute.isEmpty()) {
+			int nextStop = 0;
 			/* Loop through the possible next stops along the route */
-			Iterator<Integer> id = indicesNotInRoute.iterator();
-			while(id.hasNext()) {
-				int justRemoved = id.next();
-				indicesNotInRoute.remove(justRemoved);
+			while(nextStop < indicesNotInRoute.size()) {
+				int justRemoved = indicesNotInRoute.remove(0);
 				ArrayList<Integer> newPartialPermutation = new ArrayList<Integer>(partialPermutation);
 				newPartialPermutation.add(justRemoved);
 
-				// Compute the best remaining route
+				/* Compute the best remaining route */
 				LinkedHashSet<Integer> permutationCandidate = bruteForceFindBestRoute(newPartialPermutation, indicesNotInRoute);
-				double costCandidate = computeDuration(permutationCandidate) + Parameters.stopping_time * permutationCandidate.size();
-				// Compare its cost with the current best cost and update the best route if necessary
-				if(costCandidate < Parameters.max_time_route && costCandidate < bestCost) {
+				double costCandidate = computeDuration(permutationCandidate) + Config.STOPPING_TIME * permutationCandidate.size();
+				/* Compare its cost with the current best cost and update the best route if necessary */
+				if(costCandidate < Config.MAX_TIME_ROUTE && costCandidate < bestCost) {
 					bestRoute = permutationCandidate;
 					bestCost = costCandidate;
 				}
 				/* Replace the stop that has just been extracted at the end of the list */
 				indicesNotInRoute.add(justRemoved);
+				nextStop++;
 			}
 		}
 		return bestRoute;
-
 	}
 
 	/**
@@ -306,11 +329,11 @@ public class Route {
 		Iterator<Integer> stop1 = this.stops.iterator();
 		while(stop1.hasNext()) {
 			int stop1Index = stop1.next();
-			Location loc1 = (this.start < 0) ? this.instLIRP.getDepot(0, stop1Index):this.instLIRP.getClient(stop1Index);
-			travelDuration = Math.max((this.getStart().getDistance(loc1) + this.getStart().getDistance(newLoc) + loc1.getDistance(newLoc)) / Parameters.stopping_time, travelDuration);
+			Location loc1 = (this.lvl < this.instLIRP.getNbLevels() - 1) ? this.instLIRP.getDepot(this.lvl, stop1Index) : this.instLIRP.getClient(stop1Index);
+			travelDuration = Math.max((this.getStart().getDistance(loc1) + this.getStart().getDistance(newLoc) + loc1.getDistance(newLoc)) / Config.AVG_SPEED, travelDuration);
 		}
 
-		return this.stopTime + Parameters.stopping_time + travelDuration;
+		return this.stopTime + Config.STOPPING_TIME + travelDuration;
 	}
 
 	/**
@@ -321,20 +344,19 @@ public class Route {
 	private double computeDuration(Collection<Integer> stopsIndices) {
 		// Start with a time of 0 for the route
 		double travelTime = 0;
-		double stopsTime = Parameters.stopping_time * stopsIndices.size();
 		// Set the current stop at the starting point
 		Location currentStop = this.getStart();
 
 		Location nextStop;
 		Iterator<Integer> indexIterator = stopsIndices.iterator();
 		// Iterate through the indices of the stops and increment the cost with the time necessary to reach the next stop and the average time spent at the stop 
-		while (travelTime + stopsTime < Parameters.max_time_route && indexIterator.hasNext()) {
+		while (indexIterator.hasNext()) {
 			nextStop = (this.start < 0) ? this.instLIRP.getDepot(0, indexIterator.next()):this.instLIRP.getClient(indexIterator.next());
-			travelTime += currentStop.getDistance(nextStop) / Parameters.avg_speed;
+			travelTime += currentStop.getDistance(nextStop) / Config.AVG_SPEED;
 			currentStop = nextStop;
 		}
 		// Add the time to return to the starting point of the route
-		travelTime += currentStop.getDistance(this.getStart()) / Parameters.avg_speed;
+		travelTime += currentStop.getDistance(this.getStart()) / Config.AVG_SPEED;
 
 		return travelTime;
 	}
@@ -344,23 +366,22 @@ public class Route {
 	 * @param stopsIndices	the permutation of the stops
 	 * @return				the cost incurred by the sequence stopsIndices
 	 */
-	private double computeDuration() {
-		// Start with a time of 0 for the route
+	private double computeTravelTime() {
+		/* Start with a time of 0 for the route */
 		double travelTime = 0;
-		double stopsTime = Parameters.stopping_time * this.stops.size();
-		// Set the current stop at the starting point
+		/* Set the current stop at the starting point */
 		Location currentStop = this.getStart();
 
 		Location nextStop;
 		Iterator<Integer> indexIterator = this.stops.iterator();
-		// Iterate through the indices of the stops and increment the cost with the time necessary to reach the next stop and the average time spent at the stop 
-		while (travelTime + stopsTime < Parameters.max_time_route && indexIterator.hasNext()) {
+		/* Iterate through the indices of the stops and increment the cost with the time necessary to reach the next stop and the average time spent at the stop */
+		while (indexIterator.hasNext()) {
 			nextStop = this.instLIRP.getClient(indexIterator.next());
-			travelTime += currentStop.getDistance(nextStop) / Parameters.avg_speed;
+			travelTime += currentStop.getDistance(nextStop) / Config.AVG_SPEED;
 			currentStop = nextStop;
 		}
-		// Add the time to return to the starting point of the route
-		travelTime += currentStop.getDistance(this.getStart()) / Parameters.avg_speed;
+		/* Add the time to return to the starting point of the route */
+		travelTime += currentStop.getDistance(this.getStart()) / Config.AVG_SPEED;
 
 		return travelTime;
 	}
@@ -375,6 +396,11 @@ public class Route {
 		JSONObject jsonRoute = new JSONObject();
 		jsonRoute.put("start", this.start);
 		jsonRoute.put("stops", new JSONArray(this.stops));
+		jsonRoute.put("cost", ((double) Math.floor(this.cost * 1000)) / 1000.0);
+		jsonRoute.put("duration", ((double) Math.floor((this.travelTime + this.stopTime) * 1000)) / 1000.0);
+		if(this.travelTime + this.stopTime > Config.MAX_TIME_ROUTE) {
+			System.out.println("route too long (start " + this.start + ")");
+		}
 		
 		return jsonRoute;
 

@@ -6,7 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import instanceManager.Instance;
-import tools.Parameters;
+import tools.Config;
 
 
 public class Solution {
@@ -18,9 +18,9 @@ public class Solution {
 	private Route[][] routes;
 
 	/* Depots */
-	private boolean[][] openDepots;       			// Binary indicating whether a depot is opened or not
-	private double[][][][] q;   // Quantity delivered to the depots in period t via route r
-	private double[][][] invLoc;			// Stock at depot j in period t
+	private boolean[][] openDepots;	// Binary indicating whether a depot is opened or not
+	private double[][][][] q;   	// Quantity delivered to the depots in period t via route r
+	private double[][][] invLoc;	// Stock at depot j in period t
 
 
 	/* Routes */
@@ -109,7 +109,7 @@ public class Solution {
 	 */
 	public double getQuantityDelivered(int lvl, int loc, int r, int t){
 		if(lvl > -1 && lvl < this.q.length && loc < this.q[lvl].length && r < this.q[lvl][loc].length && t < this.q[lvl][loc][r].length)
-			if(this.q[lvl][loc][r][t] < this.instLIRP.getCapacityVehicle(lvl) + Parameters.epsilon)
+			if(this.q[lvl][loc][r][t] < this.instLIRP.getCapacityVehicle(lvl) + Config.EPSILON)
 				return Math.min(this.q[lvl][loc][r][t], this.instLIRP.getCapacityVehicle(lvl));
 			else {
 				System.out.println("Quantity impossible to deliver in period " + t + " (capacity vehicles " + this.instLIRP.getCapacityVehicle(lvl) + " at level" + lvl + ")");
@@ -120,7 +120,7 @@ public class Solution {
 			System.out.println("Impossible to access a quantity delivered to location " + loc + " on level " + lvl + " through route " + r + " in period " + t);
 			System.exit(1);
 			return -1;
-		}
+		}	
 	}
 
 	/**
@@ -133,7 +133,7 @@ public class Solution {
 	public double getInvLoc(int lvl, int loc, int t){
 		if(lvl > -1 && lvl < this.invLoc.length && loc < this.invLoc[lvl].length && t < this.invLoc[lvl][loc].length) {
 			double capaLoc = (lvl < this.instLIRP.getNbLevels() - 1) ? this.instLIRP.getDepot(lvl, loc).getCapacity() : this.instLIRP.getClient(loc).getCapacity();
-			if(this.invLoc[lvl][loc][t] < capaLoc + Parameters.epsilon)
+			if(this.invLoc[lvl][loc][t] < capaLoc + Config.EPSILON)
 				return Math.min(this.invLoc[lvl][loc][t], capaLoc);
 			else {
 				System.out.println("Not enough capacity at location " + loc + " of level " + lvl + "to store " + this.invLoc[lvl][loc][t] + "units in period " + t);
@@ -170,7 +170,7 @@ public class Solution {
 	 * @param lvl	the level for which routes are studied
 	 * @return		the set of routes used in the solution between the location at level lvl and its upper layer
 	 */
-	public LinkedHashSet<Route> getUsedRoutes(int lvl) {
+	public LinkedHashSet<Route> getUsedLoops(int lvl) {
 		LinkedHashSet<Route> loopUsed = new LinkedHashSet<Route>();
 		for(int r = 0; r < this.routes[lvl].length; r++) {
 			/* Restrict the search only to multi-stops routes */
@@ -197,6 +197,14 @@ public class Solution {
 	 */
 	public double getObjVal() {
 		return 	this.openingCosts + this.transportationCosts + this.inventoryCosts;
+	}
+
+	/**
+	 * 
+	 * @return	The solving time necessary to obtain this solution
+	 */
+	public double getSolvingTime() {
+		return this.solTime;
 	}
 
 	/*==========================
@@ -294,6 +302,10 @@ public class Solution {
 				}
 			}
 		}
+
+		this.openingCosts = ((double) Math.floor(this.openingCosts * 1000)) / 1000.0;
+		this.transportationCosts = ((double) Math.floor(this.transportationCosts * 1000)) / 1000.0;
+		this.inventoryCosts = ((double) Math.floor(this.inventoryCosts * 1000)) / 1000.0;
 	}
 
 	/**
@@ -309,7 +321,7 @@ public class Solution {
 	 * @param status
 	 */
 	public void setLB(double lb) {
-		this.bestLB = lb;
+		this.bestLB = ((double) Math.floor(lb * 1000)) / 1000.0;
 	}
 
 	/**
@@ -355,6 +367,30 @@ public class Solution {
 	}
 
 	/**
+	 * 
+	 * @return	a HashMap containing the multi-stops route used in the solution
+	 */
+	public HashMap<Integer, LinkedHashSet<Route>> collectUsedLoops(){
+		HashMap<Integer, LinkedHashSet<Route>> usedLoops = new HashMap<Integer, LinkedHashSet<Route>>();
+		for(int lvl=0; lvl < this.instLIRP.getNbLevels(); lvl++) {
+			LinkedHashSet<Route> routesLvl = new LinkedHashSet<Route>();
+			for (int r = 0; r < this.usedRoutes[lvl].length; r++){
+				boolean used = false;
+				if(this.routes[lvl][r].getNbStops() > 1) {
+					int t = 0;
+					while (!used && t < this.instLIRP.getNbPeriods()){
+						used = this.usedRoutes[lvl][r][t];
+						t++;
+					}}
+				if(used)
+					routesLvl.add(this.routes[lvl][r]);
+			}
+			usedLoops.put(lvl, routesLvl);
+		}
+		return usedLoops;
+	}
+
+	/**
 	 * Print the open depots
 	 * @param printStreamSol
 	 */
@@ -378,6 +414,7 @@ public class Solution {
 	private JSONArray storeInvLoc(){
 		JSONArray jsonInv = new JSONArray();
 		for(int lvl = 0; lvl < this.openDepots.length; lvl++) {
+			/* For each opened dc on the current level, store the evolution of the inventory level */
 			JSONArray jsonInvLvl = new JSONArray();
 			for (int d = 0; d < this.openDepots[lvl].length; d++) {
 				if(this.openDepots[lvl][d]) {
@@ -385,12 +422,24 @@ public class Solution {
 					jsonInvLoc.put("dc", d);
 					jsonInvLoc.put("init", this.instLIRP.getDepot(lvl, d).getInitialInventory());	
 					jsonInvLoc.put("seq", new JSONArray(invLoc[lvl][d]));
-					
+
 					jsonInvLvl.put(jsonInvLoc);
 				}
 			}
 			jsonInv.put(jsonInvLvl);
 		}
+		/* Same process with the clients */
+		JSONArray jsonInvClients = new JSONArray();
+		for (int c = 0; c < this.instLIRP.getNbClients(); c++) {
+			JSONObject jsonInvCl = new JSONObject();
+			jsonInvCl.put("client", c);
+			jsonInvCl.put("init", this.instLIRP.getClient(c).getInitialInventory());	
+			jsonInvCl.put("seq", new JSONArray(invLoc[this.openDepots.length][c]));
+
+			jsonInvClients.put(jsonInvCl);
+		}
+		jsonInv.put(jsonInvClients);
+
 		return jsonInv;
 	}
 
@@ -401,23 +450,18 @@ public class Solution {
 	private JSONArray storeDeliveries(){
 		JSONArray jsonDeliveries = new JSONArray();
 		for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
-			JSONObject jsonDeliveriesLvl = new JSONObject();
-			jsonDeliveriesLvl.put("lvl", lvl);
-			JSONArray jsonDeliverListLvl = new JSONArray();
+			JSONArray jsonDeliveriesLvl = new JSONArray();
 			for(int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++) {
-				JSONObject jsonDeliveriesLoc = new JSONObject();
-				jsonDeliveriesLoc.put("loc", loc);
-				JSONArray jsonDeliverListLoc = new JSONArray();
+				JSONArray jsonDeliveriesLoc = new JSONArray();
 				for(int r = 0; r < this.routes[lvl].length; r++) {
 					for(int t = 0; t < this.q[lvl][loc][r].length; t++) {
-						if(this.q[lvl][loc][r][t] > Parameters.epsilon) {
+						if(this.q[lvl][loc][r][t] > Config.EPSILON) {
 							double quantity = ((double) Math.floor(this.q[lvl][loc][r][t] * 100)) / 100.0;
-							jsonDeliverListLoc.put("{" + (t + 1) + ", route " + r + ", " +  quantity + ")");
+							jsonDeliveriesLoc.put("{(" + (t + 1) + ", " + r + "): " +  quantity + "}");
 						}
 					}
 				}
-				jsonDeliveriesLoc.put("deliveries", jsonDeliverListLoc);
-				jsonDeliverListLvl.put(jsonDeliveriesLoc);
+				jsonDeliveriesLvl.put(jsonDeliveriesLoc);
 			}
 			jsonDeliveries.put(jsonDeliveriesLvl);
 		}

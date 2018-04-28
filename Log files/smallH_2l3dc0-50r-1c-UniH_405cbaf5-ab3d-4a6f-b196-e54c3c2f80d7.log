@@ -1,0 +1,64 @@
+========================================
+== Iteration 1: Solving with 431 subsets of routes (431) ==
+========================================
+CPXPARAM_TimeLimit                               360
+CPXPARAM_Threads                                 4
+Tried aggregator 2 times.
+MIP Presolve eliminated 160514 rows and 150233 columns.
+MIP Presolve added 30 rows and 0 columns.
+MIP Presolve modified 1406 coefficients.
+Aggregator did 4 substitutions.
+Reduced MIP has 5735 rows, 11327 columns, and 37338 nonzeros.
+Reduced MIP has 3192 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.41 sec. (275.03 ticks)
+Found incumbent of value 2054695.002807 after 0.50 sec. (330.19 ticks)
+Probing fixed 0 vars, tightened 422 bounds.
+Probing changed sense of 49 constraints.
+Probing time = 0.04 sec. (11.44 ticks)
+Tried aggregator 1 time.
+MIP Presolve eliminated 4 rows and 4 columns.
+MIP Presolve modified 11 coefficients.
+Reduced MIP has 5731 rows, 11323 columns, and 37330 nonzeros.
+Reduced MIP has 3188 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.05 sec. (42.66 ticks)
+Probing fixed 0 vars, tightened 2 bounds.
+Probing time = 0.04 sec. (9.46 ticks)
+Cover probing fixed 0 vars, tightened 44 bounds.
+Clique table members: 1891.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 4 threads.
+Root relaxation solution time = 0.27 sec. (190.63 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                      2054695.0028     3366.3491            99.84%
+*     0+    0                       138569.3956     3366.3491            97.57%
+      0     0    29168.0954   602   138569.3956    29168.0954     8023   78.95%
+*     0+    0                        65792.3082    29168.0954            55.67%
+      0     0    36360.2155   669    65792.3082    Cuts: 1532    13361   44.73%
+*     0+    0                        56248.5581    36360.2155            35.36%
+      0     0    38008.1589   733    56248.5581    Cuts: 1532    19629   32.43%
+*     0+    0                        49094.3081    38008.1589            22.58%
+      0     0    38948.1427   798    49094.3081    Cuts: 1532    33700   20.67%
+*     0+    0                        48852.4572    38948.1427            20.27%
+*     0+    0                        48767.2085    38948.1427            20.13%
+*     0+    0                        48719.7488    38948.1427            20.06%
+*     0+    0                        47496.0797    38948.1427            18.00%
+      0     0    39398.0025   838    47496.0797    Cuts: 1532    41701   17.05%
+      0     0    39687.9511   859    47496.0797    Cuts: 1532    49374   16.44%
+*     0+    0                        47100.1620    39687.9511            15.74%
+      0     0    39893.9816   860    47100.1620    Cuts: 1532    57310   15.30%
+*     0+    0                        46884.0072    39893.9816            14.91%
+*     0+    0                        46813.3904    39893.9816            14.78%
+*     0+    0                        46804.0722    39893.9816            14.76%
+      0     0    40056.5683   882    46804.0722    Cuts: 1532    64727   14.42%
+      0     0    40145.3975   916    46804.0722    Cuts: 1532    71295   14.23%
+*     0+    0                        46529.7446    40145.3975            13.72%
+      0     0    40216.6117   913    46529.7446    Cuts: 1532    78060   13.57%
+*     0+    0                        46399.8911    40216.6117            13.33%
+*     0+    0                        46096.9793    40216.6117            12.76%
+*     0+    0                        46073.7237    40216.6117            12.71%
+*     0+    0                        45846.6597    40216.6117            12.28%
+      0     0    40253.2637   932    45846.6597    Cuts: 1532    95700   12.20%

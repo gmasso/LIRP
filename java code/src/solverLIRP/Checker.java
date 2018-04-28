@@ -1,17 +1,17 @@
 package solverLIRP;
 
 import instanceManager.Instance;
-import tools.Parameters;
+import tools.Config;
 
 public final class Checker {
 	public static boolean check(Solution sol, Instance instLIRP, Route[][] routes) {
 		/* Definition of parameters Alpha and Beta*/
 		/* Alpha_lir = 1 if location i of level l is visited by route r */
-		int[][][] Alpha = new int[Parameters.nb_levels][][]; 
+		int[][][] Alpha = new int[instLIRP.getNbLevels()][][]; 
 		/* Beta_lir = 1 if route r with stops at level l starts from location j of level l - 1 */
-		int[][][] Beta = new int[Parameters.nb_levels][][];
+		int[][][] Beta = new int[instLIRP.getNbLevels()][][];
 		/* Fill the two arrays by checking for each route which locations it visits and from which depots it starts */
-		for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
+		for(int lvl = 0; lvl < instLIRP.getNbLevels(); lvl++) {
 			int nbLocLvl = instLIRP.getNbLocations(lvl);
 			Alpha[lvl] = new int[nbLocLvl][routes[lvl].length];							// = 1 if route r stops in location i
 			/* Beta[lvl] is allocated only if we consider routes stopping at a level >= 1 */
@@ -34,7 +34,7 @@ public final class Checker {
 			/*         =========
 			 * Constraints on routes usage
 		           =========          */
-			for(int lvl = 0; lvl < Parameters.nb_levels; lvl++) {
+			for(int lvl = 0; lvl < instLIRP.getNbLevels(); lvl++) {
 				/* Get the number of locations at this level and at the upper level */
 				int nbLocLvl = instLIRP.getNbLocations(lvl);
 				int nbLocUp = instLIRP.getNbLocations(lvl - 1); 
@@ -47,7 +47,7 @@ public final class Checker {
 							lhs23 += Alpha[lvl][loc][r];
 						}
 					/* If the location is a dc (constraint (3)), the rhs uses the boolean variable y_{j} to check that the location is open */
-					if(lvl < Parameters.nb_levels - 1) {
+					if(lvl < instLIRP.getNbLevels() - 1) {
 						double rhs23 = sol.isOpenDepot(lvl, loc) ? 1 : 0;
 						if(lhs23 > rhs23) {
 							isFeasible = false;
@@ -89,7 +89,7 @@ public final class Checker {
 					for(int loc = 0; loc < nbLocLvl; loc++) {
 						lhs6 += sol.getQuantityDelivered(lvl, loc, r, t);
 					}
-					if(lhs6 > rhs6 + Parameters.epsilon) {
+					if(lhs6 > rhs6 + Config.EPSILON) {
 						isFeasible = false;
 						System.out.println("ERR in constraint (6), trying to deliver a quantity of " + lhs6 + " at level " + lvl + " in period " + t + ", while the total quandity available is only " + rhs6);
 					}
@@ -108,7 +108,7 @@ public final class Checker {
 				/* Flow conservation (7-8) */
 				for(int loc = 0; loc < nbLocLvl; loc++) {
 					/* If we are at a dc level, take into account the incoming and outgoing quantities through routes (7) */
-					if(lvl < Parameters.nb_levels - 1) {
+					if(lvl < instLIRP.getNbLevels() - 1) {
 						int nbLocDown = instLIRP.getNbLocations(lvl + 1);
 						double lhs7 = 0;
 						lhs7 += sol.getInvLoc(lvl, loc, t);
@@ -127,14 +127,14 @@ public final class Checker {
 								}
 							}
 						}
-						if(lhs7 < rhs7 - Parameters.epsilon || lhs7 > rhs7 + Parameters.epsilon) {
+						if(lhs7 < rhs7 - Config.EPSILON || lhs7 > rhs7 + Config.EPSILON) {
 							isFeasible = false;
 							System.out.println("ERR in constraint (7) in the flow conservation of location " + loc + " at level " + lvl + " in period " + t);
 						}
 
 						/* Capacity constraints at depots (9) */
 						double rhs9 = sol.isOpenDepot(lvl,  loc) ? instLIRP.getDepot(lvl, loc).getCapacity() : 0; 
-						if(sol.getInvLoc(lvl,  loc,  t) > rhs9 + Parameters.epsilon) {
+						if(sol.getInvLoc(lvl,  loc,  t) > rhs9 + Config.EPSILON) {
 							isFeasible = false;
 							System.out.println("ERR in constraint (9), inventory at location " + loc + " at level " + lvl + " in period " + t + " violates capacity constraint (max " + instLIRP.getDepot(lvl, loc).getCapacity() +")"); ;
 						}
@@ -151,14 +151,14 @@ public final class Checker {
 						for (int r = 0; r < routes[lvl].length; r++) {
 							rhs8 += sol.getQuantityDelivered(lvl, loc, r, t);
 						}
-						if(lhs8 < rhs8 - Parameters.epsilon || lhs8 > rhs8 + Parameters.epsilon) {
+						if(lhs8 < rhs8 - Config.EPSILON || lhs8 > rhs8 + Config.EPSILON) {
 							isFeasible = false;
 							System.out.println("ERR in constraint (8) in the flow conservation of client " + loc + " at level " + lvl + " in period " + t);
 						}
 
 						/* Stock capacity at the client or ensuring that the inventory is not greater than the sum of remaining demands (10) */
 						double remainingDemand = instLIRP.getClient(loc).getCumulDemands(t + 1, instLIRP.getNbPeriods());
-						if(sol.getInvLoc(lvl,  loc,  t) > Math.min(remainingDemand, instLIRP.getClient(loc).getCapacity()) + Parameters.epsilon) {
+						if(sol.getInvLoc(lvl,  loc,  t) > Math.min(remainingDemand, instLIRP.getClient(loc).getCapacity()) + Config.EPSILON) {
 							isFeasible = false;
 							System.out.println("ERR in constraint (10), inventory at client " + loc + " in period " + t + " violates capacity constraint (max " + instLIRP.getClient(loc).getCapacity() +")"); ;
 						}

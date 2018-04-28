@@ -6,7 +6,7 @@ import java.io.IOException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import tools.Parameters;
+import tools.Config;
 
 public class DemandSequence extends Location {
 	private double[] demands; // The demand of the client for each period of the planning horizon
@@ -49,7 +49,7 @@ public class DemandSequence extends Location {
 		/* If the demand is uniform the sequence of demands is filled with uniform r.v. */
 		if (isUniform) {
 			for (int t = 0; t < planningHorizon; t++)
-				this.demands[t] = intensity * Parameters.rand.nextDouble();
+				this.demands[t] = intensity * Config.RAND.nextDouble();
 		}
 		/* Otherwise the demand is drawn according to a truncated normal distribution,
 		 * around its average value (sinus if periodic, constant otherwise)
@@ -63,7 +63,7 @@ public class DemandSequence extends Location {
 				if (period > 0)
 					currentMean += avgDemand * Math.sin(2.0 * Math.PI * t / period);
 				while (currentDemand < 0 || currentDemand > currentMean + 0.5) {
-					currentDemand = intensity * (currentMean + Parameters.rand.nextGaussian() / 6);	
+					currentDemand = intensity * (currentMean + Config.RAND.nextGaussian() / 6);	
 				}
 				this.demands[t] = currentDemand;
 			}

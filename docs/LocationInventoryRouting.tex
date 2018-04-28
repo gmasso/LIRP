@@ -87,11 +87,12 @@ Throughout the paper, we use the following notations:
     &&\sum_{r\in \ro_k} z_{rt} &\leq 	\nu_k													&\forall k&=1,\ldots,L, \forall t=1,\ldots,T  \label{const:fleetcapa}\\
     %            &&\sum_{r\in \roc} z_{rt} &\leq 	\nu_{\cu}													&\forall t&=1,\ldots,T  \label{const:fleetcapaclients}\\
     &&\sum_{i\in \loc_k} q_{irt}   		&\leq \kappa_k z_{rt} 														&\forall k&=1,\ldots,L, \forall r\in \ro_k, t=1,\ldots,T\label{const:deliveryUB}\\
+    &&q_{irt}   		&\leq \alpha_{ir}\kappa_k  														&\forall k&=1,\ldots,L, \forall r\in \ro_k, t=1,\ldots,T\label{const:deliveryConstLoc}\\
     %&&\sum_{i\in \cu} u^t_{ir}   		&\leq \kc z_{rt} 														&\forall r&\in \roc, t=1,\ldots,T\label{const:deliveryUBcustomers}\\
     &&I_{j,t-1} + \sum_{r\in\ro_k} q_{jrt}   			&=I_{jt} +\sum_{r'\in \ro_{k+1}}\left(\beta_{jr'} \sum_{i\in \loc_{k+1}}q_{ir't}\right)\quad 			&\forall k&=1,\ldots,L-1, \forall j\in \loc_k, \forall t=1,\ldots,T \label{const:invflowdepots}\\
     &&I_{i,t-1}+\sum_{r\in \ro_L} q_{irt} &= I_{it} +d_{it} 							&\forall i&\in \cu, \forall t=1,\ldots,T\label{const:invflowcustomers}\\
     &&I_{jt}					&\leq I_j^{\max} y_j  									&\forall k&=1,\ldots,L-1, \forall j\in \loc_k,\forall t=1,\ldots,T\label{const:invdepotUB}\\	
-    &&I_{it} 					&\leq \min\left(I_i^{\max}, \sum_{t'\geq t}d_{it'}\right)											&\forall i&\in \cu, \forall t=1,\ldots,T\label{const:invcustUB}\\
+    &&I_{it} 					&\leq \min\left(I_i^{\max}, \sum_{t' > t}d_{it'}\right)											&\forall i&\in \cu, \forall t=1,\ldots,T\label{const:invcustUB}\\
     &&q_{irt}			&\geq 0 															&\forall k&=1,\ldots,L, \forall i\in \loc_k, \forall r\in \ro_k,\forall t=1,\ldots, T\label{const:upos}	\\
     % &&v^t_{jr}			&\geq 0 															&\forall j &\in \dc, \forall r\in \rod,\forall t=1,\ldots, T\label{const:vpos}	\\
     &&I_{it}			&\geq 0 															&\forall i &\in \loc, \forall t=1,\ldots, T\label{const:invCpos}	\\

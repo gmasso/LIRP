@@ -6,7 +6,7 @@ import java.io.IOException;
 import instanceManager.ClientsMap;
 import instanceManager.DemandsMap;
 import instanceManager.DepotsMap;
-import tools.Parameters;
+import tools.Config;
 
 
 public class LayerGenerator {
@@ -32,10 +32,10 @@ public class LayerGenerator {
 		if(gen_depots) {
 			/* Create the layers for each level */
 			/* DC levels */
-			for(int lvl = 0; lvl < Parameters.nb_levels - 1; lvl++) {
+			for(int lvl = 0; lvl < Config.nb_levels - 1; lvl++) {
 				for(int nbDepots : nb_depots) {
 					for(int i = 0; i < 30; i++) {
-						DepotsMap dMap = new DepotsMap(Parameters.grid_size, nbDepots, Parameters.fixed_cost_dc, oc_depots, 0, capa_loc);
+						DepotsMap dMap = new DepotsMap(Config.grid_size, nbDepots, Config.FIXED_COST_DC, oc_depots, 0, capa_loc);
 						String layerName = layersDir + "Depots/" + dMap.getID() +".json";
 						dMap.writeToJSONFile(layerName);
 					}
@@ -47,7 +47,7 @@ public class LayerGenerator {
 			for(int nbCities = 0; nbCities < 3; nbCities++) {
 				/* Create 10 layers of each type */
 				for(int i = 0; i < 10; i++) {
-					ClientsMap cMap = new ClientsMap(Parameters.grid_size, nb_clients, selectCitiesSizes(nbCities), 0.75, capa_loc);
+					ClientsMap cMap = new ClientsMap(Config.grid_size, nb_clients, selectCitiesSizes(nbCities), 0.75, capa_loc);
 					DemandsMap dMapIID = new DemandsMap(cMap, 90, 0, true);
 					DemandsMap dMapNormal = new DemandsMap(cMap, 90, 0, false);
 					DemandsMap dMapPeriodic = new DemandsMap(cMap, 90, 7, false);
@@ -89,7 +89,7 @@ public class LayerGenerator {
 			int sizeIndex = 0;
 			double cdf = proba_sizes[0];
 			// Draw a random number
-			double proba = Parameters.rand.nextDouble();
+			double proba = Config.RAND.nextDouble();
 			// Determine to which size it corresponds
 			while(proba > cdf) {
 				sizeIndex++;
