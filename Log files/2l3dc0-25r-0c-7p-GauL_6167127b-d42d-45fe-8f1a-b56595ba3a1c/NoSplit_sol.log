@@ -1,0 +1,37 @@
+CPXPARAM_TimeLimit                               7200
+CPXPARAM_Threads                                 4
+Tried aggregator 1 time.
+MIP Presolve eliminated 674440 rows and 561937 columns.
+MIP Presolve added 9050 rows and 0 columns.
+MIP Presolve modified 20960 coefficients.
+Reduced MIP has 31251 rows, 108527 columns, and 443865 nonzeros.
+Reduced MIP has 25812 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 22.83 sec. (5081.07 ticks)
+Found incumbent of value 33070.329810 after 26.48 sec. (5617.13 ticks)
+Probing time = 1.08 sec. (55.53 ticks)
+Tried aggregator 1 time.
+Reduced MIP has 31251 rows, 108527 columns, and 443865 nonzeros.
+Reduced MIP has 25812 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 3.77 sec. (237.17 ticks)
+Probing time = 1.46 sec. (55.31 ticks)
+Clique table members: 700.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 4 threads.
+Root relaxation solution time = 28.35 sec. (2914.15 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                        33070.3298        0.0000           100.00%
+      0     0     3883.8473   176    33070.3298     3883.8473       52   88.26%
+*     0+    0                        12634.7211     3883.8473            69.26%
+      0     0     5315.4831   145    12634.7211     Cuts: 579     4001   57.93%
+*     0+    0                         8588.2006     5315.4831            38.11%
+      0     0     5819.3253   179     8588.2006     Cuts: 466     7252   32.24%
+*     0+    0                         7813.4742     5819.3253            25.52%
+      0     0     5984.0369   201     7813.4742     Cuts: 574    10962   23.41%
+*     0+    0                         7619.0471     5984.0369            21.46%
+*     0+    0                         7598.4216     5984.0369            21.25%
+*     0+    0                         7577.0265     5984.0369            21.02%
+*     0+    0                         7575.8925     5984.0369            21.01%

@@ -381,7 +381,8 @@ public class Solution {
 					while (!used && t < this.instLIRP.getNbPeriods()){
 						used = this.usedRoutes[lvl][r][t];
 						t++;
-					}}
+					}
+				}
 				if(used)
 					routesLvl.add(this.routes[lvl][r]);
 			}
@@ -533,4 +534,7 @@ public class Solution {
 		return jsonSol;
 	}
 
+	public void getUsedRoutesDesc() {
+		System.out.println(this.storeRoutes());
+	}
 }

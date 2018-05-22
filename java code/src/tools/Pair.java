@@ -2,7 +2,7 @@ package tools;
 
 import org.json.JSONArray;
 
-public class Pair<L, R> {
+public class Pair<L, R> implements Comparable<Pair<L, R>>{
 	    private L l;
 	    private R r;
 
@@ -43,4 +43,9 @@ public class Pair<L, R> {
 	    	
 	    	return jsonPair;
 	    }
+
+		@Override
+		public int compareTo(Pair<L, R> pair) {
+			return - ((Comparable<R>) this.r).compareTo(pair.getR());
+		}	
 	 }

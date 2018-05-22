@@ -33,9 +33,14 @@ public final class Matheuristics {
 			for(int lvl = 0; lvl < instLIRP.getNbLevels(); lvl++) {
 				mapRoutes.put(lvl, rm.getAllRoutesOfLvl(lvl));
 			}
+			long startChrono = System.currentTimeMillis();
 
 			Solver solverLIRP = new Solver(instLIRP, mapRoutes, null, Config.NOSPLIT_TILIM);
-			return solverLIRP.getSolution();
+			Solution NoSplitSol = solverLIRP.getSolution();
+			long stopChrono = System.currentTimeMillis();
+
+			NoSplitSol.setSolvingTime(stopChrono - startChrono);
+			return NoSplitSol;
 		}
 		else {
 			return routeSamplingSol(instLIRP, rm, withLoops, rSplit, lm);
@@ -43,15 +48,6 @@ public final class Matheuristics {
 
 	}
 
-	/**
-	 * Solves the LIRP problem on instance inst using the route sampling method,
-	 * starting from
-	 * 
-	 * @param instLIRP		The instance to solve
-	 * @param rm			The RouteManager object containing the routes available for the instance
-	 * @param loopRoutes	The indices of the 
-	 * @return
-	 */
 	/**
 	 * Solves an LIRP problem using the route sampling method
 	 * @param instLIRP		The instance to solve
@@ -71,7 +67,7 @@ public final class Matheuristics {
 		 * ======================================================= 
 		 */
 		HashMap<Integer, LinkedHashSet<Route>> setOfDirect = getAllDirects(rm);
-		HashMap<Integer, LinkedHashSet<Route>> setOfLoops = getAllLoops(rm, withLoops);
+		HashMap<Integer, LinkedHashSet<Route>> setOfRoutes = getAllRoutes(rm, withLoops);
 		double timeLimit = Config.NOSPLIT_TILIM;
 
 		int[] subsetSizes = new int[instLIRP.getNbLevels()];
@@ -84,29 +80,33 @@ public final class Matheuristics {
 			 */
 			if(rSplit[lvl] > 0) {
 				subsetSizes[lvl] = rSplit[lvl];
-				timeLimit = 0.8 * Config.NOSPLIT_TILIM;
 			}
 			/* Otherwise, we create only one subset containing all the routes */
 			else {
-				subsetSizes[lvl] = setOfLoops.get(lvl).size();
+				subsetSizes[lvl] = setOfRoutes.get(lvl).size();
 			}
 		}
 
 		/* Create dumb solutions to store the intermediate results */
-		Solution currentSol = new Solution();
+		Solution currentSol = computeSampleSol(instLIRP, setOfDirect, setOfRoutes, subsetSizes, lm, timeLimit);
 		Solution bestSol = new Solution();
 
 		/* Total time spent on partial solutions */
-		double totalTime = 0;
+		double totalTime = currentSol.getSolvingTime();
 
 		/* As long as we have some time available, re-apply the algorithm to find other solutions */
-		while (bestSol.getObjVal() < 0 || currentSol.getObjVal() < bestSol.getObjVal() || totalTime < timeLimit) {
+		while(bestSol.getObjVal() < 0 || (totalTime < timeLimit && currentSol != null && currentSol.getObjVal() < bestSol.getObjVal())) {
 			bestSol = currentSol;
-
-			/* Get a new current solution using a new sampling of the loop routes */
-			currentSol = computeSampleSol(instLIRP, setOfDirect, setOfLoops, subsetSizes, lm);
-			totalTime += currentSol.getSolvingTime();
-
+			if(timeLimit - totalTime < Config.MAIN_TILIM) {
+				currentSol = null;
+			}
+			else {
+				/* Get a new current solution using a new sampling of the loop routes */
+				currentSol = computeSampleSol(instLIRP, setOfDirect, setOfRoutes, subsetSizes, lm, timeLimit - totalTime);
+			}
+			if(currentSol != null)
+				totalTime += currentSol.getSolvingTime();
+			System.out.println("Total Time elapsed : " + totalTime);
 		}
 		return bestSol;
 	}
@@ -117,110 +117,204 @@ public final class Matheuristics {
 	 * @param routesLvls	The set of available routes for each level of the network
 	 * @return				A pair containing the solving time and the set of routes used in the solution (from the set of available ones)
 	 */
-	private static Solution computeSampleSol(Instance instLIRP, HashMap<Integer, LinkedHashSet<Route>> setOfDirect, HashMap<Integer, LinkedHashSet<Route>> setOfLoops, int[] subsetSizes, LocManager lm){
-		/* Create a HashMap to store the subsets of loop routes at each level */
-		HashMap<Integer, HashSet<LinkedHashSet<Route>>> lvlSamples = computeSamples(setOfLoops, subsetSizes);
-		int nbSubsets = 1;
-		int nbLoops = 0;
-		int previousNbLoops = 0;
-		/* The total number of subset is the number of possible combinations between all the subset of routes */
-		for(int lvl = 0; lvl < instLIRP.getNbLevels(); lvl++) {
-			previousNbLoops += setOfLoops.get(lvl).size();
-			nbSubsets *= lvlSamples.get(lvl).size();
-		}
-
-		double totalTime = 0;
-
-		/* Get all the possible combinations of route samples from each level */
-		HashSet<HashMap<Integer, LinkedHashSet<Route>>> setOfLoopSamples = getCombinations(lvlSamples);
-
-		/* Routes object that are candidate for the final solution */
-		HashMap<Integer, LinkedHashSet<Route>> selectedRoutes = new HashMap<Integer, LinkedHashSet<Route>>(setOfDirect);
-		/* If the number of subsets is 1, add all the multi-stops routes to the set of available route objects to compute the final solution */
-		if(nbSubsets == 1) {
-			for(int lvl: selectedRoutes.keySet())
-			selectedRoutes.get(lvl).addAll(setOfLoops.get(lvl));
-		}
-
-		int nbIterations = 0;
-		while(nbSubsets > 1 && nbLoops < previousNbLoops) {
-			/* Set of all loops used in at least one of the intermediate solutions */
-			HashMap<Integer, LinkedHashSet<Route>> collectedLoops = new HashMap<Integer, LinkedHashSet<Route>>();
-
-			nbIterations++;
-			System.out.println("========================================");
-			System.out.println("== Iteration " + nbIterations + ": Solving with " + setOfLoopSamples.size() + " subsets of routes ==");
-			System.out.println("========================================");
-
-			for(HashMap<Integer, LinkedHashSet<Route>> mapLoops : setOfLoopSamples) {
-				/* Create a map of available routes after filtering the routes in mapLoops */
-				int computeIter = 0;
-				try {
-					HashMap<Integer, LinkedHashSet<Route>> availLoops = filterRoutes(lm, mapLoops);
-					
-					while (computeIter < Config.RECOMPUTE) {					
-						Solution partialSol = getPartialSol(instLIRP, setOfDirect, availLoops);
-						totalTime += partialSol.getSolvingTime();
-						if (partialSol != null) {
-							HashMap<Integer, LinkedHashSet<Route>> usedRoutes = partialSol.collectUsedLoops();
-							for(int lvl: mapLoops.keySet()) {
-								if(collectedLoops.get(lvl) != null)
-									collectedLoops.get(lvl).addAll(usedRoutes.get(lvl));
-								else
-									collectedLoops.put(lvl, usedRoutes.get(lvl));
-								/* Remove the collected routes from the available routes for the next iteration */
-								availLoops.get(lvl).removeAll(collectedLoops.get(lvl));
-								/* Complete the set of available routes with direct and dummy route */
-								//availLoops.get(lvl).addAll(setOfDirect.get(lvl));
-							}
-							computeIter++;
-						}
-					}
-
-				}
-				catch (IOException ioe) {
-					System.out.println("ERR: Problem while filtering the routes");
-					System.out.println(ioe.getMessage());
-					System.exit(1);
-				}
-			}
-
-			/* Re-sample from the set of collected loops */
-			lvlSamples = computeSamples(collectedLoops, subsetSizes);
-			/* Compute the number of subsets left  after this iteration */
-			nbSubsets = 1;
-			previousNbLoops = nbLoops;
-			nbLoops = 0;
+	private static Solution computeSampleSol(Instance instLIRP, HashMap<Integer, LinkedHashSet<Route>> setOfDirect, HashMap<Integer, LinkedHashSet<Route>> setOfRoutes, int[] subsetSizes, LocManager lm, double remainingTime){
+		try {
+			/* Create a HashMap to store the subsets of routes at each level */
+			HashMap<Integer, HashSet<LinkedHashSet<Route>>> lvlSamples = computeSamples(filterRoutes(lm, setOfRoutes), subsetSizes);
+			int nbSubsets = 1;
+			int previousNbRoutes = 0;
 			/* The total number of subset is the number of possible combinations between all the subset of routes */
 			for(int lvl = 0; lvl < instLIRP.getNbLevels(); lvl++) {
-				nbLoops += collectedLoops.size();
+				previousNbRoutes += setOfRoutes.get(lvl).size();
 				nbSubsets *= lvlSamples.get(lvl).size();
 			}
 
-			/* If this is the last computation of partial solution, keep all the collected multi-stops routes for the final computation */
+			completeSubsets(lvlSamples, setOfDirect);
+
+			/* Get all the possible combinations of route samples from each level */
+			HashSet<HashMap<Integer, LinkedHashSet<Route>>> setOfMapRoutes = getCombinations(lvlSamples);
+
+			/* Routes object that are candidate for the final solution */
+			HashMap<Integer, LinkedHashSet<Route>> selectedRoutes = new HashMap<Integer, LinkedHashSet<Route>>();
+			for(int lvl: setOfDirect.keySet()) {
+				selectedRoutes.put(lvl, new LinkedHashSet<Route>());
+				selectedRoutes.get(lvl).addAll(setOfDirect.get(lvl));
+			}
+			/* If the number of subsets is 1, add all the multi-stops routes to the set of available route objects to compute the final solution */
 			if(nbSubsets == 1) {
 				for(int lvl: selectedRoutes.keySet())
-					selectedRoutes.get(lvl).addAll(collectedLoops.get(lvl));
+					selectedRoutes.get(lvl).addAll(setOfRoutes.get(lvl));
 			}
+
+			int nbIterations = 0;
+			double totalTime = 0;
+			int nbRoutes = 0;
+
+			while(nbSubsets > 1 && nbRoutes < previousNbRoutes && totalTime + Config.MAIN_TILIM < remainingTime) {
+				/* Set of all loops used in at least one of the intermediate solutions */
+				HashMap<Integer, LinkedHashSet<Route>> collectedRoutes = new HashMap<Integer, LinkedHashSet<Route>>();
+
+				nbIterations++;
+				System.out.println("========================================");
+				System.out.println("== Iteration " + nbIterations + ": Solving with " + setOfMapRoutes.size() + " subsets of routes ==");
+				System.out.println("========================================");
+				double partialTiLim = Math.max((remainingTime - Config.MAIN_TILIM) / (1.5 * Config.RECOMPUTE * setOfMapRoutes.size()), Config.AUX_TILIM);
+				for(HashMap<Integer, LinkedHashSet<Route>> availRoutes : setOfMapRoutes) {
+					/* Create a map of available routes after filtering the routes in mapLoops */
+					int computeIter = 0;
+
+					while (computeIter < Config.RECOMPUTE) {
+						Solution partialSol = null;
+						/* If the remaining time is enough to compute a solution to a subproblem, 
+						 * create a problem with a subset of available loops */
+						if(totalTime < remainingTime - Config.MAIN_TILIM) {
+							System.out.println("Computing a partial solution using " + availRoutes.get(1).size() + " routes");
+							partialSol = getPartialSol(instLIRP, availRoutes, partialTiLim);
+							totalTime += partialSol.getSolvingTime();
+						}
+						/* If we have computed a partial solution, add the routes used in this solution to the collected ones */
+						if (partialSol != null) {
+							HashMap<Integer, LinkedHashSet<Route>> usedRoutes = partialSol.collectUsedRoutes();
+							for(int lvl: availRoutes.keySet()) {
+								if(collectedRoutes.get(lvl) != null) {
+									collectedRoutes.get(lvl).addAll(usedRoutes.get(lvl));
+								}
+								else {
+									collectedRoutes.put(lvl, new LinkedHashSet<Route>());
+									collectedRoutes.get(lvl).addAll(usedRoutes.get(lvl));
+								}
+
+								/* Remove the collected multi-stops routes from the available multi-stops routes for the next iteration */
+								availRoutes.get(lvl).removeAll(usedRoutes.get(lvl));
+							}
+							completeSubset(availRoutes, setOfDirect);
+						}
+						/* If there is no partial solution because of a lack of time,
+						 * add all the remaining loops to the collected ones
+						 */
+						else {
+							for(int lvl: availRoutes.keySet()) {
+								collectedRoutes.get(lvl).addAll(availRoutes.get(lvl));
+							}
+						}
+						computeIter++;
+					}
+				}
+
+				/* Re-sample from the set of collected loops */
+				lvlSamples = computeSamples(collectedRoutes, subsetSizes);
+				/* Complete the subsets to reach all locations */
+				completeSubsets(lvlSamples, setOfDirect);
+				/* Get all the possible combinations of route samples from each level */
+				setOfMapRoutes = getCombinations(lvlSamples);
+				/* Compute the number of subsets left  after this iteration */
+				nbSubsets = 1;
+				previousNbRoutes = nbRoutes;
+				nbRoutes = 0;
+				/* The total number of subset is the number of possible combinations between all the subset of routes */
+				for(int lvl = 0; lvl < instLIRP.getNbLevels(); lvl++) {
+					nbRoutes += collectedRoutes.get(lvl).size();
+					nbSubsets *= lvlSamples.get(lvl).size();
+				}
+
+				/* If this is the last computation of partial solution, keep all the collected multi-stops routes for the final computation */
+				if(nbSubsets == 1) {
+					for(int lvl: selectedRoutes.keySet())
+						selectedRoutes.get(lvl).addAll(collectedRoutes.get(lvl));
+				}
+			}
+
+			try {
+				long startChrono = System.currentTimeMillis();
+				if(remainingTime - totalTime > Config.AUX_TILIM) {
+					/* Use the set of collected routes to solve the instance */
+					Solver solverLIRP = new Solver(instLIRP, selectedRoutes, null, remainingTime - totalTime);
+					/* Call the method from the solver */
+					Solution sampleSol = solverLIRP.getSolution();
+
+					long stopChrono = System.currentTimeMillis();
+					sampleSol.setSolvingTime(stopChrono - startChrono);
+
+					sampleSol.computeObjValue();
+
+					totalTime += sampleSol.getSolvingTime();
+					System.out.println("Setting the solving time to " + totalTime);
+					sampleSol.setSolvingTime(((long) (totalTime * 1000)));
+					return sampleSol;
+				}
+			}
+			catch(IloException iloe) {
+				System.out.println("ERR: Problem while solving the problem");
+				System.out.println(iloe.getMessage());
+				System.exit(1);
+			}
+
 		}
 
-		try {
-			/* Use the set of collected routes to solve the instance */
-			Solver solverLIRP = new Solver(instLIRP, selectedRoutes, null, Config.MAIN_TILIM);
-			/* Call the method from the solver */
-			Solution sampleSol = solverLIRP.getSolution();
-			sampleSol.computeObjValue();
-			totalTime += sampleSol.getSolvingTime();
-			sampleSol.setSolvingTime(((long) totalTime * 1000));
-			return sampleSol;
-		}
-		catch(IloException iloe) {
-			System.out.println("ERR: Problem while solving the problem");
-			System.out.println(iloe.getMessage());
+		catch (IOException ioe) {
+			System.out.println("ERR: Problem while filtering the routes");
+			System.out.println(ioe.getMessage());
 			System.exit(1);
 		}
-
 		return null;
+	}
+
+	/**
+	 * 
+	 * @param setOfRoutes
+	 * @param setOfDirect
+	 */
+	private static void completeSubset(HashMap<Integer, LinkedHashSet<Route>> setOfRoutes, HashMap<Integer, LinkedHashSet<Route>> setOfDirect) {
+		if(setOfDirect.keySet().containsAll(setOfRoutes.keySet())) {
+			for(int lvl : setOfRoutes.keySet()) {
+				for(Route rDir : setOfDirect.get(lvl)) {
+					Iterator<Route> rIter = setOfRoutes.get(lvl).iterator();
+					boolean reached = false;
+					while(!reached && rIter.hasNext()) {
+						reached = rIter.next().getStops().containsAll(rDir.getStops());
+					}
+					if(!reached) {
+						System.out.println("Location " + rDir.getStops().toString() + " at level " + lvl + " unreachable, adding it to the subset");
+						setOfRoutes.get(lvl).add(rDir);
+					}
+				}
+			}
+		}
+		else {
+			System.out.println("ERR while completing a set of routes with direct ones : levels don't match");
+			System.exit(1);
+		}
+	}
+
+	/**
+	 * Add to a set of Route objects all the direct routes to locations of the next level that it does not reach
+	 * @param lvlSamples	set of routes to check
+	 * @param setOfDirect	set of direct routes that can be added to complete setOfRoutes
+	 */
+	private static void completeSubsets(HashMap<Integer, HashSet<LinkedHashSet<Route>>> lvlSamples, HashMap<Integer, LinkedHashSet<Route>> setOfDirect) {
+		if(setOfDirect.keySet().containsAll(lvlSamples.keySet())) {
+			for(int lvl : lvlSamples.keySet()) {
+				for(Route rDir : setOfDirect.get(lvl)) {
+					Iterator<LinkedHashSet<Route>> setIter = lvlSamples.get(lvl).iterator();
+					while(setIter.hasNext()) {
+						boolean reached = false;
+						LinkedHashSet<Route> currentSet = setIter.next(); 
+						Iterator<Route> rIter = currentSet.iterator();
+						while(!reached && rIter.hasNext()) {
+							reached = rIter.next().getStops().containsAll(rDir.getStops());
+						}
+						if(!reached) {
+							System.out.println("Location " + rDir.getStops().toString() + " unreachable, adding it to the subset");
+							currentSet.add(rDir);
+						}
+					}
+				}
+			}
+		}
+		else {
+			System.out.println("ERR while completing a set of routes with direct ones : levels don't match");
+			System.exit(1);
+		}
 	}
 
 	/**
@@ -229,15 +323,11 @@ public final class Matheuristics {
 	 * @param routesLvls	The set of available routes for each level of the network
 	 * @return				A pair containing the solving time and the set of routes used in the solution (from the set of available ones)
 	 */
-	private static Solution getPartialSol(Instance instLIRP, HashMap<Integer, LinkedHashSet<Route>> directLvls, HashMap<Integer, LinkedHashSet<Route>> loopsLvls){
+	private static Solution getPartialSol(Instance instLIRP, HashMap<Integer, LinkedHashSet<Route>> routesLvls, double timeLim){
 
-		HashMap<Integer, LinkedHashSet<Route>> routesLvls = directLvls;
-		for(int lvl: routesLvls.keySet())
-			routesLvls.get(lvl).addAll(loopsLvls.get(lvl));
-		
 		long startChrono = System.currentTimeMillis();
 		try {
-			Solver solverLIRP = new Solver(instLIRP, routesLvls, null, Config.AUX_TILIM);
+			Solver solverLIRP = new Solver(instLIRP, routesLvls, null, timeLim);
 			Solution partialSol = solverLIRP.getSolution();
 
 			long stopChrono = System.currentTimeMillis();
@@ -245,7 +335,7 @@ public final class Matheuristics {
 			partialSol.setSolvingTime(stopChrono - startChrono);
 			return partialSol;
 		} catch (IloException iloe) {
-			System.out.println("Error while trying to solve a subproblem: " + iloe.getMessage());
+			System.out.println("ERR while trying to solve a subproblem: " + iloe.getMessage());
 			System.exit(1);
 		}
 
@@ -263,13 +353,19 @@ public final class Matheuristics {
 		HashMap<Integer, HashSet<LinkedHashSet<Route>>> lvlSamples = new HashMap<Integer, HashSet<LinkedHashSet<Route>>>();
 		for(int lvl = 0; lvl < subsetSizes.length; lvl++) {
 			/* Sample the routes at each level and put it in the map */
-			HashSet<LinkedHashSet<Route>> loopsSample = sampleRoutes(setOfLoops.get(lvl), subsetSizes[lvl]);
-			lvlSamples.put(lvl, loopsSample);
+			HashSet<LinkedHashSet<Route>> routesSample = new HashSet<LinkedHashSet<Route>>();
+			if(subsetSizes[lvl] > 0) {
+				routesSample.addAll(sampleRoutes(setOfLoops.get(lvl), subsetSizes[lvl]));
+			}
+			else {
+				routesSample.add(setOfLoops.get(lvl));
+			}
+			lvlSamples.put(lvl, routesSample);
 		}
 
 		return lvlSamples;
 	}
-	
+
 
 	/**
 	 * Return a set of multi-stops for each level of the network
@@ -277,8 +373,8 @@ public final class Matheuristics {
 	 * @param withLoops	An array indicating for each level if multi-stops routes are considered of not
 	 * @return			A HashMap containing the multi-stops routes at every level of the network
 	 */
-	private static HashMap<Integer, LinkedHashSet<Route>> getAllLoops(RouteManager rm, boolean[] withLoops){
-		HashMap<Integer, LinkedHashSet<Route>> setOfLoops = new HashMap<Integer, LinkedHashSet<Route>>();
+	private static HashMap<Integer, LinkedHashSet<Route>> getAllRoutes(RouteManager rm, boolean[] withLoops){
+		HashMap<Integer, LinkedHashSet<Route>> setOfRoutes = new HashMap<Integer, LinkedHashSet<Route>>(getAllDirects(rm));
 		for(int lvl = 0; lvl < rm.getInstance().getNbLevels(); lvl++) {
 			if(withLoops[lvl]) {
 				LinkedHashSet<Route> lvlRoutes = new LinkedHashSet<Route>();
@@ -287,13 +383,10 @@ public final class Matheuristics {
 					lvlRoutes.addAll(rm.getAllRoutesOfType(lvl, nbStops));
 					nbStops++;
 				}
-				setOfLoops.put(lvl,  lvlRoutes);
-			}
-			else {
-				setOfLoops.put(lvl, new LinkedHashSet<Route>());
+				setOfRoutes.get(lvl).addAll(lvlRoutes);
 			}
 		}
-		return setOfLoops;
+		return setOfRoutes;
 	}
 
 	/**
@@ -304,11 +397,11 @@ public final class Matheuristics {
 	private static HashMap<Integer, LinkedHashSet<Route>> getAllDirects(RouteManager rm){
 		HashMap<Integer, LinkedHashSet<Route>> setOfDirects = new HashMap<Integer, LinkedHashSet<Route>>();
 		for(int lvl = 0; lvl < rm.getInstance().getNbLevels(); lvl++) {
-			setOfDirects.put(lvl, rm.getAllRoutesOfType(lvl, 1));
+			setOfDirects.put(lvl, new LinkedHashSet<Route>());
+			setOfDirects.get(lvl).addAll(rm.getAllRoutesOfType(lvl, 1));
 		}
 		return setOfDirects;
 	}
-
 
 	/**
 	 * 
@@ -394,7 +487,7 @@ public final class Matheuristics {
 	 * @param lm			A LocManager object indicating the allocation of locations to one or several DCs of the upper level
 	 * @param lvl			The level at which the routes have to be filtered
 	 * @param setOfRoutes	The set of Route objects on which to apply the the filter
-	 * @return				A filtered set of routes: Every route in the returned set only contains routes involving locations 
+	 * @return				A filtered set of routes: Every route in the returned set only contains routes involving locations that are assigned to the start of the route
 	 * @throws IOException
 	 */
 	private static HashMap<Integer, LinkedHashSet<Route>> filterRoutes(LocManager lm, HashMap<Integer, LinkedHashSet<Route>> setOfLvlRoutes) throws IOException {
@@ -404,8 +497,8 @@ public final class Matheuristics {
 		HashMap<Integer, LinkedHashSet<Route>> filteredRoutes = new HashMap<Integer, LinkedHashSet<Route>>();
 		for(int lvl : setOfLvlRoutes.keySet()) {
 			/* Select a random number of depots among the depots available */
-			int maxNbDC = (int) Math.floor(0.6 * (lm.getInstance().getNbLocations(lvl)));
-			HashSet<Location> dSelect = lm.depotSelect(Config.RAND.nextInt(maxNbDC) + 1);
+			int maxNbDC = (int) Math.ceil(0.6 * (lm.getInstance().getNbLocations(lvl)));
+			HashMap<Location, HashSet<Location>> locAlloc = lm.assignLocations(Config.RAND.nextInt(maxNbDC) + 1);
 			LinkedHashSet<Route> rFilter = new LinkedHashSet<Route>();
 
 			/* Loop through the routes and keep only the routes that start from the selected depots */
@@ -413,16 +506,23 @@ public final class Matheuristics {
 			while(rIter.hasNext()) {
 				Route currentRoute = rIter.next();
 				Location rStart = currentRoute.getStart();
-				if((rStart == lm.getInstance().getSupplier()) || (dSelect.contains(rStart))) {
+				if(rStart == lm.getInstance().getSupplier()) {
 					rFilter.add(currentRoute);
+				}
+				else if(locAlloc.containsKey(rStart)) {
+					boolean allAlloc = true;
+					Iterator<Integer> stopIter = currentRoute.stopIterator();
+					while(allAlloc && stopIter.hasNext())
+						allAlloc = locAlloc.get(rStart).contains(currentRoute.getStop(stopIter.next()));
+					if(allAlloc) {
+						rFilter.add(currentRoute);
+					}
 				}
 			}
 			filteredRoutes.put(lvl, rFilter);
 		}
 		return filteredRoutes;
 	}
-	
-
 
 	/**
 	 * 
@@ -444,14 +544,21 @@ public final class Matheuristics {
 			while(setIter.hasNext()) {
 				if(previousCombos.isEmpty()) {
 					HashMap<Integer, LinkedHashSet<Route>> mapToAdd = new HashMap<Integer, LinkedHashSet<Route>>();
-					mapToAdd.put(upLvl, setIter.next());
+
+					mapToAdd.put(upLvl, new LinkedHashSet<Route>());
+					mapToAdd.get(upLvl).addAll(setIter.next());
 					currentCombos.add(mapToAdd);
 				}
 				else {
 					LinkedHashSet<Route> currentSet = setIter.next();
 					for(HashMap<Integer, LinkedHashSet<Route>> mapToModify : previousCombos) {
-						HashMap<Integer, LinkedHashSet<Route>> mapToAdd = new HashMap<Integer, LinkedHashSet<Route>>(mapToModify);
-						mapToAdd.put(upLvl, currentSet);
+						HashMap<Integer, LinkedHashSet<Route>> mapToAdd = new HashMap<Integer, LinkedHashSet<Route>>();
+						for(int lvl : mapToModify.keySet()) {
+							mapToAdd.put(lvl, new LinkedHashSet<Route>());
+							mapToAdd.get(lvl).addAll(mapToModify.get(lvl));
+						}
+						mapToAdd.put(upLvl, new LinkedHashSet<Route>());
+						mapToAdd.get(upLvl).addAll(currentSet);
 						currentCombos.add(mapToAdd);
 					}
 				}

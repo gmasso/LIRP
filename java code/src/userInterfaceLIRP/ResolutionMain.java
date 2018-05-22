@@ -98,6 +98,7 @@ public class ResolutionMain {
 					if(!solSet.contains(fileNameSol)) {
 						/* Create the log file and solution file to store the results and the trace of the program */
 						String fileNameLog = logDir + fileNameSol.replace(".json", ".log");
+						System.out.println(fileNameLog);
 						File fileLog = new File(fileNameLog);
 						PrintStream printStreamLog = new PrintStream(fileLog);
 
@@ -107,10 +108,13 @@ public class ResolutionMain {
 						System.out.print("Creating the RouteManager...");
 						RouteManager rm = new RouteManager(instLIRP);
 						rm.initialize(false);
-						rm.writeToJSONFile(logDir + instName.replace(".json", "_rm.json"));
+						rm.writeToJSONFile(logDir + instName + "_rm.json");
 						System.out.println("Done.");
 						System.out.print("Creating the LocManager...");
 						LocManager lm = withLM ? new LocManager(instLIRP) : null;
+						if(lm != null) {
+							lm.init();
+						}
 						System.out.println("Done.");
 						System.out.print("Solving...");
 						System.setOut(printStreamLog);
@@ -146,7 +150,6 @@ public class ResolutionMain {
 
 						System.out.println("Instance solved.");
 					}
-					System.out.println("All Instances solved. FINISHED :-)");
 				}
 
 				catch (IOException ioe) {

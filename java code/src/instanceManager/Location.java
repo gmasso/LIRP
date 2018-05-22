@@ -117,14 +117,6 @@ public class Location {
 		return this.initialInventory;
 	}
 	
-	/**
-	 * 
-	 * @return	true if the location is dummy (i.e. doest not correspond to any physical facility of the network)
-	 */
-	public boolean isDummy() {
-		return (this.locationCoords.getX() < 0) || (this.locationCoords.getY() < 0);
-	}
-	
 	/*
 	 * MUTATORS
 	 */

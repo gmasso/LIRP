@@ -2,25 +2,26 @@ package solverLIRP;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.TreeSet;
 
-import instanceManager.Depot;
 import instanceManager.Instance;
 import instanceManager.Location;
 import tools.Config;
-import tools.SortedLocSet;
+import tools.Pair;
 
 
 public class LocManager {
 
-	private static int k = 3; 										//(parameter) number of closest depots considered
+	private static int k = 3; 									//(parameter) number of closest depots considered
 	private static double mu1 = 0.4 * Config.MAX_TIME_ROUTE;	//(parameter) max distance between client and depot for automatic allocation 
 	private static double mu2 = 0.1 * Config.MAX_TIME_ROUTE;	//(parameter) max distance between clients in farther allocation
 	private static double mu3 = Config.MAX_TIME_ROUTE;    		//(parameter) max route distance for farther allocation
-	private static int  beta = 3; 									// parameter for roulette wheel selection
+	private static int  beta = 3; 								//(parameter) for roulette wheel selection
 
 	/*======================
 	 *      ATTRIBUTES
@@ -32,8 +33,8 @@ public class LocManager {
 	 *      CONSTRUCTOR 
 	 =======================*/
 	/**
-	 * Constructor of the PreAllocation Matrix 
-	 * @param number of client, number of depots
+	 * Constructor of a LocManager Object from an instance, with an initial empty allocation
+	 * @param instLIRP		The instance considered
 	 * @throws IOException
 	 */
 	public LocManager(Instance instLIRP) throws IOException {
@@ -53,12 +54,12 @@ public class LocManager {
 
 	/**
 	 * 
-	 * @return
+	 * @return	The instance used for this LocManager object
 	 */
 	public Instance getInstance() {
 		return this.instLIRP;
 	}
-	
+
 	/**
 	 * Allocate locations to the level dc with direct links
 	 */
@@ -70,7 +71,7 @@ public class LocManager {
 			for (int loc  = 0; loc < nbLocLvl; loc++) {
 				Location currentLoc = (lvl < this.instLIRP.getNbLevels() - 1) ? (Location) this.instLIRP.getDepot(lvl, loc) : (Location) this.instLIRP.getClient(loc);
 				/* The TreeSet stores each pair of location and distance to a given location according to their distance to the location of interest */
-				SortedLocSet bestDistToLoc = new SortedLocSet(currentLoc);
+				TreeSet<Location> bestDistToLoc = initTreeSetLoc(currentLoc);
 
 				for (int locUp = 0; locUp < nbLocUp; locUp++) {
 					bestDistToLoc.add(this.instLIRP.getDepot(lvl - 1, locUp));
@@ -83,8 +84,9 @@ public class LocManager {
 					/* Get the next closest depot */
 					Location dcUp = iterUp.next();
 					/* If the current location is already assigned to at least one depot and 
-					 * the distance between the current location and the upper depot is greater than mu1, stop here */
-					if (closest > 0 && currentLoc.getDistance(dcUp) > mu1) {
+					 * the distance between the current location and the upper depot is greater than mu1, 
+					 * stop here (because all other depots will be further */
+					if (closest > 0 && currentLoc.getDistance(dcUp) / Config.AVG_SPEED > mu1) {
 						closest = k;
 					}
 					else {
@@ -102,7 +104,7 @@ public class LocManager {
 	}
 
 	/**
-	 * Allocate 
+	 * Allocate locations to the upper level dcs by considering routes going through other locations of the same level
 	 */
 	private void indirectAlloc() {
 		/* For each location, calculate the distance to all depots of the upper level */
@@ -111,7 +113,7 @@ public class LocManager {
 			for (int loc  = 0; loc < nbLocLvl; loc++) {
 				Location currentLoc = (lvl < this.instLIRP.getNbLevels() - 1) ? (Location) this.instLIRP.getDepot(lvl, loc) : (Location) this.instLIRP.getClient(loc);
 				/* The TreeSet stores each pair of location and distance to a given location according to their distance to the location of interest */
-				SortedLocSet bestDistToLoc = new SortedLocSet(currentLoc);
+				TreeSet<Location> bestDistToLoc = initTreeSetLoc(currentLoc);
 
 				/* Sort locations on the same level according to their distance to the current location considered */
 				for (int locInter = 0; locInter < nbLocLvl; locInter++) {
@@ -144,83 +146,73 @@ public class LocManager {
 		}
 	}
 
-	/* Heuristic depot selection 
-	 * Return a matrix with clients allocation (possibly to a dummy depot)
+	/**
+	 * 
+	 * @param p	Number of depots to select
+	 * @return	A HashMap linking a subset of the depots to close locations of the next layer that are affected to them
+	 * @throws IOException
 	 */
-	private HashMap<Location, HashSet<Location>> assignLocations(int p) throws IOException {
+	public HashMap<Location, HashSet<Location>> assignLocations(int p) throws IOException {
 		if(this.alloc.isEmpty()) {
 			this.init();
 		}
-		double y; 	/* random value used in roulette wheel selection */
-		HashMap<Location, HashSet<Location>> dSelect = new HashMap<Location, HashSet<Location>>(this.alloc); 
-		/* Add a dummy depot to the map */
-		Location dummy = instLIRP.getSupplier();
-		dSelect.put(dummy, new HashSet<Location>());
 
-		for(int lvl = this.instLIRP.getNbLevels() - 1; lvl > 0; lvl--) {
+		/* A HashMap allocating locations of the subsequent level to depots, initialized with the first allocation */
+		HashMap<Location, HashSet<Location>> locAlloc = new HashMap<Location, HashSet<Location>>(); 
+		/* Add the supplier as a dummy depot for unaffected clients at the end */
+		locAlloc.put(this.instLIRP.getSupplier(), new HashSet<Location>());
+
+		for(int lvl = 1; lvl < this.instLIRP.getNbLevels(); lvl++) {
 			int nbLocLvl = this.instLIRP.getNbLocations(lvl);
-			int nbLocUp = 0;
-			for (int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++) {
-				Location currentLoc = (lvl < this.instLIRP.getNbLevels() - 1) ? this.instLIRP.getDepot(lvl, loc) : this.instLIRP.getClient(loc);
-				dSelect.get(dummy).add(currentLoc);
+
+			/* HashMap that allows to dynamically keep track of the unallocated clients wrt to the remaining unselected depots */ 
+			HashMap<Location, HashSet<Location>> notAlloc = new HashMap<Location, HashSet<Location>>(this.alloc);
+			ArrayList<Pair<Location, Integer>> sortedDC = new ArrayList<Pair<Location, Integer>>();
+			for(HashMap.Entry<Location, HashSet<Location>> dynEntry : notAlloc.entrySet()) {
+				sortedDC.add(new Pair<Location, Integer>(dynEntry.getKey(), dynEntry.getValue().size()));
 			}
+			/* Sort the DCs according to how many locations on the next level are assigned to each of them */
+			Collections.sort(sortedDC);
 
-			ArrayList<Depot> depotScore = new ArrayList<Depot>(); // depots and their scores
-
-			/* Store each depot based on how many locations are allocated to it */
-			for (int d = 0; d < this.instLIRP.getNbDepots(lvl - 1); d++) {
-				Depot dc = this.instLIRP.getDepot(lvl - 1, d);
-				if(!dc.isDummy() && dSelect.containsKey(dc)) {
-					depotScore.add(dc);
-					nbLocUp++;
-				}
-			}
-
-			/* number of depots selected */
+			/* Number of depots selected */
 			int selectDC = 0;
 			/* Set of locations already allocated at this level */
 			HashSet<Location> allocated = new HashSet<Location>();
 
 			/* Main loop */
-			while (selectDC < p && allocated.size() < nbLocLvl){
-				/* Rank depots in decreasing order of scores */
-				depotScore.sort(new Comparator<Depot>() {
-					@Override
-					public int compare(Depot o1, Depot o2) 
-					{
-						if (dSelect.get(o1).size() > dSelect.get(o2).size()) {
-							return -1;
-						} 
-						else if (dSelect.get(o1).size() < dSelect.get(o2).size()) {
-							return 1; 
-						} 
-						else return 0;
-					}
-				});
-
-				/* Biased roulette wheel depot selection */
-				y = Config.RAND.nextDouble();
+			while (selectDC < p && allocated.size() < nbLocLvl && !sortedDC.isEmpty()){
 				/* Generate biased random position */
 				int position = 0; 
 				/* The list of depots that can be selected is limited to: 
 				 * Depots object that still have unassigned successors 
 				 * (i.e. that haven't been selected yet)
 				 */
-				while (position < Math.pow(y, beta) * (nbLocUp - selectDC)) 
+				double proportion = Math.pow(Config.RAND.nextDouble(), beta) * sortedDC.size();
+				while (position <  Math.floor(proportion)) 
 					position++; 
-				/* Select Depot object at the position */
-				Depot dnew = depotScore.get(position);
-				selectDC++;
 
-				allocated.addAll(dSelect.get(dnew));
-				for(Location dc : dSelect.keySet()) {
-					dSelect.get(dc).removeAll(allocated);
-					if(dSelect.get(dc).isEmpty() && dc != dummy)
-						dSelect.remove(dc);
+				/* Remove the selected DC from the list of candidate DCs */
+				Location selectedDC = sortedDC.remove(position).getL();
+				/* Add all the locations associated with the selected DCs to the result HashMap */
+				locAlloc.put(selectedDC, new HashSet<Location>(this.alloc.get(selectedDC)));
+				/* Increase the list of allocated locations with the elements associated with the selected DC (only the remaining ones) */
+				allocated.addAll(notAlloc.get(selectedDC));
+				/* Remove the selected DC from the list of candidate DCs and add its allocated list to the */
+				notAlloc.remove(selectedDC);
+				/* Clear the list to update its remaining elements */
+				sortedDC.clear();
+				/* Updated the remaining locations not yet allocated to a DC */
+				for(Location dcKey : notAlloc.keySet()) {
+					notAlloc.get(dcKey).removeAll(allocated);
+					if(!notAlloc.get(dcKey).isEmpty())
+						sortedDC.add(new Pair<Location, Integer>(dcKey, notAlloc.get(dcKey).size()));					
 				}
+				/* Sort the DC list according to the number of locations they cover */
+				Collections.sort(sortedDC);
+				selectDC++;
 			}
 		}
-		return dSelect;
+		return locAlloc;
 	}
 
 	/**
@@ -237,9 +229,28 @@ public class LocManager {
 		}
 		return new HashSet<Location>();
 	}
+
+	/**
+	 * Create a TreeSet of locations that are ordered according to their respective distance to a reference location
+	 * @param ref	The reference location that is used to sort the elements of the set
+	 * @return		An set of Location sorted in increasing order wrt their distance to ref
+	 */
+	private TreeSet<Location> initTreeSetLoc(Location ref) {
+		TreeSet<Location> tSet = new TreeSet<Location>(new Comparator<Location>() {
+			@Override
+			public int compare(Location loc1, Location loc2) {
+				if (ref.getDistance(loc1) < ref.getDistance(loc2)) {
+					return -1;
+				} 
+				else if (ref.getDistance(loc1) > ref.getDistance(loc2)) {
+					return 1; 
+				} 
+				else return 0;
+			}
+		});
+		return tSet;
+	}
 }
-
-
 
 
 

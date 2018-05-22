@@ -47,13 +47,9 @@ public class Route {
 		this.travelTime = computeTravelTime();
 		this.stopTime = Config.STOPPING_TIME * this.stops.size();
 		this.cost = Config.FIXED_COST_ROUTE + Config.COST_KM * Config.AVG_SPEED * this.travelTime;
-		/* If this route is dummy, add to its cost the fixed opening costs of all the depots of the instance */
+
 		if(this.isDummy) {
-			for(int l = 0; l < this.instLIRP.getNbLevels() - 1; l++) {
-				for(int d = 0; d < this.instLIRP.getNbDepots(l); d++) {
-					this.cost += this.instLIRP.getDepot(l, d).getFixedCost();
-				}
-			}
+			this.addDummyCost();
 		}
 	}
 
@@ -85,11 +81,7 @@ public class Route {
 			this.cost += this.instLIRP.getDepot(lvl, index).getOrderingCost();
 		/* If this route is dummy, add to its cost the fixed opening costs of all the depots of the instance */
 		if(this.isDummy) {
-			for(int l = 0; l < this.instLIRP.getNbLevels() - 1; l++) {
-				for(int d = 0; d < this.instLIRP.getNbDepots(l); d++) {
-					this.cost += this.instLIRP.getDepot(l, d).getFixedCost();
-				}
-			}
+			this.addDummyCost();
 		}
 	}
 
@@ -130,7 +122,30 @@ public class Route {
 	public LinkedHashSet<Integer> getStops() {
 		return this.stops;
 	}
+	
+	/**
+	 * 
+	 * @param index
+	 * @return
+	 */
+	public Location getStop(int index) {
+		if(this.stops.contains(index)) {
+			if(this.lvl < this.instLIRP.getNbLevels() - 1 && index < this.instLIRP.getNbDepots(this.lvl))
+				return this.instLIRP.getDepot(this.lvl, index);
+			else if(this.lvl == this.instLIRP.getNbLevels() - 1 && index < this.instLIRP.getNbClients())
+				return this.instLIRP.getClient(index);
+		}
+		return null;
+	}
 
+	/**
+	 * 
+	 * @return	An iterator on the stops of the route
+	 */
+	public Iterator<Integer> stopIterator(){
+		return this.stops.iterator();
+	}
+	
 //	/**
 //	 * Get the position of a given stop
 //	 * @param stopIndex	the index of a location of interest along the route
@@ -189,6 +204,23 @@ public class Route {
 		this.cost += OC;
 	}
 
+	/**
+	 *  Add a dummy (expensive) cost to the route
+	 */
+	private void addDummyCost() {
+		/* Increase the cost of the route with the fixed opening costs of all the depots of the instance... */
+		for(int l = 0; l < this.instLIRP.getNbLevels() - 1; l++) {
+			for(int d = 0; d < this.instLIRP.getNbDepots(l); d++) {
+				this.cost += this.instLIRP.getDepot(l, d).getFixedCost();
+			}
+			/* ...and the holding cost corresponding to keeping all the demands for the entire planning horizon */
+			double hc = (lvl < this.instLIRP.getNbLevels() - 1) ? this.instLIRP.getDepot(this.lvl, 0).getHoldingCost() : this.instLIRP.getClient(0).getHoldingCost();
+			for(int c = 0; c < this.instLIRP.getNbClients(); c++) {
+				this.cost += hc * this.instLIRP.getClient(c).getCumulDemands(0, this.instLIRP.getNbPeriods()); 
+			}
+		}
+	}
+	
 	/*
 	 * METHODS
 	 */

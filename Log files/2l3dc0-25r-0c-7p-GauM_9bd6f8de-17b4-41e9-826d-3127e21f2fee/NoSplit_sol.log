@@ -1,0 +1,32 @@
+CPXPARAM_TimeLimit                               7200
+CPXPARAM_Threads                                 4
+Tried aggregator 1 time.
+MIP Presolve eliminated 672460 rows and 561937 columns.
+MIP Presolve added 5090 rows and 0 columns.
+MIP Presolve modified 9668 coefficients.
+Reduced MIP has 29271 rows, 108527 columns, and 441885 nonzeros.
+Reduced MIP has 25812 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 22.15 sec. (5069.80 ticks)
+Found incumbent of value 37260.782329 after 26.68 sec. (5600.45 ticks)
+Probing fixed 0 vars, tightened 8387 bounds.
+Probing changed sense of 25 constraints.
+Probing time = 49.82 sec. (3208.92 ticks)
+Tried aggregator 1 time.
+MIP Presolve modified 27 coefficients.
+Reduced MIP has 29271 rows, 108527 columns, and 441885 nonzeros.
+Reduced MIP has 25812 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 1.46 sec. (241.27 ticks)
+Probing time = 0.62 sec. (55.16 ticks)
+Clique table members: 700.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 4 threads.
+Root relaxation solution time = 22.59 sec. (2635.33 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                        37260.7823        0.0000           100.00%
+      0     0     7056.9621   174    37260.7823     7056.9621       45   81.06%
+*     0+    0                        14659.3085     7056.9621            51.86%
+      0     0     7468.3637   214    14659.3085     Cuts: 671    10995   49.05%

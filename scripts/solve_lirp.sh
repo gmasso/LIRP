@@ -5,7 +5,7 @@ ulimit -n 2048
 nbThreads=3
 
 dirName="../Instances/Complete/Small/"
-typeInst="2l3dc0-10r"
+typeInst="2l3dc0-25r-*-7p"
 echo "*********************************"
 echo "Exploring instance directory $dirName for instances of type $typeInst..."
 echo "*********************************"
@@ -30,9 +30,9 @@ for i in $dirName$typeInst*.json; do
     if [ ! -e "$logDir" ]; then mkdir "$logDir"; fi
 
     echo "Treating instance $instID... ($tCount/$total)"
-    java -jar -Djava.library.path=/home-isis/auto/dapi/gmasso16/opt/ibm/ILOG/CPLEX_Studio128/cplex/bin/x86-64_linux Resolution.jar -loop_lvl=[1] $i &
-    tCount=$(( tCount + 1 ))
-    if (( $tCount % 3 == 0 )); then wait; fi
+    sem --jobs $nbThreads java -jar -Djava.library.path=/Applications/CPLEX_Studio128/cplex/bin/x86-64_osx Resolution.jar -loop_lvl=[1] $i 
+    #tCount=$(( tCount + 1 ))
+    #if (( $tCount % 3 == 0 )); then wait; fi
 done
 
 echo "All instance files have been treated successfully."

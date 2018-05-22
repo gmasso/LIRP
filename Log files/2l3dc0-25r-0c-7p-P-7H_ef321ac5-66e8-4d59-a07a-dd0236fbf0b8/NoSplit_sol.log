@@ -1,0 +1,9 @@
+CPXPARAM_TimeLimit                               7200
+CPXPARAM_Threads                                 4
+Tried aggregator 1 time.
+MIP Presolve eliminated 648579 rows and 543352 columns.
+MIP Presolve added 3920 rows and 0 columns.
+MIP Presolve modified 4666 coefficients.
+Reduced MIP has 27790 rows, 103816 columns, and 421329 nonzeros.
+Reduced MIP has 24916 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 16.80 sec. (4643.08 ticks)
