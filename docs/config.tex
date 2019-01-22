@@ -1,0 +1,116 @@
+\usepackage[margin=2cm]{geometry}
+
+%%% Language and encoding %%%
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+%%% Mathematical symbols and notations %%%
+\usepackage{amsthm, amsmath, mathrsfs, amssymb}
+\usepackage{textcomp}
+
+%%% Figures %%%
+\usepackage{caption, subcaption}
+\usepackage{tikz}
+\usepackage{tkz-graph}
+\usetikzlibrary{shapes, shapes.gates.logic.US, trees, positioning, arrows, decorations.pathreplacing, plotmarks, backgrounds,shapes}
+
+%%% Other packages %%%o
+\usepackage[affil-it]{authblk}
+\usepackage{multirow}
+\usepackage{xcolor}
+\definecolor{bleuclairimtatlantique}{RGB}{0,184,222}
+\definecolor{noirimtatlantique}{RGB}{60, 60, 60}
+\definecolor{blancimtatlantique}{RGB}{255, 255, 255}
+\definecolor{bleufonceimtatlantique}{RGB}{12, 35, 64}
+\definecolor{vertimtatlantique}{RGB}{164, 210, 51}
+\definecolor{grisimtatlantique}{RGB}{230, 230, 230}
+\definecolor{ocre}{RGB}{250,82,20}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{verbatim}
+\usepackage{varwidth}
+\usepackage{lineno}
+\usepackage{algorithmic, algorithm}
+\usepackage{hyperref} %autoref
+\usepackage[francais]{babel} 
+\usepackage[utf8]{inputenc}  %% les accents dans le fichier.tex
+\usepackage[T1]{fontenc}     %% Pour la césure des mots accentués
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage{pdflscape} % for whole page table in vertical mode
+\usepackage{ragged2e} % justifying
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{float}
+%\usepackage{subfig}
+\usepackage{hyperref}
+\usepackage{booktabs}
+
+
+%% Define the figures path
+\newcommand{\inputfig}[1]{\input{figures/#1}}
+\graphicspath{{figures/}}
+%\usepackage{empheq}
+\usepackage[framemethod=tikz]{mdframed}
+
+%%%%% Definition of commands %%%%%
+\newcommand{\cu}{I}
+\newcommand{\dc}{J}
+\newcommand{\su}{\mathcal{S}}
+\newcommand{\rd}{\mathcal{R}_J}
+\newcommand{\rc}{\mathcal{R}_I}
+\newcommand{\kc}{\kappa_{\cu}}
+\newcommand{\kd}{\kappa_{\dc}}
+
+%%%%% Definitions for tikz %%%%%
+% Definition of styles for diagrams :
+\tikzset{%
+    % Symbols for block diagrams
+    block/.style    = {draw, thick, rectangle, minimum height = 3em,
+    minimum width = 3em},
+    sum/.style      = {draw, circle, node distance = 2cm}, % Adder
+    input/.style    = {coordinate}, % Input
+    output/.style   = {coordinate}, % Output
+    % Gates and symbols style for the fault trees
+    and/.style={and gate US,thick,draw,fill=red!20,rotate=90,
+    anchor=east,xshift=-1mm},
+    or/.style={or gate US,thick,draw,fill=blue!20,rotate=90,
+    anchor=east,xshift=-1mm},
+    be/.style={circle,thick,draw,fill=green!20,anchor=north,
+    minimum width=0.7cm},
+    tr/.style={buffer gate US,thick,draw,fill=purple!40,rotate=90,
+    anchor=east,minimum width=0.8cm},
+    % Label style
+    label distance=3mm,
+    every label/.style={blue},
+    % Event style
+    event/.style={rectangle,thick,draw,fill=yellow!10,text width=2cm,
+    text centered,font=\sffamily,anchor=north},
+    % Children and edges style
+    edge from parent/.style={very thick,draw=black!70},
+    edge from parent path={(\tikzparentnode.south) -- ++(0,-1.05cm)
+    -| (\tikzchildnode.north)},
+    level 1/.style={sibling distance=7cm,level distance=1.4cm,
+    growth parent anchor=south,nodes=event},
+    level 2/.style={sibling distance=7cm},
+    level 3/.style={sibling distance=6cm},
+    level 4/.style={sibling distance=3cm},
+    %%  For compatability with PGF CVS add the absolute option:
+    absolute
+}
+
+\tikzstyle{client}=[regular polygon,regular polygon sides=3,draw,fill=blue!50,fill opacity=1,scale=0.4]
+\tikzstyle{ptf}=[draw,circle,fill=red!50,fill opacity=1,scale=0.8]
+\tikzstyle{cdc}=[regular polygon, regular polygon sides=3,draw,fill=yellow!70,fill opacity=1,scale=1.2]
+
+\tikzstyle{legend}=[scale=0.7,right,text justified]
+\tikzstyle{shipment}=[->,>=stealth',blue]
+\tikzstyle{ftlarc}=[->,>=stealth',very thick,red]
+\tikzstyle{vertexD}	=[circle,draw=black!80,fill=purple!70,minimum size=7pt,inner sep=0pt]
+\tikzstyle{vertex0}	=[circle,draw=black!80,fill=purple!20,minimum size=7pt,inner sep=0pt]
+\tikzstyle{j0}		=[circle, draw=black,fill=purple,minimum size=13pt,inner sep=0pt, scale=1]
+\tikzstyle{farm}	=[circle, draw=black,fill=blue!80,minimum size=4pt,inner sep=0pt, scale=1]
+
+\tikzstyle{com2}	= [minimum size=0pt,inner sep=0pt, scale=1]
+\tikzstyle{edgetr} 	= [draw,thick,->,purple]
+\tikzstyle{edge1} 	= [draw,dotted,-,blue, thick]
+
