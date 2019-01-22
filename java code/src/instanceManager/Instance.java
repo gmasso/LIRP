@@ -195,7 +195,6 @@ public class Instance {
 			System.out.println("Problem while reading the JSON file");
 			System.out.println(npe);
 		}
-
 	}
 
 	/*

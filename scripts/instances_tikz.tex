@@ -1,0 +1,70 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed May 23 10:19:22 2018
+
+@author: gmas
+"""
+
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import json
+
+inst_filename = "../Instances/Complete/"
+	/**
+	 * Create a new Instance object from data in JSON file
+	 * @param jsonFile	the file containing the JSON string
+	 * @throws IOException
+	 * @throws NullPointerException
+	 */
+	public Instance(String fileName) throws IOException, NullPointerException {
+		System.out.println("Getting data from the JSON file " + fileName + "...");
+		// Get the JSON object contained in the file
+		try {
+			JSONObject jsonInstanceObject = JSONParser.readJSONFromFile(fileName);
+			// Set the planning horizon
+			this.planningHorizon = jsonInstanceObject.getInt("planning horizon");
+			// Get the capacity of each vehicle
+			JSONArray jsonFleetDesc = jsonInstanceObject.getJSONArray("fleet description");
+			// Fill the corresponding attribute
+			this.fleetDesc = new ArrayList<Pair<Integer,Double>>();
+			for(int lvl = 0; lvl < jsonFleetDesc.length(); lvl++) {
+				JSONArray jsonFleetLvl = jsonFleetDesc.getJSONArray(lvl);
+				int nbVehicles = jsonFleetLvl.isNull(0) ? -1 : jsonFleetLvl.getInt(0);
+				double capaVehicles = jsonFleetLvl.isNull(1) ? -1 : jsonFleetLvl.getDouble(1);
+
+				this.fleetDesc.add(new Pair<Integer, Double>(nbVehicles, capaVehicles)); // Set the capacity of vehicle vIter if the field is not null, -1 otherwise (infinite capacity)
+			}
+			// Get the supplier coordinates
+			JSONObject jsonSupplier = jsonInstanceObject.isNull("supplier") ? null : jsonInstanceObject.getJSONObject("supplier");
+
+			this.supplier = new Location(jsonSupplier);
+
+			// Create a map for the depots by extracting data from the corresponding JSONArray in the JSON file
+			JSONArray jsonDCLayers = jsonInstanceObject.getJSONArray("depots layers");
+			this.depots = new DepotsMap[jsonDCLayers.length()];
+			for(int lvl = 0; lvl < this.depots.length; lvl++) {
+				this.depots[lvl] = new DepotsMap(jsonDCLayers.getJSONObject(lvl));
+			}
+
+			// Extract data from the JSONArrays containing data for the clients
+			this.clients = new ClientsMap(jsonInstanceObject.getJSONObject("clients"));
+
+			this.gridSize = 0;
+			for(DepotsMap dMap: this.depots) {
+				this.gridSize = Math.max(gridSize, dMap.getGridSize());
+			}
+			this.gridSize = Math.max(this.gridSize, this.clients.getGridSize());
+
+			this.instID = jsonInstanceObject.getString("id");
+		}
+		catch(IOException ioe) {
+			System.out.println("Problem while reading the JSON file");
+			System.out.println(ioe);
+		}
+		catch(NullPointerException npe) {
+			System.out.println("Problem while reading the JSON file");
+			System.out.println(npe);
+		}
+	}

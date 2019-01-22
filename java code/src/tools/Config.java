@@ -41,7 +41,6 @@ public final class Config {
 	public static double BIGM = 1000000;
 
 	/* Solver parameters */
-	public static final int MAX_NB_ROUTES = 1000;  		// Maximum number of routes in the mathematical model
 	public static final double EPSILON = 0.000001; 		// Precision for the constraints
 	public static final double MAIN_TILIM = 3600; 		// Time limit for the solver in seconds
 	public static final int MAX_THREADS = 4;
