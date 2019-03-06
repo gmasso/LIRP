@@ -98,3 +98,11 @@
 \tikzstyle{edgetr} 	= [draw,thick,->,purple]
 \tikzstyle{edge1} 	= [draw,dotted,-,blue, thick]
 
+% Authors Comments
+\newcommand{\nb}[3]{
+	{\colorbox{#2}{\bfseries\sffamily\scriptsize\textcolor{white}{#1}}}
+	{\textcolor{#2}{\sf\small$\blacktriangleright$\textit{#3}$\blacktriangleleft$}}}
+
+\newcommand{\OP}[1]{\nb{OP}{brown}{#1}}
+\newcommand{\GM}[1]{\nb{TM}{orange}{#1}}
+
