@@ -276,7 +276,7 @@ Table \ref{tab2} presents models with time discretization.
 
 This paper brings contribution in the LIRP literature in three ways. First, we propose new route-based mathematical model that covers both FTL and LTL routes between any layer of the logistics network. Without loss of generality we present this model on a three layer supply chain with one production facility, a set of candidate distribution centers and a larger set of customers. 
 Second, we propose a sampling solution method based on the decomposition of large instances in several smaller instances that are tractable by an MILP solver. 
-Finally, we introduce new instaces for the LIRP and present computational experiments that show the relevance of our approach. 
+Finally, we introduce new instances for the LIRP and present computational experiments that show the relevance of our approach. 
 
 
 \newpage
@@ -285,17 +285,60 @@ Finally, we introduce new instaces for the LIRP and present computational experi
 
 \label{sec:model}
 
-\subsection{Problem settings and notation}
+\subsection{Problem settings and notations}
 
-We propose a unified model that covers a broad spectrum of potential applications in which one production facility sends goods to a set \dc of distribution centers (DCs), which in turn deliver a large set of customers. 
-There is a set of candidates depots, that is location onto which {\em distribution centers} (DC), or {\em depots} may be opened to operate as intermediate between the central supplier and a (often larger) set of retailers, also called customers.
-The decision to open or not a DC incurs a fixed opening cost for each depot at the beginning of the planning horizon and cannot be changed during the exploitation of the network.
-Units stored at a DC or at a customer incur a holding cost that represents the financial immobilisation of the good as well as maintenance costs.
-Finally deliveries are made through predefined routes through the network. A route starts either from the supplier and visits a set of depots before returning to the supplier or starts from a depot and visits a set of customers before returning to the same depot. 
+\begin{table}[htbp]
+	\centering
+	\begin{tabular}{ll}
+		\toprule
+		$\kd$ & Capacity of vehicles delivering distribution centers\\ 
+		$\kc$ & Capacity of vehicles delivering customers\\ 
+		$\nu_{\dc}$ & fleet size for vehicles delivering distribution centers\\ 
+		$\nu_{\cu}$ & fleet size for vehicles delivering customers\\ 
+		$\alpha_{ir}$ & indicator of route $r\in\rc$ visits customer $i$\\
+			\bottomrule
+		
+	\end{tabular}
+	\caption{Reste à définir}
+	\label{tab:set}
+\end{table}
+
+
+
+We consider a two echelon distribution network composed of one production facility, a set of customers and a set intermediate logistics facilities called distribution centers (DC). 
+The list of customers as well as their demand are assumed deterministic for a given time horizon $T$, typically a few weeks. 
+The set of customers is denoted by \cu and the demand of customer $i \in \cu$ at time period $t\in T$ is denoted by $d^t_i$.
+The set of potential DCs is denoted by \dc.
+Selecting a DC incurs a fixed opening cost $f_j$ for each DC. This cost is paid once at the beginning of the planning horizon. 
+Note that the choice of selected DCs cannot be modified during the whole period. 
+
+Goods can be delivered to a DC before they are sent to customers. In the same ways, goods can be delivered to customers before they are actually used by customers. In theses cases a holding cost $h^t_i$ is payed for every good stored at facility $i \in \dc \cup \cu$ at period $t$.
+The initial inventory at facility $i \in \dc \cup \cu$ is denoted by $I_i^0$. 
+We assume that the amount of inventory stored at facility $i \in \dc \cup \cu$ cannot excess a maximal value $I_i^{\max}$. 
+
+As far as routing is concerned, we propose a unified model that covers a broad spectrum of potential applications and distribution modes (FTL, LTL). 
+Our model is based on a set of existing routes at each echelon. 
+This set can be large but enumerable. 
+Route at the upper echelon are denoted by $\rd$. 
+They start from the production facility and visit one or several DCs before returning to the production facility. 
+For any route $r \in \rd$, the indicator $\gamma_{jr}$ has value 1 is $r$ visits DC $j \in \dc$, and 0 otherwise. 
+Similarly, delivery routes $\rc$ at the lower echelon start from a DC, visit one or several customers and return to the same DC. 
+For any route $r \in \rc$, the indicator $\alpha_{ir}$ has value 1 is $r$ visits customer $i \in \cu$, and 0 otherwise. 
+
+Each route 	$r\in \rd\cup\rc$ has a fixed cost 	$c_r$ which is independent of the load carried. 
+
+%% ICI %%%
+
+
+
+
 Using a route to deliver units during a time period also incurs a transportation cost that consists of a (possibly zero) fixed ordering cost along with a routing cost that depends on the length of the route and its number of stops.
 
-Throughout the paper, the notations of datasets, data and variables are defined in Tables \ref{tab:set}--\ref{tab:var}. 
-\begin{table} 
+
+
+Tables \ref{tab:set}--\ref{tab:var} summarize the mathematical notaiton that will be used throughout the paper.
+
+\begin{table}[htbp]
     \centering
     \begin{tabular}{ll}
         \toprule
@@ -310,7 +353,7 @@ Throughout the paper, the notations of datasets, data and variables are defined 
    \label{tab:set}
 \end{table}
 
-\begin{table} 
+\begin{table}[htbp] 
 	\centering
 	\begin{tabular}{ll}
 		\toprule
@@ -319,9 +362,9 @@ Throughout the paper, the notations of datasets, data and variables are defined 
         $\kc$ & Capacity of vehicles delivering customers\\ 
         $\nu_{\dc}$ & fleet size for vehicles delivering distribution centers\\ 
         $\nu_{\cu}$ & fleet size for vehicles delivering customers\\ 
-        $d^t_i$ & Demand faced by customer $i\in\cu$ in period $t=1,\ldots,T$\\
+        $d^t_i$ & Demand of customer $i\in\cu$ in time period $t=1,\ldots,T$\\
         $h^t_i$ & Per-unit, per-period holding cost of location $i\in\cu\cup\dc$ in period $t=1,\ldots, T$\\
-        $I_{i0}$ & Initial inventory of location $i\in \cu\cup\dc$ at the beginning of the planning horizon\\
+        $I_i^0$ & Initial inventory of location $i\in \cu\cup\dc$ at the beginning of the planning horizon\\
         $c_r$ & Cost of route $r\in \rd\cup\rc$\\
         $\alpha_{ir}$ & indicator of route $r\in\rc$ visits customer $i$\\
         $\beta_{jr}$ & indicator of route $r\in\rc$ visits depot $j$\\
@@ -817,6 +860,14 @@ In the second layer, routes that start at unselected DCs are removed from the ro
  These constraints help reduce the number of variables from 3 millions to 600 thousands.
  
 
+
+\section{Conclusion}
+
+
+\subsection*{Possible extensions}
+\begin{itemize}
+	\item Etendre au cas où le coût d'une route dépend de sa charge.
+\end{itemize}
 
 
 \end{linenumbers}
