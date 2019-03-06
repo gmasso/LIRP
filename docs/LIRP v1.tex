@@ -378,7 +378,17 @@ Figure~\ref{fig:dl} and~\ref{fig:ld} illustrates the two types of structures rel
     \caption{The two types of routing structures considered}
 \end{figure}
 
+\subsection{Decomposition approach}
+The MIP presented in~\S{subsection:MIP} results from the integration of several classical optimization problems that are already NP-hard individually. 
+Hence it is doubtful that any solver could produce an optimal solution directly from the above formulation in reasonable time.
+To overcome this complexity issue, we propose to use the following 2 stages approach to obtain a good solution for the integrated problem: 
+\begin{description}
+    \item[Stage 1] Split the original problem into several subproblems for which it is possible to compute an optimal solution independently
+    \item[Stage 2] Use the decisions made on these subproblems to restrict the number of variables of the integrated problem 
+\end{description}
 
+We consider that the main difficulty for solving the previous model comes from the number of routes available to serve the clients. 
+This assumption is supported by the number of variables referring to the routes in this formulation
 %-----------------------------------------------
 \section{Matheuristic method} 
 \label{sec:algo}

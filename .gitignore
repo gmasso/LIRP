@@ -6,5 +6,10 @@ Instances/Complete/Big/
 *.class
 *.log
 *.jar
+*.aux
+*.log
+*.out
+*.bbl
+Makefile
 Log files/
 *~

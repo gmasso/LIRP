@@ -1,0 +1,72 @@
+This is BibTeX, Version 0.99d (TeX Live 2018)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: LIRP.aux
+The style file: abbrvnat.bst
+Illegal, another \bibstyle command---line 174 of file LIRP.aux
+ : \bibstyle
+ :          {plain}
+I'm skipping whatever remains of this command
+Database file #1: biblio_LIRP.bib
+I was expecting a `,' or a `}'---line 155 of file biblio_LIRP.bib
+ : 
+ : @Article{Bertazzi2012,
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+Repeated entry---line 883 of file biblio_LIRP.bib
+ : @article{LiuChenLiLiu2015
+ :                          ,
+I'm skipping whatever remains of this entry
+Too many commas in name 1 of "Seyedhosseini, S. , Bozorgi-Amiri, A. and Daraei, S." for entry Seyedhosseini2014
+while executing---line 1347 of file abbrvnat.bst
+Too many commas in name 1 of "Seyedhosseini, S. , Bozorgi-Amiri, A. and Daraei, S." for entry Seyedhosseini2014
+while executing---line 1347 of file abbrvnat.bst
+Warning--can't use both author and editor fields in Campbell98
+Warning--empty journal in hiassat_genetic_2017
+Warning--empty year in LiGuoWangFu2013
+Warning--empty year in LiGuoWangFu2013
+Too many commas in name 1 of "Seyedhosseini, S. , Bozorgi-Amiri, A. and Daraei, S." for entry Seyedhosseini2014
+while executing---line 1429 of file abbrvnat.bst
+Too many commas in name 1 of "Seyedhosseini, S. , Bozorgi-Amiri, A. and Daraei, S." for entry Seyedhosseini2014
+while executing---line 1429 of file abbrvnat.bst
+You've used 51 entries,
+            2773 wiz_defined-function locations,
+            970 strings with 15623 characters,
+and the built_in function-call counts, 25550 in all, are:
+= -- 2341
+> -- 1501
+< -- 24
++ -- 502
+- -- 450
+* -- 2245
+:= -- 3926
+add.period$ -- 182
+call.type$ -- 51
+change.case$ -- 302
+chr.to.int$ -- 50
+cite$ -- 106
+duplicate$ -- 1076
+empty$ -- 2012
+format.name$ -- 541
+if$ -- 5342
+int.to.chr$ -- 2
+int.to.str$ -- 1
+missing$ -- 51
+newline$ -- 292
+num.names$ -- 204
+pop$ -- 504
+preamble$ -- 1
+purify$ -- 252
+quote$ -- 0
+skip$ -- 830
+stack$ -- 0
+substring$ -- 1152
+swap$ -- 101
+text.length$ -- 3
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 556
+warning$ -- 4
+while$ -- 222
+width$ -- 0
+write$ -- 724
+(There were 7 error messages)
