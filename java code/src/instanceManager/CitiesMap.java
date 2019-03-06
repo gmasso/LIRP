@@ -128,7 +128,7 @@ public class CitiesMap extends Layer {
 	public Point2D positionClient(double urbanProba) {
 		// Select the index of the city to which the client belongs
 		int cityIndex = 0;
-		while(urbanProba > this.cityCumRatio[cityIndex] && cityIndex < this.getNbSites()) {
+		while(cityIndex < this.getNbSites() && urbanProba > this.cityCumRatio[cityIndex]) {
 			cityIndex++;
 		}
 
@@ -140,7 +140,15 @@ public class CitiesMap extends Layer {
 		{
 			Point2D cityCoords = this.getSite(cityIndex).getCoordinates();
 			double std = this.sizes[cityIndex];
-			return new Point2D.Double(cityCoords.getX() + Config.RAND.nextGaussian() * std, cityCoords.getY() + Config.RAND.nextGaussian() * std);
+			double xCoord = cityCoords.getX() + Config.RAND.nextGaussian() * Math.pow(std/2.0, 2);
+			while(xCoord < 0 || xCoord > this.gridSize) {
+				xCoord = cityCoords.getX() + Config.RAND.nextGaussian() * Math.pow(std/2.0, 2);
+			}
+			double yCoord = cityCoords.getY() + Config.RAND.nextGaussian() * Math.pow(std/2.0, 2);
+			while(yCoord < 0 || yCoord > this.gridSize) {
+				yCoord = cityCoords.getY() + Config.RAND.nextGaussian() * Math.pow(std/2.0, 2);
+			}
+			return new Point2D.Double(xCoord, yCoord);
 
 		}
 	}

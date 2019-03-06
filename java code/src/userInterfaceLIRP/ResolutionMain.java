@@ -30,6 +30,7 @@ public class ResolutionMain {
 		String loopString = "";
 
 		boolean withLM = false;
+		boolean presolve = false;
 		for(int argID = 0; argID < args.length; argID++) {
 			if(args[argID].startsWith("-split=")) {
 				splitString = args[argID].substring(args[argID].lastIndexOf("=") + 1);
@@ -40,7 +41,9 @@ public class ResolutionMain {
 			else if(args[argID].startsWith("-loop_lvl=")) {
 				loopString = args[argID].substring(args[argID].lastIndexOf("=") + 1);
 			}
-
+			else if(args[argID].startsWith("-ps")) {
+				presolve = true;
+			}
 			else {
 				fileName = args[argID];
 			}
@@ -70,6 +73,10 @@ public class ResolutionMain {
 			else {
 				System.out.println("The directory where the instance should be located does not exists");
 				System.exit(1);
+			}
+			if(!listSol.exists()) {
+				System.out.println("The directory where the solution will be stored must be created beforehand.");
+				System.exit(1);
 			}		
 
 			if(instSet.contains(instName + "." + extension)) {
@@ -86,10 +93,13 @@ public class ResolutionMain {
 					int[] splitParam = new int[instLIRP.getNbLevels()];
 					if(splitString.length() > 0) {
 						splitParam = convertStrToIntArray(splitString);
+						fileNameSol = "";
+						if(presolve)
+							fileNameSol = fileNameSol + "PS-";
 						if(withLM)
-							fileNameSol = "LM-Split" + splitString + "_sol.json";
-						else
-							fileNameSol = "Split" + splitString + "_sol.json";
+							fileNameSol = fileNameSol + "LM-";
+						
+						fileNameSol = fileNameSol + "Split" + splitString + "_sol.json";
 					}
 					if(loopString.length() > 0) {
 						loopLvls = extractLoopLvls(instLIRP.getNbLevels(), loopString);
@@ -120,7 +130,7 @@ public class ResolutionMain {
 						System.setOut(printStreamLog);
 						System.setErr(printStreamLog);
 						long startChrono = System.currentTimeMillis();
-						Solution sol = Matheuristics.computeSolution(instLIRP, rm, loopLvls, splitParam, lm);
+						Solution sol = Matheuristics.computeSolution(instLIRP, rm, loopLvls, splitParam, lm, presolve);
 
 						long stopChrono = System.currentTimeMillis();
 						long duration = (stopChrono - startChrono);
@@ -149,6 +159,9 @@ public class ResolutionMain {
 						instLIRP = null;
 
 						System.out.println("Instance solved.");
+					}
+					else {
+						System.out.println("Instance already solved.");
 					}
 				}
 

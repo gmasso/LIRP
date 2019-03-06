@@ -2,11 +2,14 @@ package solverLIRP;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 
+import ilog.concert.IloConversion;
 import ilog.concert.IloException;
 import ilog.concert.IloIntVar;
+import ilog.concert.IloLPMatrix;
 import ilog.concert.IloLinearIntExpr;
 import ilog.concert.IloLinearNumExpr;
 import ilog.concert.IloNumVar;
+import ilog.concert.IloNumVarType;
 import ilog.concert.IloObjectiveSense;
 import ilog.cplex.IloCplex;
 import ilog.cplex.IloCplex.DoubleParam;
@@ -44,6 +47,10 @@ public class Solver{
 
 		/* Data */
 		this.instLIRP = instLIRP;
+		//		System.out.print("ROUTES AVAILABLE : ");
+		//		for(Route r : availRoutes.get(1)) {
+		//				System.out.print("{start: " + r.getStartIndex() + ", stops: " + r.getStops().toString() + "}, ");
+		//		};
 
 		this.routes = new Route[this.instLIRP.getNbLevels()][];
 		for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
@@ -58,6 +65,7 @@ public class Solver{
 
 		/* Set the time limit */
 		this.LIRPSolver.setParam(DoubleParam.TiLim, timeLimit);
+		//this.LIRPSolver.setParam(DoubleParam.TiLim, 20);
 		this.LIRPSolver.setParam(IloCplex.IntParam.Threads, Config.MAX_THREADS);
 
 		/* Initialization of the variables */
@@ -74,7 +82,7 @@ public class Solver{
 			for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
 				/* Get the number of locations at this level and at the upper level */
 				int nbLocLvl = this.instLIRP.getNbLocations(lvl);
-				
+
 				/* Each location is served by at most one route in every period (2-3) */
 				for(int loc = 0; loc < nbLocLvl; loc++) {
 					IloLinearIntExpr lhs2 = this.LIRPSolver.linearIntExpr();
@@ -265,7 +273,7 @@ public class Solver{
 	 * Solves the MIP related to the LIRP, setting the value of all the variables
 	 * @throws IloException
 	 */
-	private void solveMIP() throws IloException {
+	private void solveMIP(boolean relax) throws IloException {
 
 		IloNumVar obj = this.LIRPSolver.numVar(0, Double.MAX_VALUE, "obj"); // objective function
 
@@ -302,7 +310,48 @@ public class Solver{
 		 =================*/
 		this.LIRPSolver.addLe(objexpr, obj);
 		this.LIRPSolver.addObjective(IloObjectiveSense.Minimize, obj);
+		
+		IloConversion[] convY = new IloConversion[y.length];
+		IloConversion[][] convZ = new IloConversion[z.length][];
+
+		IloLPMatrix lp = (IloLPMatrix) this.LIRPSolver.LPMatrixIterator().next();
+		System.out.println(lp.getNumVars().toString());
+        IloConversion conv = this.LIRPSolver.conversion(lp.getNumVars(),
+                                                IloNumVarType.Float);
+
+		if(relax) {
+			System.out.println("Relaxing boolean constaints");
+
+	         //IloLPMatrix lp = (IloLPMatrix)cplex.LPMatrixIterator().next();
+	      
+	         this.LIRPSolver.add(conv);
+
+			/* If we want to solve the relaxed problem */
+//			for(int lvl = 0; lvl < y.length; lvl++) {
+//				convY[lvl] = this.LIRPSolver.conversion(y[lvl], IloNumVarType.Float);
+//				this.LIRPSolver.add(convY[lvl]);
+//				System.out.println("Type of localisation vars : " + this.y.getClass().toString());
+//				convZ[lvl] = new IloConversion[z[lvl].length];
+//				for(int rIter = 0; rIter < z[lvl].length; rIter++) {
+//					convZ[lvl][rIter] = this.LIRPSolver.conversion(z[lvl][rIter], IloNumVarType.Float);
+//					this.LIRPSolver.add(convZ[lvl][rIter]);
+//				}
+//			}
+		}
 		this.LIRPSolver.solve();
+		if(relax) {
+			System.out.print("Un-relaxing boolean constaints...");
+			this.LIRPSolver.delete(conv);
+//			/* Unrelax the variables */
+//			for(int lvl = 0; lvl < y.length; lvl++) {
+//				this.LIRPSolver.remove(convY[lvl]);
+//				for(int rIter = 0; rIter < z[lvl].length; rIter++) {
+//					this.LIRPSolver.remove(convZ[lvl][rIter]);
+//				}
+//			}
+			System.out.println("done");
+
+		}
 
 		this.isSolved = true;
 	}
@@ -312,7 +361,7 @@ public class Solver{
 	 * @param printStreamSol	the stream on which to print the solution
 	 * @return				the solution obtained from
 	 */
-	public Solution getSolution() throws IloException {
+	public Solution getSolution(boolean relax, double threshold) throws IloException {
 
 		/*===============================
 		 *     SAVE THE SOLVER OUTPUT
@@ -320,86 +369,92 @@ public class Solver{
 		Solution sol  = new Solution(this.instLIRP, this.routes);
 
 		if(!this.isSolved)
-			this.solveMIP();
+			this.solveMIP(relax);
 
 		/* Get the best LB on the problem */
 		double bestLB = this.LIRPSolver.getBestObjValue();
-		System.out.println(" Best LB : " + bestLB);
 
-		if (this.LIRPSolver.getStatus().equals(IloCplex.Status.Infeasible)) {
-			System.out.println("There is no solution");
+		if(!relax) {
+			System.out.println(" Best LB : " + bestLB);
+			if (this.LIRPSolver.getStatus().equals(IloCplex.Status.Infeasible)) {
+				System.out.println("There is no solution");
+			}
+			else {
+				System.out.println();
+				System.out.println("===========  RESULTS  ===========");
+				System.out.print("Status of the solver :   ");
+				System.out.println(this.LIRPSolver.getStatus());
+				System.out.print(" Best solution found :   ");
+				/* Get the current integral solution */
+				double bestFeasible = this.LIRPSolver.getObjValue();
+				System.out.print(bestFeasible);
+				System.out.println(" Best LB : ");
+				System.out.print(bestLB);
+			}
 		}
-		else {
-			System.out.println();
-			System.out.println("===========  RESULTS  ===========");
-			System.out.print("Status of the solver :   ");
-			System.out.println(this.LIRPSolver.getStatus());
-			System.out.print(" Best solution found :   ");
-			/* Get the current integral solution */
-			double bestFeasible = this.LIRPSolver.getObjValue();
-			System.out.print(bestFeasible);
-			System.out.println(" Best LB : ");
-			System.out.print(bestLB);
 
-
-			/*=======================
-			 *    SOLUTION VALUES
+		/*=======================
+		 *    SOLUTION VALUES
 			 ========================*/
-			/* Save the status of depots (open/closed) */
-			for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
-				if(lvl < this.instLIRP.getNbLevels() - 1) {
-					for(int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++) {
-						if (this.LIRPSolver.getValue(this.y[lvl][loc]) > Config.EPSILON)
-							sol.setOpenDepot(lvl, loc, true);
-						else
-							sol.setOpenDepot(lvl, loc, false);
-					}
+		/* Save the status of depots (open/closed) */
+		for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
+			if(lvl < this.instLIRP.getNbLevels() - 1) {
+				for(int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++) {
+					if (this.LIRPSolver.getValue(this.y[lvl][loc]) > threshold)
+						sol.setOpenDepot(lvl, loc, true);
+					else
+						sol.setOpenDepot(lvl, loc, false);
 				}
+			}
 
-				/* Save the quantities delivered to each location in each period */
-				for (int t = 0; t < this.instLIRP.getNbPeriods(); t++){
-					for(int r = 0; r < this.routes[lvl].length; r++) {
-						if (this.LIRPSolver.getValue(this.z[lvl][r][t]) > 1 - Config.EPSILON) {
-							sol.setUsedRoute(lvl, r, t, true);
-							for (int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++){
-								double q = this.LIRPSolver.getValue(this.q[lvl][loc][r][t]);
-								if(q > Config.EPSILON) {
-									sol.setDeliveryLocation(lvl, loc, r, t, q);
-								}
-								else {
-									sol.setDeliveryLocation(lvl, loc, r, t, 0);
-								}
+			/* Save the quantities delivered to each location in each period */
+			for (int t = 0; t < this.instLIRP.getNbPeriods(); t++){
+				for(int r = 0; r < this.routes[lvl].length; r++) {
+					if (this.LIRPSolver.getValue(this.z[lvl][r][t]) > threshold) {
+						sol.setUsedRoute(lvl, r, t, true);
+						for (int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++){
+							double q = this.LIRPSolver.getValue(this.q[lvl][loc][r][t]);
+							if(q > threshold) {
+								sol.setDeliveryLocation(lvl, loc, r, t, q);
 							}
-						}
-						else {
-							sol.setUsedRoute(lvl, r, t, false);
-							for (int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++){
-								double q = this.LIRPSolver.getValue(this.q[lvl][loc][r][t]);
-								if(q > Config.EPSILON) {
-									sol.setDeliveryLocation(lvl, loc, r, t, q);
-								}
-								else {
-									sol.setDeliveryLocation(lvl, loc, r, t, q);
-								}
+							else {
+								sol.setDeliveryLocation(lvl, loc, r, t, 0);
 							}
 						}
 					}
-					/* Save the inventory in each location in each period */
-					for (int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++){
-						if(this.LIRPSolver.getValue(this.invLoc[lvl][loc][t]) > Config.EPSILON)
-							sol.setInvLoc(lvl, loc, t, this.LIRPSolver.getValue(this.invLoc[lvl][loc][t]));
-						else
-							sol.setInvLoc(lvl, loc, t, 0);
+					else {
+						sol.setUsedRoute(lvl, r, t, false);
+						for (int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++){
+							double q = this.LIRPSolver.getValue(this.q[lvl][loc][r][t]);
+							if(q > threshold) {
+								sol.setDeliveryLocation(lvl, loc, r, t, q);
+							}
+							else {
+								sol.setDeliveryLocation(lvl, loc, r, t, q);
+							}
+						}
 					}
-
 				}
+				/* Save the inventory in each location in each period */
+				for (int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++){
+					if(this.LIRPSolver.getValue(this.invLoc[lvl][loc][t]) > threshold)
+						sol.setInvLoc(lvl, loc, t, this.LIRPSolver.getValue(this.invLoc[lvl][loc][t]));
+					else
+						sol.setInvLoc(lvl, loc, t, 0);
+				}
+
 			}
 		}
 
 		sol.setStatus(this.LIRPSolver.getStatus().toString());
 		sol.setLB(bestLB);
 
-		Checker.check(sol, this.instLIRP, this.routes);
+		if(!relax) {
+			Checker.check(sol, this.instLIRP, this.routes);
+		}
+
+		System.out.print("Nb routes used : ");
+		System.out.print(sol.collectUsedLoops().get(1).size());
 
 		return sol;
 	}

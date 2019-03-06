@@ -84,6 +84,21 @@ public class Route {
 			this.addDummyCost();
 		}
 	}
+	
+	/**
+	 * Creates a new Route Object with the same attributes as another one
+	 * @param routeToCopy 	The route from which to get the attributes
+	 */
+	public Route(Route routeToCopy) {
+		this.instLIRP = routeToCopy.instLIRP;
+		this.cost = routeToCopy.cost;
+		this.lvl = routeToCopy.lvl;
+		this.isDummy = routeToCopy.isDummy;
+		this.start = routeToCopy.start;
+		this.stops = new LinkedHashSet<Integer>(routeToCopy.stops);
+		this.stopTime = routeToCopy.stopTime;
+		this.travelTime = routeToCopy.travelTime;
+	}
 
 	/*
 	 * ACCESSORS 

@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import tools.Config;
 
 public class DemandSequence extends Location {
+	private double intensity;
 	private double[] demands; // The demand of the client for each period of the planning horizon
 
 	/**
@@ -44,12 +45,12 @@ public class DemandSequence extends Location {
 	/*
 	 * MUTATORS
 	 */
-	public void fillValues(int planningHorizon, double intensity, boolean isUniform, int period) {
+	public void fillValues(int planningHorizon, boolean isUniform, int period) {
 		this.demands = new double[planningHorizon];
 		/* If the demand is uniform the sequence of demands is filled with uniform r.v. */
 		if (isUniform) {
 			for (int t = 0; t < planningHorizon; t++)
-				this.demands[t] = intensity * Config.RAND.nextDouble();
+				this.demands[t] = this.intensity * Config.RAND.nextDouble();
 		}
 		/* Otherwise the demand is drawn according to a truncated normal distribution,
 		 * around its average value (sinus if periodic, constant otherwise)
@@ -63,12 +64,17 @@ public class DemandSequence extends Location {
 				if (period > 0)
 					currentMean += avgDemand * Math.sin(2.0 * Math.PI * t / period);
 				while (currentDemand < 0 || currentDemand > currentMean + 0.5) {
-					currentDemand = intensity * (currentMean + Config.RAND.nextGaussian() / 6);	
+					currentDemand = intensity * (currentMean + Config.RAND.nextGaussian() / 4);	
 				}
 				this.demands[t] = currentDemand;
 			}
 		}
 	}
+	
+	public void setIntensity(double intensity) {
+		this.intensity = intensity;
+	}
+	
 	/*
 	 * ACCESSORS
 	 */
@@ -103,6 +109,10 @@ public class DemandSequence extends Location {
 		return cumDemand;
 	}
 
+	public double getIntensity() {
+		return this.intensity;
+	}
+	
 	/**
 	 * Enrich the JSON object associated with the location with the demand sequence of the client
 	 */
@@ -110,6 +120,7 @@ public class DemandSequence extends Location {
 	protected JSONObject getJSONLocSpec() throws IOException {
 		/* Create a JSON Object to describe the depots map */
 		JSONObject jsonSequence = new JSONObject();
+		jsonSequence.put("intensity", this.intensity);
 		if(this.demands != null) {
 			jsonSequence.put("demands", new JSONArray(this.demands));
 		}

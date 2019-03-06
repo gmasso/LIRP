@@ -21,7 +21,7 @@ public class LayerGenerator {
 	private static double[] proba_sizes = {0.25, 0.3, 0.2, 0.18, 0.07};	// Probability of each size
 
 	private static boolean gen_depots = false;
-	private static boolean gen_clients = false;
+	private static boolean gen_clients = true;
 	/**
 	 * @param args
 	 * @throws IOException
@@ -32,7 +32,7 @@ public class LayerGenerator {
 		if(gen_depots) {
 			/* Create the layers for each level */
 			/* DC levels */
-			for(int lvl = 0; lvl < Config.nb_levels - 1; lvl++) {
+			for(int lvl = 0; lvl < Config.NB_LEVELS - 1; lvl++) {
 				for(int nbDepots : nb_depots) {
 					for(int i = 0; i < 30; i++) {
 						DepotsMap dMap = new DepotsMap(Config.grid_size, nbDepots, Config.FIXED_COST_DC, oc_depots, 0, capa_loc);
@@ -44,10 +44,10 @@ public class LayerGenerator {
 		}
 		if(gen_clients) {
 			/* Create instances with 3 or 2 cities */
-			for(int nbCities = 0; nbCities < 3; nbCities++) {
+			for(int nbCities = 2; nbCities < 3; nbCities++) {
 				/* Create 10 layers of each type */
-				for(int i = 0; i < 10; i++) {
-					ClientsMap cMap = new ClientsMap(Config.grid_size, nb_clients, selectCitiesSizes(nbCities), 0.75, capa_loc);
+				for(int i = 0; i < 1; i++) {
+					ClientsMap cMap = new ClientsMap(Config.grid_size, nb_clients, selectCitiesSizes(nbCities), 0.7, capa_loc);
 					DemandsMap dMapIID = new DemandsMap(cMap, 90, 0, true);
 					DemandsMap dMapNormal = new DemandsMap(cMap, 90, 0, false);
 					DemandsMap dMapPeriodic = new DemandsMap(cMap, 90, 7, false);

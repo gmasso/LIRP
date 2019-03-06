@@ -321,6 +321,18 @@ public class Instance {
 	}
 
 	/**
+	 * Return the index of a client
+	 * @param client	the Client object of interest
+	 * @return		the index of this client in the ClientsMap associated with the instance
+	 */
+	public int getClientIndex(Location client) {
+		for(int cIndex = 0; cIndex < this.clients.getNbSites(); cIndex++) {
+			if((Client) this.clients.getSite(cIndex) == client)
+				return cIndex;
+		}
+		return -1;
+	}
+	/**
 	 * Return the number of location at a given level of the network
 	 * @param lvl	the level of interest in the network
 	 * @return		the number of location at the level of interest (0 if the level corresponds to the external supplier at the root of the distribution network)
