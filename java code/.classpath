@@ -3,7 +3,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="/Users/gmas/Downloads/eclim_2.6.0.jar"/>
-	<classpathentry kind="lib" path="Useful libraries/json-20170516.jar"/>
 	<classpathentry kind="lib" path="Useful libraries/cplex.jar"/>
+	<classpathentry kind="lib" path="/Users/gmas/Documents/GitHub/LIRP/java code/Useful libraries/json-20170516.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

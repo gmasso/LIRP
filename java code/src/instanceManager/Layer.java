@@ -178,7 +178,13 @@ public abstract class Layer {
 	protected Point2D drawLocation(double siteSize) {
 		double distWithBoundaries = 2 * siteSize;
 		double xCoord = distWithBoundaries + Config.RAND.nextDouble() * (this.gridSize - distWithBoundaries);
+		while(xCoord < 0 || xCoord > this.gridSize) {
+			xCoord = distWithBoundaries + Config.RAND.nextDouble() * (this.gridSize - distWithBoundaries);
+		}
 		double yCoord = distWithBoundaries + Config.RAND.nextDouble() * (this.gridSize - distWithBoundaries);
+		while(yCoord < 0 || yCoord > this.gridSize) {
+			yCoord = distWithBoundaries + Config.RAND.nextDouble() * (this.gridSize - distWithBoundaries);
+		}
 		return new Point2D.Double(xCoord, yCoord);
 	}
 

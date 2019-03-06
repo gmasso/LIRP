@@ -1,4 +1,10 @@
-/bin/
+java code/bin/
+Instances/
 Instances/Layers/
 Instances/Complete/Big/
 *.pdf
+*.class
+*.log
+*.jar
+Log files/
+*~

@@ -211,7 +211,7 @@ public class ClientsMap extends Layer {
 						c = selectIndex(clientsWeights[dBoxIndex]); 
 						rnd = Config.RAND.nextDouble();
 					}
-					clientsDemands[c][t] +=  this.scaleDemand(demandProfile) * demandsMap.getDemandBoxInPeriod(dBoxIndex, startPlanning + t);
+					clientsDemands[c][t] +=  this.scaleDemand(demandProfile) * ((DemandSequence) demandsMap.getSite(dBoxIndex)).getValue(startPlanning + t);
 				}
 			}
 			/* Set the clients demands in every period */
@@ -263,18 +263,7 @@ public class ClientsMap extends Layer {
 	private Point2D drawClient() {
 		// Fill the coordinates of the clients at random according to the position of urban areas
 		double urbanProba = Config.RAND.nextDouble();
-		Point2D clientCoords = this.cities.drawLocation(urbanProba);
-
-		// Compute the coordinates of the client in the selected city, using a normal distribution with mean the city coordinates and standard deviation the city size
-		// If the client falls out of the grid, replace it on its border
-		if(clientCoords.getX() < 0)
-			clientCoords.setLocation(0, clientCoords.getY());
-		else if(clientCoords.getX() > gridSize)
-			clientCoords.setLocation(gridSize, clientCoords.getY());
-		if(clientCoords.getY() < 0)
-			clientCoords.setLocation(clientCoords.getX(), 0);
-		else if(clientCoords.getY() > gridSize)
-			clientCoords.setLocation(clientCoords.getX(), gridSize);
+		Point2D clientCoords = this.cities.positionClient(urbanProba);
 
 		return clientCoords;
 	}

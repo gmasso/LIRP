@@ -148,12 +148,21 @@ public final class Checker {
 						else
 							rhs8 += sol.getInvLoc(lvl, loc, t - 1);
 
+						double sumQuant = 0;
 						for (int r = 0; r < routes[lvl].length; r++) {
 							rhs8 += sol.getQuantityDelivered(lvl, loc, r, t);
+							sumQuant += sol.getQuantityDelivered(lvl, loc, r, t);
 						}
 						if(lhs8 < rhs8 - Config.EPSILON || lhs8 > rhs8 + Config.EPSILON) {
 							isFeasible = false;
 							System.out.println("ERR in constraint (8) in the flow conservation of client " + loc + " at level " + lvl + " in period " + t);
+							if(t == 0)
+								System.out.println("inventory at the beginning of the horizon: " + instLIRP.getClient(loc).getInitialInventory());
+							else
+								System.out.println("inventory at the end of period " + (t - 1) + ": " + sol.getInvLoc(lvl, loc, t - 1));
+							System.out.println("quantity delivered in period " + t + ": " + sumQuant);
+							System.out.println("inventory at the end of period " + t + ": " + sol.getInvLoc(lvl, loc, t));
+							System.out.println("demand in period " + t + ": " + instLIRP.getClient(loc).getDemand(t));
 						}
 
 						/* Stock capacity at the client or ensuring that the inventory is not greater than the sum of remaining demands (10) */

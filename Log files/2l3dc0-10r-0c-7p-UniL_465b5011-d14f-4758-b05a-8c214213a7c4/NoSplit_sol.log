@@ -1,12 +1,74 @@
-java.lang.UnsatisfiedLinkError: no cplex1280 in java.library.path
-java.library.path must point to the directory containing the CPLEX shared library
-try invoking java with java -Djava.library.path=...
-Exception in thread "main" java.lang.UnsatisfiedLinkError: ilog.cplex.Cplex.CPXopenCPLEX([I)J
-	at ilog.cplex.Cplex.CPXopenCPLEX(Native Method)
-	at ilog.cplex.CplexI.init(CplexI.java:6834)
-	at ilog.cplex.CplexI.<init>(CplexI.java:785)
-	at ilog.cplex.IloCplex.<init>(IloCplex.java:10154)
-	at ilog.cplex.IloCplex.<init>(IloCplex.java:10169)
-	at solverLIRP.Solver.<init>(Solver.java:57)
-	at solverLIRP.Matheuristics.computeSolution(Matheuristics.java:37)
-	at userInterfaceLIRP.ResolutionMain.main(ResolutionMain.java:119)
+CPXPARAM_TimeLimit                               20
+CPXPARAM_Threads                                 4
+Tried aggregator 1 time.
+MIP Presolve eliminated 18266 rows and 12317 columns.
+MIP Presolve added 1462 rows and 0 columns.
+MIP Presolve modified 1870 coefficients.
+Reduced MIP has 2776 rows, 5474 columns, and 21719 nonzeros.
+Reduced MIP has 1634 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.08 sec. (44.53 ticks)
+Found incumbent of value 34435.727125 after 0.13 sec. (57.51 ticks)
+Probing time = 0.07 sec. (5.44 ticks)
+Tried aggregator 1 time.
+Reduced MIP has 2776 rows, 5474 columns, and 21719 nonzeros.
+Reduced MIP has 1634 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.02 sec. (14.16 ticks)
+Probing time = 0.02 sec. (5.40 ticks)
+Clique table members: 301.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 4 threads.
+Root relaxation solution time = 0.09 sec. (112.41 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                        34435.7271        0.0000           100.00%
+*     0+    0                         9527.7140        0.0000           100.00%
+      0     0     2228.4406    42     9527.7140     2228.4406     2254   76.61%
+*     0+    0                         4760.0726     2228.4406            53.18%
+      0     0     4007.7448    53     4760.0726     Cuts: 123     3419   15.80%
+*     0+    0                         4420.2177     4007.7448             9.33%
+*     0+    0                         4327.0424     4007.7448             7.38%
+      0     0     4083.0568    59     4327.0424     Cuts: 187     3782    5.64%
+*     0+    0                         4304.9837     4083.0568             5.16%
+      0     0     4131.8134    62     4304.9837     Cuts: 264     4062    4.02%
+*     0+    0                         4266.8559     4131.8134             3.16%
+*     0+    0                         4264.8689     4131.8134             3.12%
+*     0+    0                         4250.6849     4131.8134             2.80%
+      0     0     4148.0745    68     4250.6849     Cuts: 243     4358    2.41%
+      0     0     4158.4313    65     4250.6849     Cuts: 218     4582    2.17%
+      0     0     4163.1304    64     4250.6849     Cuts: 139     4726    2.06%
+      0     0     4164.1840    69     4250.6849     Cuts: 146     4839    2.03%
+      0     0     4164.7217    53     4250.6849     Cuts: 105     4964    2.02%
+      0     0     4165.1589    54     4250.6849      Cuts: 69     5044    2.01%
+      0     0     4165.3852    52     4250.6849      Cuts: 63     5142    2.01%
+      0     0     4165.5775    53     4250.6849      Cuts: 45     5225    1.74%
+      0     0        cutoff           4250.6849     4250.6849     5225    0.00%
+Elapsed time = 3.24 sec. (1859.92 ticks, tree = 0.01 MB, solutions = 9)
+
+Implied bound cuts applied:  111
+Flow cuts applied:  77
+Mixed integer rounding cuts applied:  53
+Flow path cuts applied:  8
+Zero-half cuts applied:  4
+Lift and project cuts applied:  1
+Gomory fractional cuts applied:  1
+
+Root node processing (before b&c):
+  Real time             =    3.25 sec. (1861.59 ticks)
+Parallel b&c, 4 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    3.25 sec. (1861.59 ticks)
+ Best LB : 4250.684856524693
+
+===========  RESULTS  ===========
+Status of the solver :   Optimal
+ Best solution found :   4250.684856524693 Best LB : 
+4250.684856524693Nb routes used : 6==================================================
+Time to solve the instance: 3717 milliseconds
+=================================================
+

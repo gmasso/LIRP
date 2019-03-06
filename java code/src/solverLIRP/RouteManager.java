@@ -85,7 +85,7 @@ public class RouteManager {
 	
 	/**
 	 * 
-	 * @return	the ArrayList of direct routes from the supplier to the depots
+	 * @return	the ArrayList of routes from the supplier to the depots
 	 */
 	public LinkedHashSet<Route> getAllRoutesOfLvl(int lvl) {
 		LinkedHashSet<Route> setOfRoutes = new LinkedHashSet<Route>();

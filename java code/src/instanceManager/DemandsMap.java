@@ -81,7 +81,7 @@ public class DemandsMap extends Layer {
 	 * @param period		The period of interest
 	 * @return			The value of the corresponding demand box in the period
 	 */
-	public double getDemandBoxInPeriod(int dBoxIndex, int period) {
+	public double mandBoxInPeriod(int dBoxIndex, int period) {
 		return ((DemandSequence) this.sites[dBoxIndex]).getValue(period);
 	}
 
@@ -122,8 +122,9 @@ public class DemandsMap extends Layer {
 	private void generateDemandSeq(int dBoxIndex) {
 		// A ratio of the demand corresponding to the urban ratio of the area is kept
 		// Determine the intensity of the demand box based on its distance with urban areas
-		double baseIntensity = (1 - this.clients.getCitiesMap().getUrbanRatio()) + this.clients.getCitiesMap().getUrbanRatio() * getDemandIntensity(this.sites[dBoxIndex]);
-		((DemandSequence) this.sites[dBoxIndex]).fillValues(this.planningHorizon, baseIntensity, this.isUniform, this.period);
+		((DemandSequence) this.sites[dBoxIndex]).setIntensity((1 - this.clients.getCitiesMap().getUrbanRatio()) * truncInvExp(0.5, 1) + this.clients.getCitiesMap().getUrbanRatio() * getDemandIntensity(this.sites[dBoxIndex]));
+		
+		((DemandSequence) this.sites[dBoxIndex]).fillValues(this.planningHorizon, this.isUniform, this.period);
 	}
 
 	/**
@@ -143,11 +144,11 @@ public class DemandsMap extends Layer {
 			distWithCity = loc.getDistance(this.clients.getCitiesMap().getSite(cityIndex));
 			citySize = cities.getCitySize(cityIndex);
 			citiesInfluence += citySize;
-			intensity += citySize * cdfGaussian(1 / Math.pow(distWithCity, 2), 0, citySize);
+			intensity += citySize * cdfGaussian(1/(Math.pow(distWithCity, 2)), 0, 1/Math.pow(citySize,2));
 		}
 
 		if(citiesInfluence > 0) {
-			return 2.0 * (1.0 - (intensity / citiesInfluence));
+			return 2.0 * (intensity / citiesInfluence);
 		}
 		return 1.0;
 	}
@@ -212,6 +213,15 @@ public class DemandsMap extends Layer {
 	 */
 	private static double cdfGaussian(double z, double mu, double sigma) {
 		return cdfGaussian((z - mu) / sigma);
+	}
+	
+	
+	private static double truncInvExp(double _lambda, double ub) {
+		double val = ub + 1;
+		while(val > ub)
+			val = - _lambda * Math.log(1 - Config.RAND.nextDouble());
+
+		return 1.0 - val;
 	}
 	
 	@Override
