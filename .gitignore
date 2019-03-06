@@ -10,6 +10,7 @@ Instances/Complete/Big/
 *.log
 *.out
 *.bbl
+*.blg
 Makefile
 Log files/
 *~
