@@ -278,8 +278,6 @@ and a larger set of customers at the last level.
 Second, we propose a sampling solution method based on the decomposition of large instances in several smaller instances that are tractable by an MILP solver. 
 Finally, we introduce new instances for the LIRP and present computational experiments that show the relevance of our approach. 
 
-\newpage
-
 \section{Mathematical model}
 
 \label{sec:model}
@@ -409,7 +407,7 @@ In this section, we present our mixed integer linear formulation for the LIRP.
 The objective function to be minimized can be stated as follows: 
  
 \begin{equation} \label{objfunct}
-    {minimize} \sum_{j\in \loc \setminus \cu} f_{j} y_{j} +\sum_{t\in T} \left( \sum_{r\in \ro} c_r z_{rt} + \sum_{i\in \loc} h_{it} I_{it}\right)
+    \text{minimize} \sum_{j\in \loc \setminus \cu} f_{j} y_{j} +\sum_{t\in T} \left( \sum_{r\in \ro} c_r z_{rt} + \sum_{i\in \loc} h_{it} I_{it}\right)
     \end{equation} 
     
     The first term in equation \ref{objfunct} represents the sum of fixed opening costs for all DCs selected. 
@@ -962,6 +960,26 @@ In the last level, routes that start at unselected DCs are removed from the rout
 %--------------------------
 \section{Numerical experiments}
 \label{sec:expe}
+\subsection{Generation of instances}
+\paragraph{Assumptions}
+\begin{itemize}
+    \item Each route has a maximum duration, including the stops and the travel durations
+    \item The cost of transportation is proportional to the duration of the route
+    \item The speed of the vehicles is equal to 45 $\text{km}\cdot\text{h}^{-1}$
+    \item The capacity of the vehicles is fixed
+    \item Demand vary from one period to the next and from one client to another, as {\em high}, {\em low} or {\em mixed}
+    \end{itemize}
+\paragraph{Methodology}
+We obtain different instances of LIRP by positioning the different locations involved on a shared map, combining different {\em layers}, where each layer contains specific elements of the final problem.
+carrying some of the elements of the final problem.
+E
+Specifically, we use the following procedure to build and combine the different layers:
+\begin{description}
+    \item[Urban areas] We start by positioning
+    \item[Clients]
+    \item[DCs]
+    \item[Demand boxes]
+\end{description}
 
 \subsection{Constraints}
 

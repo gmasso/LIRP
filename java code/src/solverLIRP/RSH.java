@@ -15,10 +15,21 @@ import instanceManager.Instance;
 import instanceManager.Location;
 import tools.Config;
 
-public final class Matheuristics {
+public final class RSH {
 
-	private Matheuristics() {}
+	private RSH() {}
 
+	/**
+	 * Returns a solution to an LIRP instance by applying (or not) RSH on its different levels
+	 * @param instLIRP	The instance to solve
+	 * @param rm		The RouteManager for this instance
+	 * @param withLoops	Indicators for each level if it includes loops or not
+	 * @param rSplit	The split parameters for the routes at each level (no split if the parameter is equal to 0)
+	 * @param lm		The location manager if we pre-process an assignement for each location to a DC
+	 * @param presolve	If we start with a quick and dirty resolution of the problem to start extracting some routes
+	 * @return			A solution to the LIRP problem
+	 * @throws IloException
+	 */
 	public static Solution computeSolution(Instance instLIRP, RouteManager rm, boolean[] withLoops, int[] rSplit, LocManager lm, boolean presolve)
 			throws IloException {
 
@@ -44,7 +55,7 @@ public final class Matheuristics {
 			return NoSplitSol;
 		}
 		else {
-			return routeSamplingSol(instLIRP, rm, withLoops, rSplit, lm, presolve);
+			return RSHSol(instLIRP, rm, withLoops, rSplit, lm, presolve);
 		}
 
 	}
@@ -59,7 +70,7 @@ public final class Matheuristics {
 	 * @return				A solution to the LIRP problem corresponding to the instance instLIRP
 	 * @throws IloException
 	 */
-	private static Solution routeSamplingSol(Instance instLIRP, RouteManager rm, boolean[] withLoops, int[] rSplit, LocManager lm, boolean presolve) throws IloException {
+	private static Solution RSHSol(Instance instLIRP, RouteManager rm, boolean[] withLoops, int[] rSplit, LocManager lm, boolean presolve) throws IloException {
 		/*
 		 * ======================================================= 
 		 * Create two HashMaps of Routes objects : the first one 
@@ -67,8 +78,8 @@ public final class Matheuristics {
 		 * one contains the loop routes for each level
 		 * ======================================================= 
 		 */
-		HashMap<Integer, LinkedHashSet<Route>> setOfDirect = getAllDirects(rm);
-		HashMap<Integer, LinkedHashSet<Route>> setOfRoutes = getAllRoutes(rm, withLoops);
+		HashMap<Integer, LinkedHashSet<Route>> setOfDirect = rm.getAllDirects();
+		HashMap<Integer, LinkedHashSet<Route>> setOfRoutes = rm.getAllRoutes(withLoops);
 		/* The total time available to solve the instance is the same as the solver time without sampling */
 		double timeLimit = Config.NOSPLIT_TILIM;
 
@@ -90,7 +101,7 @@ public final class Matheuristics {
 		}
 		
 		/* Create dumb solutions to store the intermediate results */
-		Solution currentSol = computeSampleSol(instLIRP, setOfDirect, setOfRoutes, subsetSizes, lm, timeLimit, presolve);
+		Solution currentSol = getSampleSol(instLIRP, setOfDirect, setOfRoutes, subsetSizes, lm, timeLimit, presolve);
 		Solution bestSol = new Solution();
 
 		/* Total time spent on partial solutions */
@@ -104,7 +115,7 @@ public final class Matheuristics {
 			}
 			else {
 				/* Get a new current solution using a new sampling of the loop routes */
-				currentSol = computeSampleSol(instLIRP, setOfDirect, setOfRoutes, subsetSizes, lm, timeLimit - totalTime, false);
+				currentSol = getSampleSol(instLIRP, setOfDirect, setOfRoutes, subsetSizes, lm, timeLimit - totalTime, false);
 			}
 			if(currentSol != null)
 				totalTime += currentSol.getSolvingTime();
@@ -114,12 +125,12 @@ public final class Matheuristics {
 	}
 
 	/**
-	 * Compute a solution to the original LIRP instance using the route sampling algorithm
+	 * Compute a solution to the original LIRP instance using the a specified set of routes
 	 * @param instLIRP		The instance of the LIRP problem considered
 	 * @param routesLvls	The set of available routes for each level of the network
 	 * @return				A pair containing the solving time and the set of routes used in the solution (from the set of available ones)
 	 */
-	private static Solution computeSampleSol(Instance instLIRP, HashMap<Integer, LinkedHashSet<Route>> setOfDirect, HashMap<Integer, LinkedHashSet<Route>> setOfRoutes, int[] subsetSizes, LocManager lm, double remainingTime, boolean presolve){
+	private static Solution getSampleSol(Instance instLIRP, HashMap<Integer, LinkedHashSet<Route>> setOfDirect, HashMap<Integer, LinkedHashSet<Route>> setOfRoutes, int[] subsetSizes, LocManager lm, double remainingTime, boolean presolve){
 		try {
 			HashMap<Integer, LinkedHashSet<Route>> filteredRoutes = filterRoutes(lm, setOfRoutes);
 			double totalTime = 0;
@@ -421,43 +432,6 @@ public final class Matheuristics {
 		}
 
 		return lvlSamples;
-	}
-
-
-	/**
-	 * Return a set of multi-stops for each level of the network
-	 * @param rm		The RouteManager object containing the routes for the instance
-	 * @param withLoops	An array indicating for each level if multi-stops routes are considered of not
-	 * @return			A HashMap containing the multi-stops routes at every level of the network
-	 */
-	private static HashMap<Integer, LinkedHashSet<Route>> getAllRoutes(RouteManager rm, boolean[] withLoops){
-		HashMap<Integer, LinkedHashSet<Route>> setOfRoutes = new HashMap<Integer, LinkedHashSet<Route>>(getAllDirects(rm));
-		for(int lvl = 0; lvl < rm.getInstance().getNbLevels(); lvl++) {
-			if(withLoops[lvl]) {
-				LinkedHashSet<Route> lvlRoutes = new LinkedHashSet<Route>();
-				int nbStops = 2;
-				while(rm.getNbRoutesOfType(lvl, nbStops) > 0){
-					lvlRoutes.addAll(rm.getAllRoutesOfType(lvl, nbStops));
-					nbStops++;
-				}
-				setOfRoutes.get(lvl).addAll(lvlRoutes);
-			}
-		}
-		return setOfRoutes;
-	}
-
-	/**
-	 * 
-	 * @param rm	The RouteManager object from which direct routes are collected
-	 * @return		A HashMap object containing the set of direct routes for each level
-	 */
-	private static HashMap<Integer, LinkedHashSet<Route>> getAllDirects(RouteManager rm){
-		HashMap<Integer, LinkedHashSet<Route>> setOfDirects = new HashMap<Integer, LinkedHashSet<Route>>();
-		for(int lvl = 0; lvl < rm.getInstance().getNbLevels(); lvl++) {
-			setOfDirects.put(lvl, new LinkedHashSet<Route>());
-			setOfDirects.get(lvl).addAll(rm.getAllRoutesOfType(lvl, 1));
-		}
-		return setOfDirects;
 	}
 
 	/**

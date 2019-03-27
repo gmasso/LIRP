@@ -9,7 +9,7 @@ import java.util.HashSet;
 import ilog.concert.IloException;
 import instanceManager.Instance;
 import solverLIRP.LocManager;
-import solverLIRP.Matheuristics;
+import solverLIRP.RSH;
 import solverLIRP.RouteManager;
 import solverLIRP.Solution;
 import tools.JSONParser;
@@ -130,7 +130,7 @@ public class ResolutionMain {
 						System.setOut(printStreamLog);
 						System.setErr(printStreamLog);
 						long startChrono = System.currentTimeMillis();
-						Solution sol = Matheuristics.computeSolution(instLIRP, rm, loopLvls, splitParam, lm, presolve);
+						Solution sol = RSH.computeSolution(instLIRP, rm, loopLvls, splitParam, lm, presolve);
 
 						long stopChrono = System.currentTimeMillis();
 						long duration = (stopChrono - startChrono);

@@ -71,16 +71,39 @@ public class RouteManager {
 	}
 
 	/**
-	 * 
-	 * @return	the ArrayList of direct routes from the supplier to the depots
+	 * Return a set of multi-stops routes for each level of the network
+	 * @param rm		The RouteManager object containing the routes for the instance
+	 * @param withLoops	An array indicating for each level if multi-stops routes are considered of not
+	 * @return			A HashMap containing the multi-stops routes at every level of the network
 	 */
-	public LinkedHashSet<Route> getAllRoutesOfType(int lvl, int nbStops) {
-		if(lvl > -1 && lvl < this.instLIRP.getNbLevels()) {
-			if(this.routes.get(lvl).containsKey(nbStops)) {
-				return this.routes.get(lvl).get(nbStops);
+	public HashMap<Integer, LinkedHashSet<Route>> getAllRoutes(boolean[] withLoops){
+		HashMap<Integer, LinkedHashSet<Route>> setOfRoutes = new HashMap<Integer, LinkedHashSet<Route>>(this.getAllDirects());
+		for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
+			if(withLoops[lvl]) {
+				LinkedHashSet<Route> lvlRoutes = new LinkedHashSet<Route>();
+				int nbStops = 2;
+				while(this.getNbRoutesOfType(lvl, nbStops) > 0){
+					lvlRoutes.addAll(this.getAllRoutesOfType(lvl, nbStops));
+					nbStops++;
+				}
+				setOfRoutes.get(lvl).addAll(lvlRoutes);
 			}
 		}
-		return new LinkedHashSet<Route>();
+		return setOfRoutes;
+	}
+
+	/**
+	 * Return a set of direct routes for each level of the network
+	 * @param rm	The RouteManager object from which direct routes are collected
+	 * @return		A HashMap object containing the set of direct routes for each level
+	 */
+	public HashMap<Integer, LinkedHashSet<Route>> getAllDirects(){
+		HashMap<Integer, LinkedHashSet<Route>> setOfDirects = new HashMap<Integer, LinkedHashSet<Route>>();
+		for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
+			setOfDirects.put(lvl, new LinkedHashSet<Route>());
+			setOfDirects.get(lvl).addAll(this.getAllRoutesOfType(lvl, 1));
+		}
+		return setOfDirects;
 	}
 	
 	/**
@@ -147,6 +170,19 @@ public class RouteManager {
 	/*
 	 * METHODS
 	 */
+	
+	/**
+	 * 
+	 * @return	the ArrayList of direct routes from the supplier to the depots
+	 */
+	private LinkedHashSet<Route> getAllRoutesOfType(int lvl, int nbStops) {
+		if(lvl > -1 && lvl < this.instLIRP.getNbLevels()) {
+			if(this.routes.get(lvl).containsKey(nbStops)) {
+				return this.routes.get(lvl).get(nbStops);
+			}
+		}
+		return new LinkedHashSet<Route>();
+	}
 	/**
 	 * Fill the direct routes arrays with all the valid direct routes for the instance considered. 
 	 * If a location is not reachable from an upper level, re-position this location on the map.
