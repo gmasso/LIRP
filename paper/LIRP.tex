@@ -18,7 +18,7 @@
 	blablabla
 	
 	
-\textbf{Keywords:}		location, inventory management, routing, sampling heuristics, supply chain
+\textbf{Keywords:}	facility location, inventory management, routing, sampling heuristics, supply chain
 	
 \end{abstract}
 
@@ -43,49 +43,14 @@ In this paper we consider an extension of the IRP concerning emerging activities
 or any activity has to frequently revise its supply chain design, e.g. delivery of e-commerce goods or services to a set of customers that changes over time. We assume a three-level supply chain consisting of one production facility, several intermediate depot called distribution centers (DC) and a larger set of customers. A single product is first carried from the production facility to DCs, and then from DCs to customers. The decision variables concern the location of DCs, the allocation of customers to DC and all IRP decisions previously cited. 
 This optimization problem is called the Location Inventory Routing Problem (LIRP). This problem appeared recently in the scientific literature \cite{AhmadiJavid2010} and has been more and more studied since then. 
 
-The contributions of this paper are the following. 
-In section \ref{sec:lit}, we review the scientific literature dedicated to the LIRP. 
-In section \ref{sec:model}, we propose a new mathematical formulation of the LIRP and show that this formulation is general enough to 
-cover several types of supply chain networks. 
-In section \ref{sec:algo}, we propose a matheuristic algorithm based on the iterative sampling of the routes. 
-In section \ref{sec:expe}, we introduce new LIRP instances and report numerical expriment that show the performance of our algorithm.
 
-\section{Literature Review} \label{sec:lit}
 
 
 
 \subsubsection*{Generalites sur les problèmes combines}
 
 The LIRP combines three families of well-known optimization problems: vehicle routing, facility location and inventory management. 
-As shown in Figure \ref{fig:circles}, these problems, combined in pairs, already define the location routing problem (LRP), the inventory routing problem (IRP) and the location problem with inventory management (ILP). 
-
-   	\begin{figure}[htbp]
-	\centering
-	\begin{tikzpicture}[scale=0.18, auto,swap]
-	\coordinate (A) at (0,1);
-	\coordinate (B) at (12,2);
-	\coordinate (C) at (6,14);
-	\fill[opacity=0.5,green!40] (C) circle(12);
-	\fill[opacity=0.5,red!40] (A)  circle(12);
-	\fill[opacity=0.5,blue!40] (B)  circle(12);
-	\fill[green,even odd rule] (C) circle(12) circle(12.15);
-	\fill[red,even odd rule] (A) circle(12) circle(12.15);
-	\fill[blue,even odd rule] (B) circle(12) circle(12.15);
-	
-	\draw (-10.5,2) node[right] {Facility};
-	\draw (-11,0) node[right] {Location};
-	\draw (13,2) node[right] {Inventory};
-	\draw (11.3,0) node[right] {Management};
-	\draw (1,19) node[right] {Vehicle};
-	\draw (1,17) node[right] {Routing};
-	\draw (4,-4) node[right] {ILP};
-	\draw (3,6.5) node[right] {LIRP};
-	\draw (-4,10) node[right] {LRP};
-	\draw (11,10) node[right] {IRP};
-	\end{tikzpicture}
-	\caption{Optimization problems combining facility location, inventory management and routing}
-	\label{fig:circles}
-	\end{figure} 
+The pairwise combination of two of these three problems gives rises to the Location Routing Problem (LRP), Inventory Routing Problem (IRP) and the Inventory Location Problem (ILP). 
 
 These three integrated problems have already been the subject of many publications in recent decades.
 
@@ -115,31 +80,49 @@ In the context of arc routing, 	\cite{Riquelme2016} inr
 	
 	\item \textbf{ILP : }
 	
-	As pointed by \cite{Melo2009}, facility location is frequently combined with inventory decisions. However, the integration of inventory and location decisions in a single mathematical model did not give rise to a well-identified optimization problem such as IRP or LRP. 
+	As pointed by \cite{Melo2009}, facility location is frequently combined with inventory decisions. 
+
+ The problem is to determine the optimal number of distributioncenters,  their locations,  the retailers assigned to each distribution center,  and the opti-mal ordering policy at the distribution centers. 
 	
 	
+	
+	\cite{DasCShen02} study a joint location-inventory model with risk pooling, facility location, vehicle routing, and inventory control.
+\cite{kaviani_location-inventory_2009} 
+
+	\cite{farahani_location-inventory_2015}
+	
+	
+		
 \end{itemize}
 
-\subsection{Review of the literature}
+
+The outline of this paper are the following. 
+In section \ref{sec:lit}, we review the scientific literature dedicated to the LIRP. 
+In section \ref{sec:model}, we propose a new mathematical formulation of the LIRP and show that this formulation is general enough to 
+cover several types of supply chain networks. 
+In section \ref{sec:algo}, we propose a matheuristic algorithm based on the iterative sampling of the routes. 
+In section \ref{sec:expe}, we introduce new LIRP instances and report numerical experiments that show the performance of our algorithm.
+
+
+\section{Review of the literature} \label{sec-lit}
 
 The location inventory routing problem LIRP has been attracting much research effort in the very recent years, but preliminary works have appeared several decades ago.  
 In this section, we review the main publications related to the LIRP.
 Section \ref{sec:almost} summarizes the preliminary works that led to a formal definition of the LIRP. 
-Next sections described the modeling of the main LIRP components: location and supply chain desgin (section\ref{sec:l}), 
+Next sections described the modeling of the main LIRP components: location and supply chain design (section \ref{sec:l}), 
 routing (\ref{sec:r} and inventory policies (\ref{sec:i}). 
 
 \subsection{Preliminary works related to the LIRP}
 \label{sec:almost}
 
  The idea of integrating location, inventory and routing decisions in mathematical models is not new, but most models have been considered intractable until the recent progress of mathematical programming solvers and heuristic solution methods. 
-In 1988, \cite{PerSir88} pointed the necessary interdependance between location, inventory and routing decisions. 
+In 1988, \cite{PerSir88} pointed the necessary interdependence between location, inventory and routing decisions. 
 The authors proposed an integrated model combining location and inventory decisions, but only direct shipments were considered and no computational experiments were presented. 
 This model has been extended by \cite{AmbScu05} to a multi-level problem with distribution routes visiting several customers. The authors also propose a dynamic models (with multiple periods). Computational experiments show the practical difficulty of solving static models (with one time period). 
 
-\cite{DasCShen02} study a joint location-inventory model with risk pooling, facility location, vehicle routing, and inventory control.
 
 Several LIRP related papers considered the three main decisions in a hierarchical way, or priority is given to one or two decisions. 
-In \cite{LiuLee03} and \cite{LiuLin05}, inventory mangement decisions are taken independently from routing and location. 
+In \cite{LiuLee03} and \cite{LiuLin05}, inventory management decisions are taken independently from routing and location. 
 \cite{Shen07} explicitly model facility location and allocation decisions but use approximated routing costs instead of formal routing costs. 
 \cite{MetZab10} propose a two-stage stochastic programming approach for a medical supply
 storage and distribution problem.
@@ -206,7 +189,7 @@ Tables \ref{tab1} and \ref{tab2} present a synthesis of the main bibliographic r
 Tables \ref{tab1} presents models with continuous time inventory policies. 
 
 
-\textcolor{red}{Ajouter texte pour presenter le contenu de chaque colonne}
+\OP{Ajouter texte pour presenter le contenu de chaque colonne}
 
 \begin{table}[htbp]
 	\scriptsize
@@ -487,75 +470,55 @@ Finally, constraints \ref{const:upos}--\ref{const:zbool} define the nature of de
 %\end{alignat}
 
 
+\subsection{Targeted use cases}
 
-\subsection{Restrictions}
-Although the MIP formulation from~\S~\ref{subsection:MIP} deals with a rather general version of the problem, we restrict our attention and apply our resolution method to particular cases of the problem.
-Specifically, we consider distribution network with two levels, i.e. $L=2$ with $\loc_1$ the set of DCs and $\cu=\loc_2$ the set of clients.
-Within this framework, we will focus on three particular cases:
-\begin{enumerate}
-    \item The first one considers a model ``Direct+Loop'' in which the set $\ro_1$ consists only of direct routes between the supplier and the depots. 
-        That is, a route $r\in\ro_1$ can be described by two arcs $(s,j)$ and $(j,s)$, where $j\in\ro_1$ and $s$ is the supplier.
-    \item The second one, called ``Loop+Direct'' considers a set $\ro_2$ containing only direct routes between depots and customers. 
-        In other words, a route $r\in\ro_2$ can be described by two arcs $(j,i)$ and $(i,j)$ with $j\in\loc_1$ and $i\in\cu$. Figure~\ref{fig:ld}.
-    \item The third one, called ``Loop+Loop'' considers multiple stops routes at every level.
-\end{enumerate}
-Figure~\ref{fig:dl} and~\ref{fig:ld} illustrates the first two types of structures related to these models.
+The MIP formulation presented in section \ref{subsection:MIP} models a general version of the LIRP, 
+that allows many supply chain networks and routing policies. 
+In this paper, we specifically address the case of a distribution network with one production facility and two tiers of facilities in the distribution network ($L=2$): one set ($\loc_1$) of DCs and one set $\cu=\loc_2$ of clients. 
+Moreover, routes are concentrated in one single echelon whereas only direct shipments are performed at the second echelon. 
+Under these assumptions, we consider two particular cases:
 
-\begin{figure}[htbp]
+ Figure~\ref{fig:dl} illustrates the ``Direct+Loop'' network, in which the set $\ro_1$ consists of direct shipments from the production center to DCs
+ and the set $\ro_2$ consists of routes starting at a DC and visiting one or several clients.  This type of network is commonly used by two-level distribution systems that deliver DCs with full truckloads and individual clients by routes starting at a DC.
+ 
+ \begin{figure}[htbp]
     \centering
-    \subcaptionbox[.45\linewidth]{Model ``Direct-Loop''\label{fig:dl}}{\inputfig{model1}}
-    \subcaptionbox[.45\linewidth]{Model ``Loop-Direct''\label{fig:ld}}{\inputfig{model2}}
-    \caption{The two types of routing structures considered}
+ 	\inputfig{model1}
+	\caption{ ``Direct-Loop'' network}
+	  \label{fig:dl}
+	
 \end{figure}
 
-In the remainder of the paper, we shall restr
-\subsection{Decomposition approach}
-The MIP presented in~\S\ref{subsection:MIP} results from the integration of several classical optimization problems that are already NP-hard individually. 
-Hence it is doubtful that any solver could produce an optimal solution directly from the above formulation in reasonable time.
-To overcome this complexity issue, we propose to use the following 2 stages approach to obtain a good solution for the integrated problem: 
-\begin{description}
-    \item[Stage 1] Split the original problem into several subproblems for which it is possible to compute an optimal solution independently
-    \item[Stage 2] Use the decisions made on these subproblems to restrict the number of variables of the integrated problem 
-\end{description}
+Figure~\ref{fig:ld} illustrates the ``Loop+Direct'' network, in which the set $\ro_1$  consists of routes starting at the production center and visiting one one several DCs, and the set $\ro_2$ consists of direct shipments from DCs to clients. This type of network may concern all distribution networks in which clients collect goods at the distribution center or a locker. 
 
-In the case of the LIRP problem, we apply this generic principle to shrink the set of routes available to the model. 
-This objective is consistent with a common observation in routing problems, for which the computational complexity is strongly influenced by the number of routes considered.
-A great number of routes also implies that there exist several ways to serve one location, which in turns makes the inventory problem more difficult.
-Finally, one may observe that even after restricting the problem to routes with less than $m$ stops for a simple network with two levels, one DC and $n$ clients, the number of admissible routes is $\mathcal{O}(n^m)$.
+\begin{figure}[htbp]
+	\centering
+	\inputfig{model2}
+	\caption{``Loop-Direct'' network}
+	\label{fig:ld}
+	\end{figure}
 
-In the next section, we shall present several decompositions to reduce the number of routes considered by the model. 
-One of these natural decompositions relies on a ``DC based'' splitting of the problem. 
-Namely, this decomposition considers one subproblem $P_{\lambda}$ for each potential DC location $\lambda\in \loc_1$.
-$P_{\lambda}$ is a subproblem of the original LIRP where the set of routes considered is $\ro(\lambda)= \ro_1(\lambda) \cup \ro_2(\lambda)$, where $\ro_1(\lambda)=\left\{r\in\ro_1:\beta_{\lambda}r=1 \mbox{ and } \alpha_{jr}=0\ \forall j\neq \lambda\right\}$ is the unique direct route from the supplier to DC $\lambda$ and $\ro_2(\lambda)=\left\{r\in\ro_2: \beta_{\lambda r}=1\right\}$ is the set of routes starting from DC $\lambda$.
-The set of clients is restricted to $\cu(\lambda) =\{i\in\cu: \sum_{r\in\ro_2(\lambda)} \alpha_{ir}\geq 1 \}$, i.e. clients that can be served using a route that starts from DC $\lambda$ . 
-Hence problem $P_{\lambda}$ is an inventory routing problem derived from the original LIRP, in which the location considerations have been discarded, as well as the routing from the supplier to DC $\lambda$. 
-All the variables of the original MIP remain the same, except $q_{\lambda t}$ that represent the quantity delivered by the external supplier to DC $\lambda$ in period $t$.
-The following MIP is a valid formulation of $P_{\lambda}$:
-\begin{alignat}{3}
-    \text{minimize} &&\sum_{t=1}^{T} \left( \sum_{r\in \ro(\lambda)} c_r z_{rt} + \sum_{i\in \left\{\lambda\right\}\cup \cu(\lambda)} h_{it} I_{it}\right)\span\omit\span\label{decomp_objfunct}\\ 
-    \text{s.t.}  %&&\sum_{r\in \ro} \gamma_{jr} z_{rt} &\leq 1 															&\forall j&\in \, \forall t=1,\ldots,T  \label{const:singleroutedepots}\\
-    &&\sum_{r\in \ro_2(\lambda)} \alpha_{ir} z_{rt} &\leq 1 															&\forall i&\in \cu(\lambda), \forall t\in T  \label{const:decomp_singleroutecustomers}\\
-    &&\sum_{r\in \ro_2(\lambda)} z_{rt} &\leq 	\nu_2													&\forall t&\in T  \label{const:decomp_fleetcapa}\\
-    %            &&\sum_{r\in \roc} z_{rt} &\leq 	\nu_{\cu}													&\forall t&=1,\ldots,T  \label{const:fleetcapaclients}\\
-    &&q_{\lambda t}   		&\leq \kappa_1 z_{rt} 														&\forall r&\in \ro_1(\lambda), t\in T\label{const:decomp_deliveryDCUB}\\
-    &&\sum_{i\in \cu(\lambda)} q_{irt}   		&\leq \kappa_2 z_{rt} 														&\forall r&\in \ro_2(\lambda), t\in T\label{const:decomp_deliveryUB}\\
-    &&q_{irt}   		&\leq \alpha_{ir}\kappa_2  														&\forall i&\in\cu(\lambda), \forall r\in \ro_2(\lambda), t\in T\label{const:decomp_deliveryConstLoc}\\
-    &&I_{\lambda,t-1} + q_{\lambda t}   			&=I_{\lambda t} +\sum_{r\in \ro_2(\lambda)}\left( \sum_{i\in \cu(\lambda)}q_{irt}\right)\quad 			&\forall t& \in T \label{const:decomp_invflowdepots}\\
-    &&I_{i,t-1}+\sum_{r\in \ro_2(\lambda)} q_{irt} &= I_{it} +d_{it} 							&\forall i&\in \cu(\lambda), \forall t\in T\label{const:decomp_dinvflowcustomers}\\
-    &&I_{\lambda t}					&\leq I_\lambda^{\max}  									&\forall t&\in T\label{const:decomp_invdepotUB}\\	
-    &&I_{it} 					&\leq \min\left(I_i^{\max}, \sum_{t' > t}d_{it'}\right)											&\forall i&\in \cu(\lambda), \forall t\in T\label{const:decomp_invcustUB}\\
-    &&q_{irt}			&\geq 0 															&\forall i&\in \cu(\lambda), \forall r\in \ro_2(\lambda),\forall t \in T\label{const:decomp_qpos}	\\
-    &&q_{\lambda t}			&\geq 0 															&\forall t&\in T\label{const:decomp_qdcpos}	\\
-    &&I_{it}			&\geq 0 															&\forall i &\in \{\lambda\}\cup \cu(\lambda), \forall t\in T\label{const:decomp_invCpos}	\\
-    &&z_{rt}					&\in \{0,1\} 														&\forall r&\in \ro_2(\lambda), \forall t\in T\label{const:decomp_zbool}
-\end{alignat}
+In this paper we present the case of a distribution network. Without loss of generality, our model can be applied to the collection of goods from multiples origins to a set of collection centers and one single processing center. 
+
+
 
 %-----------------------------------------------
 \section{Matheuristic method} 
 \label{sec:algo}
 
-We propose a matheuristic method based on a sampling of the routes. 
-A simplified scheme of this method is described in Figure \ref{fig:algo1}. 
+The LIRP  results from the integration of several classical NP-hard optimization problems. 
+Hence it is doubtful that any solver could produce optimal solutions directly from the above formulation in reasonable time, except for very small instances. The computational complexity of the problem is strongly influenced by the number of routes considered.
+A great number of routes implies that there are several ways to serve each location, which in turns makes the inventory problem more difficult.
+Finally, one may observe that in a simple network with two levels, one DC and $n$ clients, even restricting the problem to routes with at most $m$ stops, the number of admissible routes is $\mathcal{O}(n^m)$.
+
+To overcome this complexity issue, we propose a two-stage heuristic method to obtain good solutions within acceptable time.
+The heuristic relies on the assumption that an MILP solver is able to find optimal or non-optimal good solutions for small instances of the LIRP. 
+Thus, the main idea of our heuristic is (i) to split the original MILP into several subproblems for which it is possible to compute (near) optimal solutions independently and (ii) to collect the routes contained in these (near) optimal solutions to form a restricted pool of elite routes. 
+By doing this, we expect than the MILP solver will be able to solve one elite instance made of routes of the elite pool only. 
+Hence, the main challenge of our algorithm is to find a good partition of the original problem into smaller subproblems and to progressively shrink the set of routes available to the model. 
+
+
+We propose a Route Sampling Heuristic (RSH) which simplified scheme is described in Figure \ref{fig:algo1}. 
 
 The algorithm starts with the full set of routes, which is randomly shuffled, and then partitioned into independent subsets of routes of identical size. Each subset is solved independently with an MILP solver (we used IBM Cplex 12.8). All routes contained in the solutions returned by the solved are stored in a pool of so-called elite routes. 
 Finally, we hope that the pool of elite routes will be tractable by an MILP solver. 
@@ -692,6 +655,37 @@ In lines 12-16, sets $R_1$--$R_\alpha$ can be repeatedly used to yield elite rou
 
 
 \subsection{Location based sampling}
+
+
+\subsubsection{Model associated with one DC}
+
+In the next section, we shall present several decompositions to reduce the number of routes considered by the model. 
+One of these natural decompositions relies on a ``DC based'' splitting of the problem. 
+Namely, this decomposition considers one subproblem $P_{\lambda}$ for each potential DC location $\lambda\in \loc_1$.
+$P_{\lambda}$ is a subproblem of the original LIRP where the set of routes considered is $\ro(\lambda)= \ro_1(\lambda) \cup \ro_2(\lambda)$, where $\ro_1(\lambda)=\left\{r\in\ro_1:\beta_{\lambda}r=1 \mbox{ and } \alpha_{jr}=0\ \forall j\neq \lambda\right\}$ is the unique direct route from the supplier to DC $\lambda$ and $\ro_2(\lambda)=\left\{r\in\ro_2: \beta_{\lambda r}=1\right\}$ is the set of routes starting from DC $\lambda$.
+The set of clients is restricted to $\cu(\lambda) =\{i\in\cu: \sum_{r\in\ro_2(\lambda)} \alpha_{ir}\geq 1 \}$, i.e. clients that can be served using a route that starts from DC $\lambda$ . 
+Hence problem $P_{\lambda}$ is an inventory routing problem derived from the original LIRP, in which the location considerations have been discarded, as well as the routing from the supplier to DC $\lambda$. 
+All the variables of the original MIP remain the same, except $q_{\lambda t}$ that represent the quantity delivered by the external supplier to DC $\lambda$ in period $t$.
+The following MIP is a valid formulation of $P_{\lambda}$:
+\begin{alignat}{3}
+	\text{minimize} &&\sum_{t=1}^{T} \left( \sum_{r\in \ro(\lambda)} c_r z_{rt} + \sum_{i\in \left\{\lambda\right\}\cup \cu(\lambda)} h_{it} I_{it}\right)\span\omit\span\label{decomp_objfunct}\\ 
+	\text{s.t.}  %&&\sum_{r\in \ro} \gamma_{jr} z_{rt} &\leq 1 															&\forall j&\in \, \forall t=1,\ldots,T  \label{const:singleroutedepots}\\
+	&&\sum_{r\in \ro_2(\lambda)} \alpha_{ir} z_{rt} &\leq 1 															&\forall i&\in \cu(\lambda), \forall t\in T  \label{const:decomp_singleroutecustomers}\\
+	&&\sum_{r\in \ro_2(\lambda)} z_{rt} &\leq 	\nu_2													&\forall t&\in T  \label{const:decomp_fleetcapa}\\
+	%            &&\sum_{r\in \roc} z_{rt} &\leq 	\nu_{\cu}													&\forall t&=1,\ldots,T  \label{const:fleetcapaclients}\\
+	&&q_{\lambda t}   		&\leq \kappa_1 z_{rt} 														&\forall r&\in \ro_1(\lambda), t\in T\label{const:decomp_deliveryDCUB}\\
+	&&\sum_{i\in \cu(\lambda)} q_{irt}   		&\leq \kappa_2 z_{rt} 														&\forall r&\in \ro_2(\lambda), t\in T\label{const:decomp_deliveryUB}\\
+	&&q_{irt}   		&\leq \alpha_{ir}\kappa_2  														&\forall i&\in\cu(\lambda), \forall r\in \ro_2(\lambda), t\in T\label{const:decomp_deliveryConstLoc}\\
+	&&I_{\lambda,t-1} + q_{\lambda t}   			&=I_{\lambda t} +\sum_{r\in \ro_2(\lambda)}\left( \sum_{i\in \cu(\lambda)}q_{irt}\right)\quad 			&\forall t& \in T \label{const:decomp_invflowdepots}\\
+	&&I_{i,t-1}+\sum_{r\in \ro_2(\lambda)} q_{irt} &= I_{it} +d_{it} 							&\forall i&\in \cu(\lambda), \forall t\in T\label{const:decomp_dinvflowcustomers}\\
+	&&I_{\lambda t}					&\leq I_\lambda^{\max}  									&\forall t&\in T\label{const:decomp_invdepotUB}\\	
+	&&I_{it} 					&\leq \min\left(I_i^{\max}, \sum_{t' > t}d_{it'}\right)											&\forall i&\in \cu(\lambda), \forall t\in T\label{const:decomp_invcustUB}\\
+	&&q_{irt}			&\geq 0 															&\forall i&\in \cu(\lambda), \forall r\in \ro_2(\lambda),\forall t \in T\label{const:decomp_qpos}	\\
+	&&q_{\lambda t}			&\geq 0 															&\forall t&\in T\label{const:decomp_qdcpos}	\\
+	&&I_{it}			&\geq 0 															&\forall i &\in \{\lambda\}\cup \cu(\lambda), \forall t\in T\label{const:decomp_invCpos}	\\
+	&&z_{rt}					&\in \{0,1\} 														&\forall r&\in \ro_2(\lambda), \forall t\in T\label{const:decomp_zbool}
+\end{alignat}
+
 
 Sampling is performed in two steps.
 First, the clients are pre-assigned to a number of DCs, as described in Algorithm \ref{algo:pre-allocation}.
@@ -981,20 +975,31 @@ Specifically, we use the following procedure to build and combine the different 
     \item[Demand boxes]
 \end{description}
 
+
 \subsection{Constraints}
 
  \cite{Zheng2019} restrict the number of variables by incorporating real-life constraints that are not part of their mathematical model: 
  vehicles can visit at most four retailers at one trip due to vehicle capacity limitation, and DCs can only serve retailers within a given radius. 
  These constraints help reduce the number of variables from 3 millions to 600 thousands.
  
-
+ 
+ Why we consider routes at one echelon only? 
+ \begin{itemize}
+ 	\item Distribution networks with multiple layer of routes: this requires combining routes obtained at each echelon. High combinatorial burden. 
+	\item LIPR = hard problem. Probably not tractable with two many echelons. 
+ \end{itemize}
 
 \section{Conclusion}
 
 
+
 \subsection*{Possible extensions}
 \begin{itemize}
-	\item Etendre au cas où le coût d'une route dépend de sa charge.
+	\item Load dependent route cost. 
+	\item Generalisation to extended networks
+	\item One warehouse multi retailer routing problem
+	\item combination of collection and delivery activities
+	
 \end{itemize}
 
 
