@@ -31,6 +31,9 @@
 
 \section{Introduction}
 
+
+
+
 For any business, the stock is a major financial asset. 
 Therefore, its volume must be controlled in order to avoid stock-out and minimize holding costs. 
 The Vendor managed inventory (VMI) is based on the principle that the company selling a product has only a stock directly dedicated to the delivery to customers. In other words, all items received are placed on the shelf and stock replenishment is the responsibility of the supplier. VMI had motivated much research about the joint optimization of the inventory and transport, leading to the inventory routing problem (IRP). The IRP considers one supplier running a fleet of vehicles and a set of customers who consume a good on a multi-period time horizon. The objective of the IRP is to jointly optimize the delivery schedule of customers, the quantities delivered, and the delivery routes to be covered in each period, while minimizing the sum of routing costs and storage costs.
@@ -50,61 +53,23 @@ This optimization problem is called the Location Inventory Routing Problem (LIRP
 \subsubsection*{Generalites sur les problèmes combines}
 
 The LIRP combines three families of well-known optimization problems: vehicle routing, facility location and inventory management. 
-The pairwise combination of two of these three problems gives rises to the Location Routing Problem (LRP), Inventory Routing Problem (IRP) and the Inventory Location Problem (ILP). 
-
-These three integrated problems have already been the subject of many publications in recent decades.
-
-\begin{itemize}
+The pairwise combination these problems gave rise to the Location Routing Problem (LRP), the Inventory Routing Problem (IRP) and the Inventory Location Problem (ILP). These three integrated problems have already been the subject of many publications in recent decades.
+The inventory problem has been studied for more than 30 years \cite{Coelho2014}. Prior surveys had been published by \cite{Campbell98}, \cite{MoinSalhi2007}. Interested reader may also read the tutorial by \cite{Bertazzi2012}. 
+Very few models consider the inventory routing problem within a two-echelon or multi-echelon network	\cite{GuimaraesCoelho2019}
+Location Routing problems have been studeid for several decades. Recent surveys include \cite{ProdhonPrins2014}, \cite{DrexlSchneider2015} and \cite{Schneider2017}.  
+As pointed by \cite{Melo2009}, facility location is frequently combined with inventory decisions. 
+The problem is to determine the optimal number of distribution centers,  their locations,  the retailers assigned to each distribution center,  and the optimal ordering policy at the distribution centers.  Reviews on inventory location problems have been proposed by \cite{kaviani_location-inventory_2009} 
+and \cite{farahani_location-inventory_2015}. 
 	
-	\item \textbf{IRP: }
-	
-	The inventory problem has been studied for more than 30 years \cite{Coelho2014}. Prior surveys had been published by \cite{Campbell98}, \cite{MoinSalhi2007}. Interested reader may also read the tutorial by \cite{Bertazzi2012}. 
-	
-	Very few models consider the inventory routing problem within a two-echelon or multi-echelon network	\cite{GuimaraesCoelho2019}
-	
-	\item \textbf{LRP: }
-	
-	The Location Routing problem has been introduced 
-	
-		
-	
-	\cite{Laporte1987} 
-	
-	Surveys by \cite{MinJS98}, \cite{NagySahli07}, \cite{ProdhonPrins2014}, \cite{DrexlSchneider2015} and \cite{Schneider2017} 
-	
-	
-	
-In the context of arc routing, 	\cite{Riquelme2016} inr
-
-	
-	
-	\item \textbf{ILP : }
-	
-	As pointed by \cite{Melo2009}, facility location is frequently combined with inventory decisions. 
-
- The problem is to determine the optimal number of distributioncenters,  their locations,  the retailers assigned to each distribution center,  and the opti-mal ordering policy at the distribution centers. 
-	
-	
-	
-	\cite{DasCShen02} study a joint location-inventory model with risk pooling, facility location, vehicle routing, and inventory control.
-\cite{kaviani_location-inventory_2009} 
-
-	\cite{farahani_location-inventory_2015}
-	
-	
-		
-\end{itemize}
-
-
 The outline of this paper are the following. 
 In section \ref{sec:lit}, we review the scientific literature dedicated to the LIRP. 
 In section \ref{sec:model}, we propose a new mathematical formulation of the LIRP and show that this formulation is general enough to 
 cover several types of supply chain networks. 
-In section \ref{sec:algo}, we propose a matheuristic algorithm based on the iterative sampling of the routes. 
+In section \ref{sec:algo}, we propose a Route Sampling Heuristic (RSH) algorithm for the LIRP. 
 In section \ref{sec:expe}, we introduce new LIRP instances and report numerical experiments that show the performance of our algorithm.
 
 
-\section{Review of the literature} \label{sec-lit}
+\section{Review of the literature} \label{sec:lit}
 
 The location inventory routing problem LIRP has been attracting much research effort in the very recent years, but preliminary works have appeared several decades ago.  
 In this section, we review the main publications related to the LIRP.
@@ -172,56 +137,57 @@ but these papers do not detail routes generation.
 \subsection{Inventory policies}
 \label{sec:i}
 
-As far as inventory management is concerned, the literature can be classified in two main families: papers considering a continuous time inventory policy 
-and those who consider discretized time periods. 
-In the first case, demand is considered either constant (see e.g. \cite{AhmSed2012}, \cite{Deng2016}) or subject to a known distribution a 
-normal distribution (see e.g. \cite{Nekooghadirli2014}, \cite{Zhalechian2016}, \cite{Saragih2018}) or a Poisson distribution (see e.g. \cite{Asadi2018}, \cite{HabibiAS2018}). In these cases, classical continuous review policies such as $(r,Q)$ and $(S-1,S)$ policies are applied \textcolor{red}{Guillaume, il faut qu'on discute de ça} and the same inventory cycle repeats over time. Note that in this category, the objective function often incorporate the average value of inventories or their standard deviation, which yield non linearity. Thus, only small instances can be solved by MINLP solvers, or general purpose heuristics and metaheuristics are used. 
+As far as inventory management is concerned, the literature can be classified in two main families: 
+some papers consider a continuous time inventory policy whereas others consider discretized time periods. 
+In the first case, demand is considered either constant (see e.g. \cite{AhmSed2012}, \cite{Deng2016})
+or subject to a known distribution such as the normal distribution (see e.g. \cite{Zhalechian2016}, \cite{Saragih2018}) or 
+the Poisson distribution (see e.g. \cite{Asadi2018}, \cite{HabibiAS2018}). 
+Classical continuous review policies such as $(r,Q)$ and $(S-1,S)$ policies are applied and the same inventory cycle repeats over time. 
+Note that in this category, the objective function often incorporates the average value of inventory or their standard deviation. 
+These values yield non linearity. 
+Thus, only small instances can be solved by MINLP solvers, or general purpose heuristics and metaheuristics are used. 
+
+Table \ref{tab1} present a synthesis of the main bibliographic references concerning the LIRP with continuous time inventory policy. 
+\OP{Retirer tableau. Remplacer par commentaires généraux }
+
+\begin{table}[htbp]
+	\scriptsize
+	\centering
+	\begin{tabular}{lcc}
+		\toprule
+		Reference &   Route &    Inventory \\
+		&          model & 		            policy                 \\
+		\midrule
+		\cite{Yuchi2016}			&		arc		&			Wilson	\\	
+		\cite{AhmadiJavid2010}		&		arc  	&			(r,Q) 	\\	
+		\cite{AhmSed2012}			&		arc 	&			(0,Q)	\\	
+		\cite{Seyedhosseini2014} 	&	arc		&			(r,Q) 	\\	
+		\cite{LiuChenLiLiu2015}		&		route	&			(r,Q) 	\\	
+		\cite{Tang2016}				&		arc		&			(r,Q)	\\	
+		\cite{Deng2016} 			& 	route	&			(r,Q) 	\\	
+		\cite{Saragih2018}			&		arc		&		(r,Q) 	\\	
+		\cite{Dehghani2017}			&		arc		&		(S-1,S)	\\	
+		\cite{HabibiAS2018}			&		arc		&		(S-1,S)	\\	
+		\cite{Asadi2018}			&		arc		&		(S-1,S)	\\	
+		\bottomrule
+	\end{tabular}
+	\caption{LIRP models with continuous inventory review}
+	\label{tab1}
+\end{table}
+
+Note that all references cited in Table \ref{tab1} consider logistics network with three layers. 
+Direct shipments are performed from layer 1 to layer 2 and routes between a facility at layer 2 and several client at layer 3. 
 
 
-In the latter category, the time horizon is decomposed into several time periods and all demands and flow values within one period are aggregated. This leads to inventory management policies that look like lot-sizing policies. Most references study models in which all data including demand are variable but deterministic (see e.g. \cite{Guerrero2013}, \cite{Zhang2014}, \cite{Ghorbani2016}). 
+The model considered in thiss paper considers discretized time periods me periods and all demands and flow values within one period are aggregated. This leads to inventory management policies that look like lot-sizing policies. Most references study models in which all data including demand are variable but deterministic (see e.g. \cite{Guerrero2013}, \cite{Zhang2014}, \cite{Ghorbani2016}). 
 \cite{Vahdani2018} consider stochastic storage capacity. 
 \cite{Rayat2017} explicitly model stochastic demand and propose an MINLP bi-objective model with multiple periods and multiple products. The model is solved with an epsilon constraint and several multi-objective metaheuristics. 
 Uncertainty can also be incorporated through various modeling techniques. 
 \cite{ChenChenSunLiu2014, TavakkoliIFAC2016} model fuzzy demand ; \cite{Bashiri2018} define demand scenarios ; 
 
 
-Tables \ref{tab1} and \ref{tab2} present a synthesis of the main bibliographic references concerning the LIRP. 
-Tables \ref{tab1} presents models with continuous time inventory policies. 
 
-
-\OP{Ajouter texte pour presenter le contenu de chaque colonne}
-
-\begin{table}[htbp]
-	\scriptsize
-\begin{tabular}{lccccccc}
-	\toprule
-	Reference & Periods & Route & Layers   & Flow &  Stochastic & Linear & Inventory \\
-             &          & model & 		   & 	   &     demand        &        & policy                 \\
- \midrule
-\cite{Yuchi2016}	&	1	&	arc	&	3 &	direct+loop	&	constant	&	NL	&	Wilson	\\	
-\cite{AhmadiJavid2010}	&	1	&	arc  &	3 &	direct+loop	&	normal	&	NL	&	(r,Q) 	\\	
-\cite{AhmSed2012}	&	1	&	arc &	3 	&	direct+loop	&	constant 	&	NL	&	(0,Q)	\\	
-\cite{Nekooghadirli2014}	&	multi	&	arc &	3 	&	direct+loop	&	normal 	&	NL	&	(r,Q) 	\\	
-\cite{Seyedhosseini2014} &	1	&	arc	&3 &	direct+loop	&	demand	&	NL	&	(r,Q) 	\\	
-\cite{LiuChenLiLiu2015}	&	1	&	route	&	3 	&	direct+loop	&	normal	&	NL	&	(r,Q) 	\\	
-\cite{Tang2016}	&	1	&	arc	&	3 	&	direct+loop	&	no	&	NL	&	(Q, R)	\\	
-\cite{Zhalechian2016}	&	multi	&	arc	&	3 	&	direct+loop	&	Normal	&	NL	&	(r,Q) 	\\	
-\cite{Deng2016} & 1	&	route	&	3 	&	direct+loop	&	no	&	NL	&	(r,Q) 	\\	
-\cite{Dehghani2017}	&	1	&	arc	&	3 	&	direct+loop	&	Poisson	&	NL	&	(S-1,S)	\\	
-\cite{Rafie-Majd2018}	&multi	&	arc	&	3 	&	direct+loop	&	normal	&	NL	&	(Q,R)	\\	
-\cite{HabibiAS2018}		&	1	&	arc	&	3 &	direct+loop	&	 Poisson 	&	NL	&	(S-1,S)	\\	
-\cite{Asadi2018}		&	1	&	arc	&	3 	&	direct+loop	&	Poisson 	&	NL	&	(S-1,S)	\\	
-\cite{Saragih2018}	&	1	&	arc	&	3 	&	direct+loop	&	 normal	&	NL	&	(r,Q) 	\\	
-\cite{Sajjadi2011}	&	1	&	arc  	&	3	&	direct+loop	&	yes	&	NL	&	fixed interval \\	
-\cite{ChenChenSunLiu2014}	&	1	&	arc	&	3 	&	direct+loop	&	fuzzy 	&	L	&	Periodic (T,$r_j$)	\\	
-\cite{Zheng2019}		&   1		& arc		& 2		& loop					&  demand (avg,std) & NL & Periodic review \\
-\bottomrule
-\end{tabular}
-\caption{Reference with continuous inventory review}
-	\label{tab1}
-\end{table}
-
-Table \ref{tab2} presents models with time discretization. 
+Table \ref{tab2} presents LIRP models with time discretization. 
 
 \begin{table}[htbp]
 	\scriptsize
@@ -230,25 +196,32 @@ Table \ref{tab2} presents models with time discretization.
 		Reference & Periods & Route & Layers   & Flow &  Stochastic & Linear  \\
 					&          & model & 	   & 	   &     demand        &                      \\
 		\midrule
-\cite{AmbScu05}			&	1 \& multi	&	arc		&	4 	&	direct+loop+loop	&	no	&	L		\\
-\cite{Zhang2014}		&	multi		&	arc  	&	2 	&	loop				&	no	&	L	\\
-\cite{Guerrero2013}		&	multi		&	route	&	3 	&	direct+loop			&	no	&	L	\\
-\cite{TavakkoliIFAC2016}&	multi		&	arc		&	3 	&	direct+loop			&	fuzzy 	&	L	\\
-\cite{Ghorbani2016}		&	multi		&	arc		&	3 	&	direct+loop			&	no	&	L\\
-\cite{Lehrlaly2016}		&	multi		&	route	&	3 	&	direct+loop			&	no	&	L		\\
-\cite{Rayat2017}		&	multi		&	arc		&	3 	&	direct+loop			&	demand (avg, std)	&	NL		\\
-\cite{Hiassat2017}		&	multi		&	route	&	3 	&	direct+loop			&	no	&	L		\\
-\cite{Riquelme2016}		&	multi		&	arc		&	2 	&	general graph		&	no	&	L	\\
-\cite{Tavana2018} 		&	multi		&	arc		&	4 	&	direct+loop+loop 	&	no	&	L		\\
-\cite{Vahdani2018}		&	multi		&	arc		&	3 	&	direct+loop			&	storage capacity	&	L	\\
-\cite{Eskandari2018}	&	multi		&	arc		&	4 	&	direct+direct+route	&	yes (disaster)	&	L		\\
-\cite{Bashiri2018}		&	multi		&	arc		&	3 	&	loop+direct			&	demand (scenarios)	&	L	\\
+\cite{AmbScu05}				&	1 \& multi	&	arc		&	4 	&	direct+loop+loop	&	no	&	L		\\
+\cite{Zhang2014}			&	multi		&	arc  	&	2 	&	loop				&	no	&	L	\\
+\cite{Guerrero2013}			&	multi		&	route	&	3 	&	direct+loop			&	no	&	L	\\
+\cite{Nekooghadirli2014}	&   multi		&	arc 	&	3   &   direct+loop			& demand( normal) & NL 	\\	
+\cite{TavakkoliIFAC2016}	&	multi		&	arc		&	3 	&	direct+loop			&	fuzzy 	&	L	\\
+\cite{Ghorbani2016}			&	multi		&	arc		&	3 	&	direct+loop			&	no	&	L\\
+\cite{Lehrlaly2016}			&	multi		&	route	&	3 	&	direct+loop			&	no	&	L		\\
+\cite{Rayat2017}			&	multi		&	arc		&	3 	&	direct+loop			&	demand (avg, std)	&	NL		\\
+\cite{Zhalechian2016}		&	multi		&	arc		&	3	& direct+loop			&	note: (r,Q) à compléter 	\\	
+\cite{Hiassat2017}			&	multi		&	route	&	3 	&	direct+loop			&	no	&	L		\\
+\cite{Riquelme2016}			&	multi		&	arc		&	2 	&	general graph		&	no	&	L	\\
+\cite{Tavana2018} 			&	multi		&	arc		&	4 	&	direct+loop+loop 	&	no	&	L		\\
+\cite{Vahdani2018}			&	multi		&	arc		&	3 	&	direct+loop			&	storage capacity	&	L	\\
+\cite{Eskandari2018}		&	multi		&	arc		&	4 	&	direct+direct+route	&	yes (disaster)	&	L		\\
+\cite{Bashiri2018}			&	multi		&	arc		&	3 	&	loop+direct			&	demand (scenarios)	&	L	\\
+\cite{Rafie-Majd2018}		& 	multi		&	arc		&	3 	&  loop +direct			&  note:(r,Q) a compléter	\\	
 		\bottomrule
 	\end{tabular}
 	\caption{Reference with time discretization}
 	\label{tab2}
 \end{table}
 
+
+\OP{completer  	Zhalechian and Rafie Majd}
+
+\OP{Fini ici 27/03/19}
 
 
 
