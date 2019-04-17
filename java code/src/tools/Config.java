@@ -54,7 +54,7 @@ public final class Config {
 	
 	public static final double PRESOLVE_TILIM = 300;  	// Time limit to compute a first solution and define a first subset of interesting routes
 	public static final int PRESOLVE_NB = 3;  			// Number of solves to extract a first pool of routes
-	public static final double ACCEPT_TS = 0.1; 		// Minimum value for a relaxed boolean variable to be considered as triggered by the resolution of the relaxed problem
+	public static final double ACCEPT_TS = 0.01; 		// Minimum value for a relaxed boolean variable to be considered as triggered by the resolution of the relaxed problem
 
 
 	public enum typeModel {
