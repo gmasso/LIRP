@@ -1,4 +1,4 @@
-CPXPARAM_TimeLimit                               20
+CPXPARAM_TimeLimit                               14400
 CPXPARAM_Threads                                 4
 Tried aggregator 1 time.
 MIP Presolve eliminated 18266 rows and 12317 columns.
@@ -6,14 +6,14 @@ MIP Presolve added 1462 rows and 0 columns.
 MIP Presolve modified 1870 coefficients.
 Reduced MIP has 2776 rows, 5474 columns, and 21719 nonzeros.
 Reduced MIP has 1634 binaries, 0 generals, 0 SOSs, and 0 indicators.
-Presolve time = 0.08 sec. (44.53 ticks)
-Found incumbent of value 34435.727125 after 0.13 sec. (57.51 ticks)
-Probing time = 0.07 sec. (5.44 ticks)
+Presolve time = 0.06 sec. (44.53 ticks)
+Found incumbent of value 34435.727125 after 0.09 sec. (57.51 ticks)
+Probing time = 0.02 sec. (5.44 ticks)
 Tried aggregator 1 time.
 Reduced MIP has 2776 rows, 5474 columns, and 21719 nonzeros.
 Reduced MIP has 1634 binaries, 0 generals, 0 SOSs, and 0 indicators.
 Presolve time = 0.02 sec. (14.16 ticks)
-Probing time = 0.02 sec. (5.40 ticks)
+Probing time = 0.04 sec. (5.40 ticks)
 Clique table members: 301.
 MIP emphasis: balance optimality and feasibility.
 MIP search method: dynamic search.
@@ -45,7 +45,7 @@ Root relaxation solution time = 0.09 sec. (112.41 ticks)
       0     0     4165.3852    52     4250.6849      Cuts: 63     5142    2.01%
       0     0     4165.5775    53     4250.6849      Cuts: 45     5225    1.74%
       0     0        cutoff           4250.6849     4250.6849     5225    0.00%
-Elapsed time = 3.24 sec. (1859.92 ticks, tree = 0.01 MB, solutions = 9)
+Elapsed time = 3.13 sec. (1859.92 ticks, tree = 0.01 MB, solutions = 9)
 
 Implied bound cuts applied:  111
 Flow cuts applied:  77
@@ -56,19 +56,22 @@ Lift and project cuts applied:  1
 Gomory fractional cuts applied:  1
 
 Root node processing (before b&c):
-  Real time             =    3.25 sec. (1861.59 ticks)
+  Real time             =    3.14 sec. (1861.59 ticks)
 Parallel b&c, 4 threads:
   Real time             =    0.00 sec. (0.00 ticks)
   Sync time (average)   =    0.00 sec.
   Wait time (average)   =    0.00 sec.
                           ------------
-Total (root+branch&cut) =    3.25 sec. (1861.59 ticks)
- Best LB : 4250.684856524693
+Total (root+branch&cut) =    3.14 sec. (1861.59 ticks)
 
 ===========  RESULTS  ===========
 Status of the solver :   Optimal
- Best solution found :   4250.684856524693 Best LB : 
-4250.684856524693Nb routes used : 6==================================================
-Time to solve the instance: 3717 milliseconds
+ Best solution found :   4250.684856524693
+ Best LB : 4250.684856524693
+Nb routes used : 6(total 6)
+
+Cleaning the memory...done.
+==================================================
+Time to solve the instance: 3703 milliseconds
 =================================================
 

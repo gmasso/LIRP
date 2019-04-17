@@ -1,9 +1,10 @@
 package solverLIRP;
 
+import java.util.ArrayList;
+
 import ilog.concert.IloConversion;
 import ilog.concert.IloException;
 import ilog.concert.IloIntVar;
-import ilog.concert.IloLPMatrix;
 import ilog.concert.IloLinearIntExpr;
 import ilog.concert.IloLinearNumExpr;
 import ilog.concert.IloNumVar;
@@ -29,6 +30,12 @@ public class Solver{
 	private IloIntVar[][] y;  			// facility location variables (depots) for each level
 	/* Integer variables */
 	private IloIntVar[][][] z;  		// = 1 if route r is used on period t (for each level)
+	
+	/* Conversion of variables for the linear relaxation */
+	private ArrayList<IloConversion> mipConversion = new ArrayList<IloConversion>();
+	
+	//private IloNumVar[][] yl;
+	///IloConversionprivate IloNumVar[][][] zl;
 	/* Continuous */
 	private IloNumVar[][][][] q; 			// quantity delivered by route r to location i of level l in period t
 	private IloNumVar[][][] invLoc; 	// inventory at depots
@@ -309,20 +316,31 @@ public class Solver{
 		this.LIRPSolver.addLe(objexpr, obj);
 		this.LIRPSolver.addObjective(IloObjectiveSense.Minimize, obj);
 		
-		IloConversion[] convY = new IloConversion[y.length];
-		IloConversion[][] convZ = new IloConversion[z.length][];
-
-		IloLPMatrix lp = (IloLPMatrix) this.LIRPSolver.LPMatrixIterator().next();
-		System.out.println(lp.getNumVars().toString());
-        IloConversion conv = this.LIRPSolver.conversion(lp.getNumVars(),
-                                                IloNumVarType.Float);
+//		IloConversion[] convY = new IloConversion[y.length];
+//		IloConversion[][] convZ = new IloConversion[z.length][];
+//
+//		IloLPMatrix lp = (IloLPMatrix) this.LIRPSolver.LPMatrixIterator().next();
+//		System.out.println(lp.getNumVars().toString());
+//        IloConversion conv = this.LIRPSolver.conversion(lp.getNumVars(),
+//                                                IloNumVarType.Float);
 
 		if(relax) {
 			System.out.println("Relaxing boolean constaints");
-
+			
+//			for (IloIntVar[] yl : this.y) {
+//					mipConversion.add(this.LIRPSolver.conversion(yl, IloNumVarType.Float)) ;
+//					this.LIRPSolver.add(mipConversion.get(mipConversion.size()-1));
+//			}
+			for (IloIntVar[][] zl_arr : this.z) {
+				for (IloIntVar[] zl : zl_arr) {
+						mipConversion.add(this.LIRPSolver.conversion(zl, IloNumVarType.Float)) ;
+						this.LIRPSolver.add(mipConversion.get(mipConversion.size()-1));
+				}
+			}	
+			//Ilothis.LIRPSolver.conversion(this.y[], IloNumVarType.Float);
 	         //IloLPMatrix lp = (IloLPMatrix)cplex.LPMatrixIterator().next();
 	      
-	         this.LIRPSolver.add(conv);
+	        // this.LIRPSolver.add(conv);
 
 			/* If we want to solve the relaxed problem */
 //			for(int lvl = 0; lvl < y.length; lvl++) {
@@ -336,10 +354,10 @@ public class Solver{
 //				}
 //			}
 		}
-		this.LIRPSolver.solve();
+		this.isSolved = this.LIRPSolver.solve();
 		if(relax) {
 			System.out.print("Un-relaxing boolean constaints...");
-			this.LIRPSolver.delete(conv);
+			//this.LIRPSolver.delete(conv);
 //			/* Unrelax the variables */
 //			for(int lvl = 0; lvl < y.length; lvl++) {
 //				this.LIRPSolver.remove(convY[lvl]);
@@ -348,10 +366,7 @@ public class Solver{
 //				}
 //			}
 			System.out.println("done");
-
 		}
-
-		this.isSolved = true;
 	}
 
 	/**
@@ -372,23 +387,21 @@ public class Solver{
 		/* Get the best LB on the problem */
 		double bestLB = this.LIRPSolver.getBestObjValue();
 
-		if(!relax) {
-			System.out.println(" Best LB : " + bestLB);
-			if (this.LIRPSolver.getStatus().equals(IloCplex.Status.Infeasible)) {
-				System.out.println("There is no solution");
-			}
-			else {
-				System.out.println();
-				System.out.println("===========  RESULTS  ===========");
-				System.out.print("Status of the solver :   ");
-				System.out.println(this.LIRPSolver.getStatus());
-				System.out.print(" Best solution found :   ");
-				/* Get the current integral solution */
-				double bestFeasible = this.LIRPSolver.getObjValue();
-				System.out.print(bestFeasible);
-				System.out.println(" Best LB : ");
-				System.out.print(bestLB);
-			}
+		//System.out.println(" Best LB : " + bestLB);
+		if (this.LIRPSolver.getStatus().equals(IloCplex.Status.Infeasible)) {
+			System.out.println("There is no solution");
+		}
+		else {
+			System.out.println();
+			System.out.println("===========  RESULTS  ===========");
+			System.out.print("Status of the solver :   ");
+			System.out.println(this.LIRPSolver.getStatus());
+			System.out.print(" Best solution found :   ");
+			/* Get the current integral solution */
+			double bestFeasible = this.LIRPSolver.getObjValue();
+			System.out.println(bestFeasible);
+			System.out.print(" Best LB : ");
+			System.out.println(bestLB);
 		}
 
 		/*=======================
@@ -398,6 +411,7 @@ public class Solver{
 		for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
 			if(lvl < this.instLIRP.getNbLevels() - 1) {
 				for(int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++) {
+					//double yvar = this.LIRPSolver.getValue(this.y[lvl][loc]);
 					if (this.LIRPSolver.getValue(this.y[lvl][loc]) > threshold)
 						sol.setOpenDepot(lvl, loc, true);
 					else
@@ -408,6 +422,7 @@ public class Solver{
 			/* Save the quantities delivered to each location in each period */
 			for (int t = 0; t < this.instLIRP.getNbPeriods(); t++){
 				for(int r = 0; r < this.routes[lvl].length; r++) {
+					//double zvar = this.LIRPSolver.getValue(this.z[lvl][r][t]);
 					if (this.LIRPSolver.getValue(this.z[lvl][r][t]) > threshold) {
 						sol.setUsedRoute(lvl, r, t, true);
 						for (int loc = 0; loc < this.instLIRP.getNbLocations(lvl); loc++){
@@ -453,6 +468,23 @@ public class Solver{
 
 		System.out.print("Nb routes used : ");
 		System.out.print(sol.collectUsedLoops().get(1).size());
+		System.out.print("(total ");
+		System.out.print(sol.collectUsedRoutes().get(1).size());
+		System.out.println(")");
+
+
+		System.out.println();
+		System.out.print("Cleaning the memory...");
+		try {
+			this.LIRPSolver.getParameterSet().clear();
+	        
+	        this.LIRPSolver.clearCallbacks();
+			this.LIRPSolver.clearModel();
+	    } catch (IloException e) {
+	        System.out.println("Exception clearing model: " + e.getMessage());
+	        this.LIRPSolver.end();
+		}
+		System.out.println("done.");
 
 		return sol;
 	}

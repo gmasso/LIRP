@@ -91,13 +91,19 @@ public final class RSH {
 				subsetSizes[lvl] = setOfRoutes.get(lvl).size();
 			}
 		}
-		
+		/* Total time spent on partial solutions */
+		double totalTime = 0;
+
+		long startChrono = System.currentTimeMillis();
+		RouteMap rMap = preProcess(instLIRP, setOfDirect, setOfRoutes, lm, presolve);
+		totalTime += System.currentTimeMillis() - startChrono;
+
 		/* Create dumb solutions to store the intermediate results */
-		Solution currentSol = getSampleSol(instLIRP, setOfDirect, setOfRoutes, subsetSizes, lm, timeLimit, presolve);
+		Solution currentSol = getSampleSol(instLIRP, setOfDirect, rMap, subsetSizes, timeLimit);
 		Solution bestSol = new Solution();
 
 		/* Total time spent on partial solutions */
-		double totalTime = currentSol.getSolvingTime();
+		totalTime += currentSol.getSolvingTime();
 
 		/* As long as we have some time available, re-apply the algorithm to find other solutions */
 		while(bestSol.getObjVal() < 0 || (totalTime < timeLimit && currentSol != null && currentSol.getObjVal() < bestSol.getObjVal())) {
@@ -107,7 +113,7 @@ public final class RSH {
 			}
 			else {
 				/* Get a new current solution using a new sampling of the loop routes */
-				currentSol = getSampleSol(instLIRP, setOfDirect, setOfRoutes, subsetSizes, lm, timeLimit - totalTime, false);
+				currentSol = getSampleSol(instLIRP, setOfDirect, rMap, subsetSizes, timeLimit - totalTime);
 			}
 			if(currentSol != null)
 				totalTime += currentSol.getSolvingTime();
@@ -117,140 +123,149 @@ public final class RSH {
 	}
 
 	/**
-	 * Compute a solution to the original LIRP instance using the a specified set of routes
-	 * @param instLIRP		The instance of the LIRP problem considered
-	 * @param directMap		The RouteMap object containing the direct routes
-	 * @param rMap			The RouteMap object containing the multi-stops routes
-	 * @param subsetSizes	The samples size in each level
-	 * @param lm			The LocManager object assigning locations to DCs of the upper level
-	 * @param remainingTime	The time remaining in the allowed resolution time
-	 * @param presolve		Indicator that the resolution is a pre-processing
-	 * @return				A Solution object to the LIRP
+	 * 
+	 * @param instLIRP	The instance of the LIRP problem to solve
+	 * @param directMap	The RouteMap object containing all the direct routes
+	 * @param rMap		The RouteMap object containing all the multi-stops routes
+	 * @param lm		The LocManager object assigning locations to DCs of the upper level
+	 * @param presolve	Boolean indicating if the pre-processing solves the linear relaxation to further shrink the set of routes available
+	 * @return			A RouteMap object containing the multi-stops routes to use throughout the resolution
 	 */
-	private static Solution getSampleSol(Instance instLIRP, RouteMap directMap, RouteMap rMap, int[] subsetSizes, LocManager lm, double remainingTime, boolean presolve){
+	private static RouteMap preProcess(Instance instLIRP, RouteMap directMap, RouteMap rMap, LocManager lm, boolean presolve) {
 		try {
 			RouteMap filteredRoutes = rMap.filterRoutes(lm);
-			double totalTime = 0;
 			/* If the presolve option is activated, solve the problem without sampling first and to extract the routes used and 
 			 * reduce the pool of routes from which to sample from 
 			 */
-			if(presolve) {
-				long startChrono = System.currentTimeMillis();
-				filteredRoutes = collectRoutes(instLIRP, rMap, filteredRoutes, remainingTime - totalTime, Config.PRESOLVE_TILIM, presolve);
-				long stopChrono = System.currentTimeMillis();
-				totalTime += stopChrono - startChrono;
-			}
-
-			
-			/* Create a HashMap to store the subsets of routes at each level */
-			SampleMap lvlSamples = new SampleMap(filteredRoutes, subsetSizes);
-			int nbSubsets = 1;
-			int previousNbRoutes = 0;
-			/* The total number of subset is the number of possible combinations between all the subset of routes */
-			for(int lvl = 0; lvl < instLIRP.getNbLevels(); lvl++) {
-				previousNbRoutes += rMap.get(lvl).size();
-				nbSubsets *= lvlSamples.get(lvl).size();
-			}
-
-			lvlSamples.completeSamples(directMap);
-
-			/* Get all the possible combinations of route samples from each level */
-			HashSet<RouteMap> setOfMapRoutes = lvlSamples.getCombinations();
-
-			/* Routes object that are candidate for the final solution */
-			RouteMap selectedRoutes = new RouteMap();
-			for(int lvl: directMap.keySet()) {
-				selectedRoutes.put(lvl, new RouteSet());
-				selectedRoutes.get(lvl).addAll(directMap.get(lvl));
-			}
-			/* If the number of subsets is 1, add all the multi-stops routes to the set of available route objects to compute the final solution */
-			if(nbSubsets == 1) {
-				for(int lvl: selectedRoutes.keySet())
-					selectedRoutes.get(lvl).addAll(rMap.get(lvl));
-			}
-
-			int nbIterations = 0;
-			int nbRoutes = 0;
-			
-			while(nbSubsets > 1 && nbRoutes < previousNbRoutes && totalTime + Config.MAIN_TILIM < remainingTime) {
-				/* Set of all loops used in at least one of the intermediate solutions */
-				RouteMap collectedRoutes = new  RouteMap();
-				nbIterations++;
-				System.out.println("========================================");
-				System.out.println("== Iteration " + nbIterations + ": Solving with " + setOfMapRoutes.size() + " subsets of routes ==");
-				System.out.println("========================================");
-				double partialTiLim = Math.max((remainingTime - Config.MAIN_TILIM) / (1.5 * Config.RECOMPUTE * setOfMapRoutes.size()), Config.AUX_TILIM);
-				for(RouteMap availRoutes : setOfMapRoutes) {
-					long startChrono = System.currentTimeMillis();
-					RouteMap eliteRoutes = collectRoutes(instLIRP, directMap, availRoutes, remainingTime - totalTime, partialTiLim, false);
-					for(int lvl : eliteRoutes.keySet()) {
-						if(collectedRoutes.get(lvl) != null) {
-							collectedRoutes.get(lvl).addAll(eliteRoutes.get(lvl));
-						}
-						else {
-							collectedRoutes.put(lvl, new RouteSet());
-							collectedRoutes.get(lvl).addAll(eliteRoutes.get(lvl));
-						}
-					}
-					long stopChrono = System.currentTimeMillis();
-					totalTime += stopChrono - startChrono;
-				}
-
-				/* Re-sample from the set of collected loops */
-				lvlSamples.reSample(collectedRoutes, subsetSizes);
-				/* Complete the subsets to reach all locations */
-				lvlSamples.completeSamples(directMap);
-				/* Get all the possible combinations of route samples from each level */
-				setOfMapRoutes = lvlSamples.getCombinations();
-				/* Compute the number of subsets left  after this iteration */
-				nbSubsets = 1;
-				previousNbRoutes = nbRoutes;
-				nbRoutes = 0;
-				/* The total number of subset is the number of possible combinations between all the subset of routes */
-				for(int lvl = 0; lvl < instLIRP.getNbLevels(); lvl++) {
-					nbRoutes += collectedRoutes.get(lvl).size();
-					nbSubsets *= lvlSamples.get(lvl).size();
-				}
-
-				/* If this is the last computation of partial solution, keep all the collected multi-stops routes for the final computation */
-				if(nbSubsets == 1) {
-					for(int lvl: selectedRoutes.keySet())
-						selectedRoutes.get(lvl).addAll(collectedRoutes.get(lvl));
-				}
-			}
-
-			try {
-				long startChrono = System.currentTimeMillis();
-				if(remainingTime - totalTime > Config.AUX_TILIM) {
-					/* Use the set of collected routes to solve the instance */
-					Solver solverLIRP = new Solver(instLIRP, selectedRoutes, null, remainingTime - totalTime);
-					/* Call the method from the solver */
-					Solution sampleSol = solverLIRP.getSolution(presolve, Config.EPSILON);
-
-					long stopChrono = System.currentTimeMillis();
-					sampleSol.setSolvingTime(stopChrono - startChrono);
-
-					sampleSol.computeObjValue();
-
-					totalTime += sampleSol.getSolvingTime();
-					System.out.println("Setting the solving time to " + totalTime);
-					sampleSol.setSolvingTime(((long) (totalTime * 1000)));
-					return sampleSol;
-				}
-			}
-			catch(IloException iloe) {
-				System.out.println("ERR: Problem while solving the problem");
-				System.out.println(iloe.getMessage());
-				System.exit(1);
-			}
-
+			if(presolve)
+				/* If we solve a relaxation of the problem, collect the multi-stops routes used in the relaxed solutions */
+				return collectMSRoutes(instLIRP, rMap, filteredRoutes, Config.NOSPLIT_TILIM, Config.PRESOLVE_TILIM, presolve);
+			else
+				return filteredRoutes;
 		}
-
 		catch (IOException ioe) {
 			System.out.println("ERR: Problem while filtering the routes");
 			System.out.println(ioe.getMessage());
 			System.exit(1);
 		}
+
+		return rMap;
+	}
+
+	/**
+	 * Compute a solution to the original LIRP instance using the a specified set of routes
+	 * @param instLIRP		The instance of the LIRP problem considered
+	 * @param directMap		The RouteMap object containing the direct routes
+	 * @param rMap			The RouteMap object containing the multi-stops routes
+	 * @param subsetSizes	The samples size in each level
+	 * @param remainingTime	The time remaining in the allowed resolution time
+	 * @return				A Solution object to the LIRP
+	 */
+	private static Solution getSampleSol(Instance instLIRP, RouteMap directMap, RouteMap rMap, int[] subsetSizes, double remainingTime){
+		double totalTime = 0;
+
+		/* Create a HashMap to store the subsets of routes at each level */
+		SampleMap lvlSamples = new SampleMap(rMap, subsetSizes);
+		int nbSubsets = 1;
+		int previousNbRoutes = 0;
+		/* The total number of subset is the number of possible combinations between all the subset of routes */
+		for(int lvl = 0; lvl < instLIRP.getNbLevels(); lvl++) {
+			previousNbRoutes += rMap.get(lvl).size();
+			nbSubsets *= lvlSamples.get(lvl).size();
+		}
+
+		lvlSamples.completeSamples(directMap);
+
+		/* Get all the possible combinations of route samples from each level */
+		HashSet<RouteMap> setOfMapRoutes = lvlSamples.getCombinations();
+
+		/* Routes object that are candidate for the final solution */
+		RouteMap selectedRoutes = new RouteMap();
+		for(int lvl: directMap.keySet()) {
+			selectedRoutes.put(lvl, new RouteSet());
+			selectedRoutes.get(lvl).addAll(directMap.get(lvl));
+		}
+		/* If the number of subsets is 1, add all the multi-stops routes to the set of available route objects to compute the final solution */
+		if(nbSubsets == 1) {
+			for(int lvl: selectedRoutes.keySet())
+				selectedRoutes.get(lvl).addAll(rMap.get(lvl));
+		}
+
+		int nbIterations = 0;
+		int nbRoutes = 0;
+
+		while(nbSubsets > 1 && nbRoutes < previousNbRoutes && totalTime + Config.MAIN_TILIM < remainingTime) {
+			/* Set of all loops used in at least one of the intermediate solutions */
+			RouteMap collectedRoutes = new  RouteMap();
+			nbIterations++;
+			System.out.println("========================================");
+			System.out.println("== Iteration " + nbIterations + ": Solving with " + setOfMapRoutes.size() + " subsets of routes ==");
+			System.out.println("========================================");
+			double partialTiLim = Math.max((remainingTime - Config.MAIN_TILIM) / (1.5 * Config.RECOMPUTE * setOfMapRoutes.size()), Config.AUX_TILIM);
+			for(RouteMap availRoutes : setOfMapRoutes) {
+				long startChrono = System.currentTimeMillis();
+				RouteMap eliteRoutes = collectMSRoutes(instLIRP, directMap, availRoutes, remainingTime - totalTime, partialTiLim, false);
+				for(int lvl : eliteRoutes.keySet()) {
+					if(collectedRoutes.get(lvl) != null) {
+						collectedRoutes.get(lvl).addAll(eliteRoutes.get(lvl));
+					}
+					else {
+						collectedRoutes.put(lvl, new RouteSet());
+						collectedRoutes.get(lvl).addAll(eliteRoutes.get(lvl));
+					}
+				}
+				long stopChrono = System.currentTimeMillis();
+				totalTime += stopChrono - startChrono;
+			}
+
+			/* Re-sample from the set of collected loops */
+			lvlSamples.reSample(collectedRoutes, subsetSizes);
+			/* Complete the subsets to reach all locations */
+			lvlSamples.completeSamples(directMap);
+			/* Get all the possible combinations of route samples from each level */
+			setOfMapRoutes = lvlSamples.getCombinations();
+			/* Compute the number of subsets left  after this iteration */
+			nbSubsets = 1;
+			previousNbRoutes = nbRoutes;
+			nbRoutes = 0;
+			/* The total number of subset is the number of possible combinations between all the subset of routes */
+			for(int lvl = 0; lvl < instLIRP.getNbLevels(); lvl++) {
+				nbRoutes += collectedRoutes.get(lvl).size();
+				nbSubsets *= lvlSamples.get(lvl).size();
+			}
+
+			/* If this is the last computation of partial solution, keep all the collected multi-stops routes for the final computation */
+			if(nbSubsets == 1) {
+				for(int lvl: selectedRoutes.keySet())
+					selectedRoutes.get(lvl).addAll(collectedRoutes.get(lvl));
+			}
+		}
+
+		try {
+			long startChrono = System.currentTimeMillis();
+			if(remainingTime - totalTime > Config.AUX_TILIM) {
+				/* Use the set of collected routes to solve the instance */
+				Solver solverLIRP = new Solver(instLIRP, selectedRoutes, null, remainingTime - totalTime);
+				/* Call the method from the solver */
+				Solution sampleSol = solverLIRP.getSolution(false, Config.EPSILON);
+
+				long stopChrono = System.currentTimeMillis();
+				sampleSol.setSolvingTime(stopChrono - startChrono);
+
+				sampleSol.computeObjValue();
+
+				totalTime += sampleSol.getSolvingTime();
+				System.out.println("Setting the solving time to " + totalTime);
+				sampleSol.setSolvingTime(((long) (totalTime * 1000)));
+				return sampleSol;
+			}
+		}
+		catch(IloException iloe) {
+			System.out.println("ERR: Problem while solving the problem");
+			System.out.println(iloe.getMessage());
+			System.exit(1);
+		}
+
 		return null;
 	}
 
@@ -261,9 +276,9 @@ public final class RSH {
 	 * @param availLoopsMap	The RouteMap object containing all the routes available in each level
 	 * @param timeLeft		The time left for solving the problem
 	 * @param partialTiLim	The time left for solving the partial problem
-	 * @return				A RouteMap object containing the used routes in each level
+	 * @return				A RouteMap object containing the multi-stops routes routes used in each level
 	 */
-	private static RouteMap collectRoutes(Instance instLIRP, RouteMap directMap, RouteMap availLoopsMap, double timeLeft, double partialTiLim, boolean presolve){
+	private static RouteMap collectMSRoutes(Instance instLIRP, RouteMap directMap, RouteMap availLoopsMap, double timeLeft, double partialTiLim, boolean presolve){
 		RouteMap allUsedRoutes = new RouteMap();
 		/* Create a map of available routes after filtering the routes in mapLoops */
 		int computeIter = 0;
@@ -274,43 +289,53 @@ public final class RSH {
 			nbComput = Config.PRESOLVE_NB;
 			partialTiLim *= 1.0/nbComput; 
 		}
-		
+
+		double updatedTimeLeft = timeLeft;
 		/* Compute solutions sequentially by removing used routes from one iteration to the next */
 		while (computeIter < nbComput) {
 			Solution partialSol = null;
 			/* If the remaining time is enough to compute a solution to a subproblem, 
 			 * create a problem with a subset of available loops */
-			if(Config.MAIN_TILIM < timeLeft) {
+			if(Config.MAIN_TILIM < updatedTimeLeft) {
+				/* Complete the map of multi-stops routes with direct routes for unreachable clients */
+				availLoopsMap.completeMap(directMap);
 				partialSol = getPartialSol(instLIRP, availLoopsMap, partialTiLim, presolve);
+				updatedTimeLeft -= partialSol.getSolvingTime();
 			}
-			/* If we have computed a partial solution, add the routes used in this solution to the collected ones */
+			/* If we have computed a partial solution, add the multi-stops routes used in this solution to the collected ones */
 			if (partialSol != null) {
-				RouteMap usedRoutes = partialSol.collectUsedRoutes();
-				for(int lvl: availLoopsMap.keySet()) {
+				RouteMap usedLoops = partialSol.collectUsedLoops();
+				for(int lvl : availLoopsMap.keySet()) {
 					if(allUsedRoutes.get(lvl) != null) {
-						allUsedRoutes.get(lvl).addAll(usedRoutes.get(lvl));
+						allUsedRoutes.get(lvl).addAll(usedLoops.get(lvl));
 					}
 					else {
 						allUsedRoutes.put(lvl, new RouteSet());
-						allUsedRoutes.get(lvl).addAll(usedRoutes.get(lvl));
+						allUsedRoutes.get(lvl).addAll(usedLoops.get(lvl));
 					}
 
 					/* Remove the collected multi-stops routes from the available multi-stops routes for the next iteration */
-					availLoopsMap.get(lvl).removeAll(usedRoutes.get(lvl));
+					availLoopsMap.get(lvl).removeAll(usedLoops.get(lvl));
 				}
-				availLoopsMap.completeMap(directMap);
+				//availLoopsMap.completeMap(directMap);
 			}
 			/* If there is no partial solution because of a lack of time,
 			 * add all the remaining loops to the collected ones
 			 */
 			else {
 				for(int lvl: availLoopsMap.keySet()) {
-					allUsedRoutes.get(lvl).addAll(availLoopsMap.get(lvl));
+					if(allUsedRoutes.get(lvl) != null) {
+						allUsedRoutes.get(lvl).addAll(availLoopsMap.get(lvl));
+					}
+					else {
+						allUsedRoutes.put(lvl, new RouteSet());
+						allUsedRoutes.get(lvl).addAll(availLoopsMap.get(lvl));
+					}
 				}
 			}
 			computeIter++;
 		}
-		
+
 		return allUsedRoutes;
 	}
 

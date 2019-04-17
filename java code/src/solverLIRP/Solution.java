@@ -343,7 +343,7 @@ public class Solution {
 	 ===========================*/
 	/**
 	 * 
-	 * @return	a HashMap containing the route used in the solution
+	 * @return	a RouteMap object containing the routes used in the solution
 	 */
 	public RouteMap collectUsedRoutes(){
 		RouteMap collectedRoutes = new RouteMap();
@@ -366,7 +366,7 @@ public class Solution {
 
 	/**
 	 * 
-	 * @return	a HashMap containing the multi-stops route used in the solution
+	 * @return	a RouteMap object containing the multi-stops route used in the solution
 	 */
 	public RouteMap collectUsedLoops(){
 		RouteMap usedLoops = new RouteMap();
