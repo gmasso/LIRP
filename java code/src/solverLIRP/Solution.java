@@ -1,6 +1,4 @@
 package solverLIRP;
-import java.util.LinkedHashSet;
-import java.util.HashMap;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -170,8 +168,8 @@ public class Solution {
 	 * @param lvl	the level for which routes are studied
 	 * @return		the set of routes used in the solution between the location at level lvl and its upper layer
 	 */
-	public LinkedHashSet<Route> getUsedLoops(int lvl) {
-		LinkedHashSet<Route> loopUsed = new LinkedHashSet<Route>();
+	public RouteSet getUsedLoops(int lvl) {
+		RouteSet loopUsed = new RouteSet();
 		for(int r = 0; r < this.routes[lvl].length; r++) {
 			/* Restrict the search only to multi-stops routes */
 			if(this.routes[lvl][r].getNbStops() > 1) {
@@ -347,10 +345,10 @@ public class Solution {
 	 * 
 	 * @return	a HashMap containing the route used in the solution
 	 */
-	public HashMap<Integer, LinkedHashSet<Route>> collectUsedRoutes(){
-		HashMap<Integer, LinkedHashSet<Route>> collectedRoutes = new HashMap<Integer, LinkedHashSet<Route>>();
+	public RouteMap collectUsedRoutes(){
+		RouteMap collectedRoutes = new RouteMap();
 		for(int lvl=0; lvl < this.instLIRP.getNbLevels(); lvl++) {
-			LinkedHashSet<Route> routesLvl = new LinkedHashSet<Route>();
+			RouteSet routesLvl = new RouteSet();
 			for (int rIter = 0; rIter < this.usedRoutes[lvl].length; rIter++){
 				boolean used = false;
 				int t = 0;
@@ -370,10 +368,10 @@ public class Solution {
 	 * 
 	 * @return	a HashMap containing the multi-stops route used in the solution
 	 */
-	public HashMap<Integer, LinkedHashSet<Route>> collectUsedLoops(){
-		HashMap<Integer, LinkedHashSet<Route>> usedLoops = new HashMap<Integer, LinkedHashSet<Route>>();
+	public RouteMap collectUsedLoops(){
+		RouteMap usedLoops = new RouteMap();
 		for(int lvl=0; lvl < this.instLIRP.getNbLevels(); lvl++) {
-			LinkedHashSet<Route> routesLvl = new LinkedHashSet<Route>();
+			RouteSet routesLvl = new RouteSet();
 			for (int r = 0; r < this.usedRoutes[lvl].length; r++){
 				boolean used = false;
 				if(this.routes[lvl][r].getNbStops() > 1) {

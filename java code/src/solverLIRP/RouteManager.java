@@ -6,7 +6,6 @@ package solverLIRP;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -22,7 +21,7 @@ public class RouteManager {
 	 *      ATTRIBUTES
 	 ======================*/
 	private Instance instLIRP;													// The instance to which the routes apply
-	private HashMap<Integer, HashMap<Integer, LinkedHashSet<Route>>> routes; 	// A route is referenced with its level (0 : supplier-depot, 1 : depot-client)
+	private HashMap<Integer, RouteMap> routes; 	// A route is referenced with its level (0 : supplier-depot, 1 : depot-client)
 	// For a given level, routes are ordered according to their number of stops
 	private int[] nbRoutesLvl;													// Total number of routes at each level (0: Supplier to depots, 1: Depots to clients)
 
@@ -33,12 +32,12 @@ public class RouteManager {
 	public RouteManager(Instance instLIRP) throws IOException {
 		/* Create direct routes for the instance */
 		this.instLIRP = instLIRP;
-		this.routes = new HashMap<Integer, HashMap<Integer, LinkedHashSet<Route>>>();
+		this.routes = new HashMap<Integer, RouteMap>();
 
 		/* Create HashMaps to store the sets of routes at each level */
 		this.nbRoutesLvl = new int[this.instLIRP.getNbLevels()];
 		for(int lvl = 0; lvl < nbRoutesLvl.length; lvl++) {
-			this.routes.put(lvl, new HashMap<Integer, LinkedHashSet<Route>>());
+			this.routes.put(lvl, new RouteMap());
 			this.nbRoutesLvl[lvl] = 0;
 		}
 	}
@@ -76,11 +75,11 @@ public class RouteManager {
 	 * @param withLoops	An array indicating for each level if multi-stops routes are considered of not
 	 * @return			A HashMap containing the multi-stops routes at every level of the network
 	 */
-	public HashMap<Integer, LinkedHashSet<Route>> getAllRoutes(boolean[] withLoops){
-		HashMap<Integer, LinkedHashSet<Route>> setOfRoutes = new HashMap<Integer, LinkedHashSet<Route>>(this.getAllDirects());
+	public RouteMap getAllRoutes(boolean[] withLoops){
+		RouteMap setOfRoutes = new RouteMap(this.getAllDirects());
 		for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
 			if(withLoops[lvl]) {
-				LinkedHashSet<Route> lvlRoutes = new LinkedHashSet<Route>();
+				RouteSet lvlRoutes = new RouteSet();
 				int nbStops = 2;
 				while(this.getNbRoutesOfType(lvl, nbStops) > 0){
 					lvlRoutes.addAll(this.getAllRoutesOfType(lvl, nbStops));
@@ -97,10 +96,10 @@ public class RouteManager {
 	 * @param rm	The RouteManager object from which direct routes are collected
 	 * @return		A HashMap object containing the set of direct routes for each level
 	 */
-	public HashMap<Integer, LinkedHashSet<Route>> getAllDirects(){
-		HashMap<Integer, LinkedHashSet<Route>> setOfDirects = new HashMap<Integer, LinkedHashSet<Route>>();
+	public RouteMap getAllDirects(){
+		RouteMap setOfDirects = new RouteMap();
 		for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
-			setOfDirects.put(lvl, new LinkedHashSet<Route>());
+			setOfDirects.put(lvl, new RouteSet());
 			setOfDirects.get(lvl).addAll(this.getAllRoutesOfType(lvl, 1));
 		}
 		return setOfDirects;
@@ -110,8 +109,8 @@ public class RouteManager {
 	 * 
 	 * @return	the ArrayList of routes from the supplier to the depots
 	 */
-	public LinkedHashSet<Route> getAllRoutesOfLvl(int lvl) {
-		LinkedHashSet<Route> setOfRoutes = new LinkedHashSet<Route>();
+	public RouteSet getAllRoutesOfLvl(int lvl) {
+		RouteSet setOfRoutes = new RouteSet();
 		if(lvl > -1 && lvl < this.instLIRP.getNbLevels()) {
 			int nbStops = 1;
 			while(this.routes.get(lvl).containsKey(nbStops)) {
@@ -151,7 +150,7 @@ public class RouteManager {
 			}
 		}
 		else {
-			this.routes.get(lvl).put(0, new LinkedHashSet<Route>());
+			this.routes.get(lvl).put(0, new RouteSet());
 		}
 		
 		try {
@@ -175,13 +174,13 @@ public class RouteManager {
 	 * 
 	 * @return	the ArrayList of direct routes from the supplier to the depots
 	 */
-	private LinkedHashSet<Route> getAllRoutesOfType(int lvl, int nbStops) {
+	private RouteSet getAllRoutesOfType(int lvl, int nbStops) {
 		if(lvl > -1 && lvl < this.instLIRP.getNbLevels()) {
 			if(this.routes.get(lvl).containsKey(nbStops)) {
 				return this.routes.get(lvl).get(nbStops);
 			}
 		}
-		return new LinkedHashSet<Route>();
+		return new RouteSet();
 	}
 	/**
 	 * Fill the direct routes arrays with all the valid direct routes for the instance considered. 
@@ -193,7 +192,7 @@ public class RouteManager {
 		/* Loop through the different levels */
 		for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
 			/* Create a LinkedHashSet to store the feasible routes on the current level as they are computed */
-			LinkedHashSet<Route> directLvl = new LinkedHashSet<Route>();
+			RouteSet directLvl = new RouteSet();
 			//LinkedHashSet<Route> dummyLvl = new LinkedHashSet<Route>();
 			int sIndex = 0;
 			int nbLocLvl = this.instLIRP.getNbLocations(lvl);
@@ -242,7 +241,7 @@ public class RouteManager {
 	 */
 	private void populateLoops(int lvl, int nbStops) throws IOException {
 		/* HashSet to store the loop routes with nbStops+1 stops at level lvl */
-		LinkedHashSet<Route> loopsLvl = new LinkedHashSet<Route>();
+		RouteSet loopsLvl = new RouteSet();
 
 		/* Fill an array list with the potential stop candidates to add to the loop routes */
 		int finalIndex = (lvl == this.instLIRP.getNbLevels() - 1) ? finalIndex = this.instLIRP.getNbClients() : this.instLIRP.getNbDepots(lvl);
@@ -286,10 +285,10 @@ public class RouteManager {
 
 		JSONArray jsonLvls = new JSONArray();
 		for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
-			Iterator<Map.Entry<Integer, LinkedHashSet<Route>>> mapRouteIter = this.routes.get(lvl).entrySet().iterator();
+			Iterator<Map.Entry<Integer, RouteSet>> mapRouteIter = this.routes.get(lvl).entrySet().iterator();
 			JSONObject jsonLvlRoutes = new JSONObject();
 			while (mapRouteIter.hasNext()) {
-				Map.Entry<Integer, LinkedHashSet<Route>> setPair = mapRouteIter.next();
+				Map.Entry<Integer, RouteSet> setPair = mapRouteIter.next();
 				JSONArray jsonRouteArray = new JSONArray();
 				Iterator<Route> routesIter = setPair.getValue().iterator();
 				while(routesIter.hasNext()) {

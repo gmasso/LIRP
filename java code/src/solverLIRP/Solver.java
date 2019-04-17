@@ -1,6 +1,4 @@
 package solverLIRP;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
 
 import ilog.concert.IloConversion;
 import ilog.concert.IloException;
@@ -43,7 +41,7 @@ public class Solver{
 	 * @param availableRoutes	the direct and multi-stops routes that are available in this model
 	 * @throws IloException
 	 */
-	public Solver(Instance instLIRP, HashMap<Integer, LinkedHashSet<Route>> availRoutes, Solution previousSol, double timeLimit) throws IloException {
+	public Solver(Instance instLIRP, RouteMap availRoutes, Solution previousSol, double timeLimit) throws IloException {
 
 		/* Data */
 		this.instLIRP = instLIRP;
