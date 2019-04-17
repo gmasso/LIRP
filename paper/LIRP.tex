@@ -32,41 +32,42 @@
 \section{Introduction}
 
 
+Logistics and supply chain management decisions in industry are traditionally divided into 
+\textit{strategic decisions}, which concern the definition and sizing of long-term resources, 
+\textit{tactical decisions}, which concern the use of resources over a period of a few months and 
+\textit{operational decisions}, which concern daily or weekly operations. 
+In a distribution network, examples of strategic decision are the location of production facilities and distribution centers (DC), the allocation of customer to distribution centers. 
+Inventory and fleet management fall into the category of tactical decisions,
+ whereas vehicle routing belong to operational decisions. 
 
+In some companies, logistics decisions can be taken independently of each others. 
+In this case, strategic decisions are typically taken or revised every year, then tactical decisions are taken every month assuming known strategic choices, and operational decision are taken every day or week assuming known tactical decisions. 
+However, in many companies and activities, strategic, tactical and operational decisions are interrelated. 
+For example, the choice of a location for a truck depot highly influences the quality of routing, so that finding the best location without considering routing aspects would probably lead to a bad location decision.  Integrated Location Routing Problems (LRP) have been studied for several decades. Recent surveys include \cite{ProdhonPrins2014}, \cite{DrexlSchneider2015} and \cite{Schneider2017}.  
+  
 
-For any business, the stock is a major financial asset. 
-Therefore, its volume must be controlled in order to avoid stock-out and minimize holding costs. 
-The Vendor managed inventory (VMI) is based on the principle that the company selling a product has only a stock directly dedicated to the delivery to customers. In other words, all items received are placed on the shelf and stock replenishment is the responsibility of the supplier. VMI had motivated much research about the joint optimization of the inventory and transport, leading to the inventory routing problem (IRP). The IRP considers one supplier running a fleet of vehicles and a set of customers who consume a good on a multi-period time horizon. The objective of the IRP is to jointly optimize the delivery schedule of customers, the quantities delivered, and the delivery routes to be covered in each period, while minimizing the sum of routing costs and storage costs.
+Another example in the inventory routing problem (IRP). 
+The IRP considers one supplier running a fleet of vehicles and a set of customers who consume a good on a multi-period time horizon. The objective of the IRP is to jointly optimize the delivery schedule of customers, the quantities delivered, and the delivery routes to be covered in each period, while minimizing the sum of routing costs and storage costs. The popularity of the IRP has grown with the development of the Vendor Managed Inventory (VMI) system, in which the supplier monitors the inventory and decides the replenishment policy of each retailer \cite{Archetti2007}. 
+The IRP has been studied for more than 30 years \cite{Coelho2014}. Prior surveys had been published by \cite{Campbell98}, \cite{MoinSalhi2007}. Interested reader may also read the tutorial by \cite{Bertazzi2012}. 
+Very few models consider the inventory routing problem within a two-echelon or multi-echelon network	\cite{GuimaraesCoelho2019}
 
 Traditional applications of the IRP have been listed in the survey \cite{Coelho2014}. They mainly concern the distribution of commodities, raw materials or fast moving consumer goods. These activities rely on a stable supply chain network. 
 In industrial applications the set of customers is quite stable and the starting points of all defined for a long duration.
 For example, distribution of fuel always starts from the same fuel depots, which capacity and location cannot be easily modified. 
 
-In this paper we consider an extension of the IRP concerning emerging activities which supply chain is not yet designed, 
-or any activity has to frequently revise its supply chain design, e.g. delivery of e-commerce goods or services to a set of customers that changes over time. We assume a three-level supply chain consisting of one production facility, several intermediate depot called distribution centers (DC) and a larger set of customers. A single product is first carried from the production facility to DCs, and then from DCs to customers. The decision variables concern the location of DCs, the allocation of customers to DC and all IRP decisions previously cited. 
-This optimization problem is called the Location Inventory Routing Problem (LIRP). This problem appeared recently in the scientific literature \cite{AhmadiJavid2010} and has been more and more studied since then. 
-
-
-
-
-
-\subsubsection*{Generalites sur les problèmes combines}
-
-The LIRP combines three families of well-known optimization problems: vehicle routing, facility location and inventory management. 
-The pairwise combination these problems gave rise to the Location Routing Problem (LRP), the Inventory Routing Problem (IRP) and the Inventory Location Problem (ILP). These three integrated problems have already been the subject of many publications in recent decades.
-The inventory problem has been studied for more than 30 years \cite{Coelho2014}. Prior surveys had been published by \cite{Campbell98}, \cite{MoinSalhi2007}. Interested reader may also read the tutorial by \cite{Bertazzi2012}. 
-Very few models consider the inventory routing problem within a two-echelon or multi-echelon network	\cite{GuimaraesCoelho2019}
-Location Routing problems have been studeid for several decades. Recent surveys include \cite{ProdhonPrins2014}, \cite{DrexlSchneider2015} and \cite{Schneider2017}.  
 As pointed by \cite{Melo2009}, facility location is frequently combined with inventory decisions. 
-The problem is to determine the optimal number of distribution centers,  their locations,  the retailers assigned to each distribution center,  and the optimal ordering policy at the distribution centers.  Reviews on inventory location problems have been proposed by \cite{kaviani_location-inventory_2009} 
+The Inventory Location Problem (ILP) aims at determining the optimal number of distribution centers,  their locations,  the retailers assigned to each distribution center  and the optimal ordering policy at the distribution centers.  Reviews on inventory location problems have been proposed by \cite{kaviani_location-inventory_2009} 
 and \cite{farahani_location-inventory_2015}. 
-	
+
+In this paper we consider the integrated optimization problem of jointly optimize facility location, inventory management and vehicle routing. This optimization problem, called the Location Inventory Routing Problem (LIRP), recently appeared in the scientific literature \cite{AhmadiJavid2010}. It is relevant when considering an IRP on a supply chain which is not stabilized yet or must be frequently revised (e.g., delivery of e-commerce goods or services to a set of customers that changes over time). We consider a three-layer supply chain consisting of one production facility, several intermediate depots called Distribution Centers (DC) and a larger set of customers. Product are first carried from the production facility to DCs, and then from DCs to customers. The decision variables concern the location of DCs, the allocation of customers to DC as well as the IRP routing and inventory decisions. 
+
 The outline of this paper are the following. 
 In section \ref{sec:lit}, we review the scientific literature dedicated to the LIRP. 
-In section \ref{sec:model}, we propose a new mathematical formulation of the LIRP and show that this formulation is general enough to 
-cover several types of supply chain networks. 
+In section \ref{sec:model}, we propose a new mathematical formulation of the LIRP and show that this formulation is general enough to cover several types of supply chain networks. 
 In section \ref{sec:algo}, we propose a Route Sampling Heuristic (RSH) algorithm for the LIRP. 
 In section \ref{sec:expe}, we introduce new LIRP instances and report numerical experiments that show the performance of our algorithm.
+
+
 
 
 \section{Review of the literature} \label{sec:lit}
@@ -139,89 +140,60 @@ but these papers do not detail routes generation.
 
 As far as inventory management is concerned, the literature can be classified in two main families: 
 some papers consider a continuous time inventory policy whereas others consider discretized time periods. 
-In the first case, demand is considered either constant (see e.g. \cite{AhmSed2012}, \cite{Deng2016})
-or subject to a known distribution such as the normal distribution (see e.g. \cite{Zhalechian2016}, \cite{Saragih2018}) or 
+In the first category, demand is considered either constant (see e.g. \cite{AhmSed2012}, \cite{Deng2016})
+or subject to a given distribution such as the normal distribution (see e.g. \cite{Zhalechian2016}, \cite{Saragih2018}) or 
 the Poisson distribution (see e.g. \cite{Asadi2018}, \cite{HabibiAS2018}). 
-Classical continuous review policies such as $(r,Q)$ and $(S-1,S)$ policies are applied and the same inventory cycle repeats over time. 
-Note that in this category, the objective function often incorporates the average value of inventory or their standard deviation. 
-These values yield non linearity. 
+\cite{AhmadiJavid2010}, \cite{AhmSed2012}, \cite{Seyedhosseini2014}, \cite{LiuChenLiLiu2015}, \cite{Tang2016}, \cite{Deng2016} and  \cite{Saragih2018} apply the $(r,Q)$ inventory review policy whereas \cite{Dehghani2017}, \cite{HabibiAS2018} and \cite{Asadi2018} apply the $(S-1,S)$ policy. \cite{Yuchi2016} use the Wilson formula. 
+Note that in  most of these works, the objective function incorporates the average value of inventory or their standard deviation, which yields non linearity. 
 Thus, only small instances can be solved by MINLP solvers, or general purpose heuristics and metaheuristics are used. 
 
-Table \ref{tab1} present a synthesis of the main bibliographic references concerning the LIRP with continuous time inventory policy. 
-\OP{Retirer tableau. Remplacer par commentaires généraux }
-
-\begin{table}[htbp]
-	\scriptsize
-	\centering
-	\begin{tabular}{lcc}
-		\toprule
-		Reference &   Route &    Inventory \\
-		&          model & 		            policy                 \\
-		\midrule
-		\cite{Yuchi2016}			&		arc		&			Wilson	\\	
-		\cite{AhmadiJavid2010}		&		arc  	&			(r,Q) 	\\	
-		\cite{AhmSed2012}			&		arc 	&			(0,Q)	\\	
-		\cite{Seyedhosseini2014} 	&	arc		&			(r,Q) 	\\	
-		\cite{LiuChenLiLiu2015}		&		route	&			(r,Q) 	\\	
-		\cite{Tang2016}				&		arc		&			(r,Q)	\\	
-		\cite{Deng2016} 			& 	route	&			(r,Q) 	\\	
-		\cite{Saragih2018}			&		arc		&		(r,Q) 	\\	
-		\cite{Dehghani2017}			&		arc		&		(S-1,S)	\\	
-		\cite{HabibiAS2018}			&		arc		&		(S-1,S)	\\	
-		\cite{Asadi2018}			&		arc		&		(S-1,S)	\\	
-		\bottomrule
-	\end{tabular}
-	\caption{LIRP models with continuous inventory review}
-	\label{tab1}
-\end{table}
-
-Note that all references cited in Table \ref{tab1} consider logistics network with three layers. 
+Note that all papers presenting continuous time inventory policy consider logistics network with three layers. 
 Direct shipments are performed from layer 1 to layer 2 and routes between a facility at layer 2 and several client at layer 3. 
+\cite{LiuChenLiLiu2015} and \cite{Deng2016} propose route based models ; all other references propose arc based models. 
 
 
-The model considered in thiss paper considers discretized time periods me periods and all demands and flow values within one period are aggregated. This leads to inventory management policies that look like lot-sizing policies. Most references study models in which all data including demand are variable but deterministic (see e.g. \cite{Guerrero2013}, \cite{Zhang2014}, \cite{Ghorbani2016}). 
+In this paper, we use discretized time periods and all demands and material flow values within one period are aggregated. This leads to inventory management policies that can be modeled by lot sizing optimization problems. 
+All papers use multiple period formulation. Note that \cite{AmbScu05} formulated a mathematical model with multiple periods but provide solutions with a single period only. 
+Most LIRP references consider models in which all data are deterministic but variable (see e.g. \cite{Guerrero2013}, \cite{Zhang2014}, \cite{Ghorbani2016}). 
 \cite{Vahdani2018} consider stochastic storage capacity. 
 \cite{Rayat2017} explicitly model stochastic demand and propose an MINLP bi-objective model with multiple periods and multiple products. The model is solved with an epsilon constraint and several multi-objective metaheuristics. 
 Uncertainty can also be incorporated through various modeling techniques. 
-\cite{ChenChenSunLiu2014, TavakkoliIFAC2016} model fuzzy demand ; \cite{Bashiri2018} define demand scenarios ; 
+\cite{ChenChenSunLiu2014, TavakkoliIFAC2016, Eskandari2018} model fuzzy demand and parameters ; \cite{Bashiri2018} define demand scenarios ; 
+\cite{Zhalechian2016} and \cite{Rafie-Majd2018} consider demands following a normal distribution and combine discretized time modeling with a $(R,Q)$ replenishment policy.  
 
-
-
-Table \ref{tab2} presents LIRP models with time discretization. 
+Table \ref{tab2} presents the main features of LIRP models with time discretization. 
 
 \begin{table}[htbp]
+	\centering
 	\scriptsize
-	\begin{tabular}{lcccccc}
+	\begin{tabular}{lccclc}
 		\toprule
-		Reference & Periods & Route & Layers   & Flow &  Stochastic & Linear  \\
-					&          & model & 	   & 	   &     demand        &                      \\
+		Reference &  Route & Network    & Flow &  \multicolumn{1}{c}{Uncertain}  & Linear  \\
+				  & model & layers	   & 	   &   \multicolumn{1}{c}{data}       &                      \\
 		\midrule
-\cite{AmbScu05}				&	1 \& multi	&	arc		&	4 	&	direct+loop+loop	&	no	&	L		\\
-\cite{Zhang2014}			&	multi		&	arc  	&	2 	&	loop				&	no	&	L	\\
-\cite{Guerrero2013}			&	multi		&	route	&	3 	&	direct+loop			&	no	&	L	\\
-\cite{Nekooghadirli2014}	&   multi		&	arc 	&	3   &   direct+loop			& demand( normal) & NL 	\\	
-\cite{TavakkoliIFAC2016}	&	multi		&	arc		&	3 	&	direct+loop			&	fuzzy 	&	L	\\
-\cite{Ghorbani2016}			&	multi		&	arc		&	3 	&	direct+loop			&	no	&	L\\
-\cite{Lehrlaly2016}			&	multi		&	route	&	3 	&	direct+loop			&	no	&	L		\\
-\cite{Rayat2017}			&	multi		&	arc		&	3 	&	direct+loop			&	demand (avg, std)	&	NL		\\
-\cite{Zhalechian2016}		&	multi		&	arc		&	3	& direct+loop			&	note: (r,Q) à compléter 	\\	
-\cite{Hiassat2017}			&	multi		&	route	&	3 	&	direct+loop			&	no	&	L		\\
-\cite{Riquelme2016}			&	multi		&	arc		&	2 	&	general graph		&	no	&	L	\\
-\cite{Tavana2018} 			&	multi		&	arc		&	4 	&	direct+loop+loop 	&	no	&	L		\\
-\cite{Vahdani2018}			&	multi		&	arc		&	3 	&	direct+loop			&	storage capacity	&	L	\\
-\cite{Eskandari2018}		&	multi		&	arc		&	4 	&	direct+direct+route	&	yes (disaster)	&	L		\\
-\cite{Bashiri2018}			&	multi		&	arc		&	3 	&	loop+direct			&	demand (scenarios)	&	L	\\
-\cite{Rafie-Majd2018}		& 	multi		&	arc		&	3 	&  loop +direct			&  note:(r,Q) a compléter	\\	
+\cite{AmbScu05}				&	arc		&	4 	&	direct+loop+loop	&		&	\checkmark		\\
+\cite{Zhang2014}			&	arc  	&	2 	&	loop				&		&	\checkmark	\\
+\cite{Guerrero2013}			&	route	&	3 	&	direct+loop			&		&	\checkmark	\\
+\cite{Nekooghadirli2014}	&   arc 	&	3   &   direct+loop			& 	\checkmark &  	\\	
+\cite{TavakkoliIFAC2016}	&	arc		&	3 	&	direct+loop			&	\checkmark (fuzzy) 	&	\checkmark	\\
+\cite{Ghorbani2016}			&	arc		&	3 	&	direct+loop			&		&	\checkmark \\
+\cite{Lehrlaly2016}			&	route	&	3 	&	direct+loop			&		&	\checkmark		\\
+\cite{Rayat2017}			&	arc		&	3 	&	direct+loop			&	\checkmark	&			\\
+\cite{Zhalechian2016}		&	arc		&	3	& 	direct+loop			&	\checkmark	& 	\\	
+\cite{Hiassat2017}			&	route	&	3 	&	direct+loop			&		&	\checkmark		\\
+\cite{Riquelme2016}			&	arc		&	2 	&	general graph		&		&	\checkmark	\\
+\cite{Tavana2018} 			&	arc		&	4 	&	direct+loop+loop 	&		&	\checkmark		\\
+\cite{Vahdani2018}			&	arc		&	3 	&	direct+loop			&	\checkmark			&	\checkmark	\\
+\cite{Eskandari2018}		&	arc		&	4 	&	direct+direct+route	&	\checkmark (fuzzy)	&	\checkmark		\\
+\cite{Bashiri2018}			&	arc		&	3 	&	loop+direct			&	\checkmark (scenario)	&	\checkmark	\\
+\cite{Rafie-Majd2018}		& 	arc		&	3 	&  	direct + loop 		&  \checkmark 			&  \\	
+\textit{This paper}			& route		& any	&   flexible			& 						& \checkmark \\
 		\bottomrule
 	\end{tabular}
-	\caption{Reference with time discretization}
+	\caption{LIRP papers using time discretization}
 	\label{tab2}
 \end{table}
 
-
-\OP{completer  	Zhalechian and Rafie Majd}
-
-\OP{Fini ici 27/03/19}
 
 
 
@@ -229,10 +201,13 @@ Table \ref{tab2} presents LIRP models with time discretization.
 
 This paper brings contribution in the LIRP literature in three ways. 
 First, we propose new route-based mathematical model for a multi-level logistics network with both FTL and LTL routes. 
-Without loss of generality we describe a network with one production facility, multiple levels of candidate distribution centers 
-and a larger set of customers at the last level. 
+Without loss of generality, we describe a network with one production facility, multiple levels of candidate distribution centers and a larger set of customers at the last level. 
 Second, we propose a sampling solution method based on the decomposition of large instances in several smaller instances that are tractable by an MILP solver. 
 Finally, we introduce new instances for the LIRP and present computational experiments that show the relevance of our approach. 
+
+\OP{Vérifier l'argumentation FTL, LTL}
+
+%-------------------------------------------------------
 
 \section{Mathematical model}
 
@@ -242,39 +217,69 @@ Finally, we introduce new instances for the LIRP and present computational exper
 
 \OP{Choix de vocabulaire: comment appelle t-on un site ? Facility , location, facility location?}
 
-We consider a  distribution network composed of one production facility, 
-a set of customers and a set intermediate logistics facilities called distribution centers (DC). 
-The list of customers as well as their demand are assumed deterministic on a given time horizon $T$, typically a few weeks. 
-The set of customers is denoted by $\cu$ and the demand of customer $i \in \cu$ at time period $t\in T$ is denoted by $d^t_i$.
+\OP{Choix de vocabulaire: layer, level? }
 
-We propose a unified model that covers a broad spectrum of potential applications and distribution networks. 
-In particular, the model includes the possibility of dealing with multiple levels of DCs and material flows with both FLT and LTL distribution (see, e.g. \cite{AmbScu05}). 
 
-Let us call $\loc$ the set of all facility locations (DCs and customers) in the distribution network. 
+In this section, we introduce a new mixed integer linear programming formulation for the LIRP, 
+that covers a broad spectrum of potential applications and distribution networks. 
+In particular, the model includes the possibility of dealing with multiple levels of DCs and FTL or LTL distribution (see, e.g. \cite{AmbScu05}). 
+
+We consider a distribution network composed of one production center, several layers of distribution centers and a terminal layer of customers. Let us call $\loc$ the set of all facility locations (DCs and customers) in the distribution network. 
 We assume that $\loc$ is decomposed into levels and we denote by $\loc_k$ the set of facility locations at level $k$. 
 A depot lies on level 1 if it is delivered by the production facility only. 
 It lies at level $k$ if it is delivered by at least one DC from level $k-1$. 
 Let $L$ be the number of levels in the networks. By definition, the set $\cu$ of customers corresponds to $\loc_L$.
-Moreover, $\loc=\cup_{k=1}^L \loc_k$.
+Moreover, $\loc=\bigcup\limits_{k=1}^L \loc_k$.
 %
 Selecting a DC incurs a fixed opening cost $f_j$ for each DC. 
 This cost is paid once at the beginning of the planning horizon. 
-Note that the choice of selected DCs cannot be modified during the whole period. 
+Note that the choice of selected DCs cannot be modified during the whole time horizon. 
 %
-Temporary storage of goods at DCs and customers is authorized. 
-Delivering these facilities in advance is not penalized but incurs a holding cost $h^t_i$ for every good stored at facility $i \in \loc$ at period $t \in T$.
+Customers demand is assumed deterministic on a given time horizon $T$, typically a few weeks. The demand of customer $i \in \cu$ at time period $t\in T$ is denoted by $d^t_i$.
+%
+Storage of goods at DCs and customers is authorized, 
+but incurs a holding cost $h^t_i$ for every good stored at facility $i \in \loc$ at period $t \in T$.
 The initial inventory at facility $i \in \loc$ is denoted by $I_i^0$. 
 We assume that inventory level at facility $i \in \loc$ cannot excess maximal value $I_i^{\max}$. 
 
-Our model is based on a set of existing routes in the logistics network. 
+Our proposed formulation is based on a set of existing routes in the logistics network. 
 This set $\ro$ is potentially large but enumerable. 
-Similarly to the set of facilities, the set of routes can be decomposed in levels: $\ro = \cup_{k=1}^{L} \ro_k$. 
+Similarly to the set of facilities, the set of routes can be decomposed in levels: $\ro = \bigcup\limits_{k=1}^{L} \ro_k$. 
 All routes $r \in \ro_k$ start from a facility (production facility or DC) at level $k-1$ and deliver facilities at level $k$. 
 For each route $r \in \ro$, the list of facilities visited is given by an indicator vector. 
 For the sake of clarity, we define two indicators: 
 $\beta_{jr}$ is equal to 1 if $r$ starts from DC $j \in \loc \setminus C$, and 0 otherwise;
 $\alpha_{ir}$ is equal to 1 if route $r \in \ro_{L}$ visits facility $i \in \loc$, and 0 otherwise.
 %
+
+Each route 	$r\in \ro$ has a deterministic cost $c_r$ that consists of a (possibly zero) fixed ordering cost, 
+a routing cost roughly proportional to the route length and stopover costs for each facility visited.  
+Finally, each route level is operated by a homogeneous fleet of vehicles. 
+Let $\nu_k$ the number of vehicles available at level $k$ and $\kappa_k$ their capacity. 
+%
+
+
+
+The proposed MILP formulation is based on the following sets of binary variables: 
+$$	y_j  = \left\{
+\begin{array}{ll}
+1 & \mbox{if distribution center } j \mbox{ is selected }  \\
+0 & \mbox{otherwise.}
+\end{array}
+\right.
+$$
+$$	z_{rt}  = \left\{
+\begin{array}{ll}
+1 & \mbox{if route } r \in R \mbox{ is selected in period } t \in T \\
+0 & \mbox{otherwise.}
+\end{array}
+\right.
+$$
+
+Moreover, continuous variables $q_{irt} \geq 0$ and $I_{it} \geq 0$  
+determine the quantities delivered by route $r \in \ro$ to facility $i \in \loc$ in period $t\in T$
+and the inventory at facility $i \in \loc_{k}$ in period $t \in T$, respectively. 
+Tables \ref{tab:set}--\ref{tab:var} summarize the mathematical notations that will be used throughout the paper.
 
 \begin{table}[htbp]
 	\centering
@@ -293,50 +298,26 @@ $\alpha_{ir}$ is equal to 1 if route $r \in \ro_{L}$ visits facility $i \in \loc
 	\label{tab:set}
 \end{table}       
 
-Each route 	$r\in \ro$ has a cost $c_r$ that consists of a (possibly zero) fixed ordering cost along with a stopover cost at each facility visited and a routing cost roughly proportional to the route length. Note that route costs are deterministic and do not depend on the load carried. 
-Finally, each route level is operated by a homogeneous fleet of vehicle. 
-Let $\nu_k$ the number of vehicles available at level $k$ and $\kappa_k$ their capacity. 
 
- \begin{table}[htbp]
+\begin{table}[htbp]
 	\centering
 	\begin{tabular}{ll}
 		\toprule
 		$f_j$ & Fixed cost of opening distribution center $j\in\loc \setminus \cu$\\ 
 		$d_{it}$ & Demand of customer $i\in\cu$ in period $t \in T$\\
-		$h_{it}$ & unitary holding cost at facility $i\in\loc$ in period $t \in T$\\
+		$h_{it}$ & Unitary holding cost at facility $i\in\loc$ in period $t \in T$\\
 		$I_{i0}$ & Initial inventory at facility $i\in \loc$\\
 		$I_i^{\max}$ & Maximum inventory at location $i\in\loc$\\
 		$c_r$ & Cost of route $r\in \ro$\\
-		$\alpha_{ir}$ & indicator that route $r$ delivers facility $i \in \loc$\\
-		$\beta_{jr}$ & indicator that route $r$ starts from DC $j \in \loc \setminus \cu$\\
+		$\alpha_{ir}$ & Indicator that route $r$ delivers facility $i \in \loc$\\
+		$\beta_{jr}$ & Indicator that route $r$ starts from DC $j \in \loc \setminus \cu$\\
 		$\kappa_k$ & Capacity of vehicles delivering locations at level $k$\\ 
-		$\nu_k$ & fleet size for vehicles delivering locations of level $k$\\ 
-		
+		$\nu_k$ & Fleet size for vehicles delivering locations of level $k$\\ 
 		\bottomrule
 	\end{tabular}
 	\caption{Data}
 	\label{tab:data}
 \end{table}       
-
-The formulation is based on the following sets of binary variables: 
-$$	y_j  = \left\{
-\begin{array}{ll}
-1 & \mbox{if distribution center } j \mbox{ is selected }  \\
-0 & \mbox{otherwise.}
-\end{array}
-\right.
-$$
-$$	z_{rt}  = \left\{
-\begin{array}{ll}
-1 & \mbox{if route } r \in R \mbox{ is selected in period} t \in T \\
-0 & \mbox{otherwise.}
-\end{array}
-\right.
-$$
-
-Moreover, continuous variables $q_{irt} \geq 0$ and $I_{it} \geq 0$  determine the quantities delivered by route $r$ to facility $i \in \loc$ in period $t\in T$
-and the inventory at facility $i \in \loc_{k}$ at period $t \in T$, respectively. 
-Tables \ref{tab:set}--\ref{tab:var} summarize the mathematical notations that will be used throughout the paper.
 
 
 	\begin{table}[htbp]
@@ -344,12 +325,12 @@ Tables \ref{tab:set}--\ref{tab:var} summarize the mathematical notations that wi
 	\begin{tabular}{ll}
 		\toprule
 		\multicolumn{2}{l}{\textit{Binary Variables}}\\
-		$y_{j}$ & $\rightarrow$ 1 if distribution center $j$ is selected \\
-		$z_{rt}$ & $\rightarrow$ 1 if route $r$  is selected in period $t \in T$\\
+		$y_{j}$ & $=1$ if distribution center $j \in \loc \backslash \cu$ is selected \\
+		$z_{rt}$ & $=1$ if route $r \in \ro$  is selected in period $t \in T$\\
 		\midrule
 		\multicolumn{2}{l}{\textit{Continuous variables}}\\
-		$q_{irt}$ & $\rightarrow$ quantity delivered by route $r$ to location $i$ in period $t\in T$\\
-		$I_{it}$ & $\rightarrow$ Inventory at location $i$ in period $t \in T$\\
+		$q_{irt}$ & Quantity delivered by route $r \in \ro$ to location $i\in \loc$ in period $t\in T$\\
+		$I_{it}$ &  Inventory at location $i \in \loc$ in period $t \in T$\\
 		\bottomrule
 	\end{tabular}
 	\caption{Variables}
@@ -359,14 +340,13 @@ Tables \ref{tab:set}--\ref{tab:var} summarize the mathematical notations that wi
 
 \subsection{Mathematical  formulation}\label{subsection:MIP}
 
-In this section, we present our mixed integer linear formulation for the LIRP. 
 The objective function to be minimized can be stated as follows: 
  
 \begin{equation} \label{objfunct}
     \text{minimize} \sum_{j\in \loc \setminus \cu} f_{j} y_{j} +\sum_{t\in T} \left( \sum_{r\in \ro} c_r z_{rt} + \sum_{i\in \loc} h_{it} I_{it}\right)
     \end{equation} 
     
-    The first term in equation \ref{objfunct} represents the sum of fixed opening costs for all DCs selected. 
+    The first term in equation (\ref{objfunct}) represents the sum of fixed opening costs for all DCs selected. 
     The second term is the sum of all routing costs and inventory costs during the time horizon considered. 
     
   The LIRP is subject to the following constraints:
@@ -378,39 +358,40 @@ The objective function to be minimized can be stated as follows:
 &&\sum_{r\in \ro_k} z_{rt} &\leq 	\nu_k							&\forall k&=1,\ldots,L, t \in T  				\label{const:fleetcapa}\\
 &&\sum_{i\in \loc_k} q_{irt}   		&\leq \kappa_k z_{rt} 			&\forall k&=1,\ldots,L,  r\in \ro_k, t \in T 	\label{const:deliveryUB}\\
 &&q_{jrt}   		&\leq \alpha_{jr}\kappa_k  						&\forall k&=1,\ldots,L,  r\in \ro_k, j \in \loc_k, t \in T	\label{const:deliveryConstLoc}\\
-&&I_{j,t-1} + \sum_{r\in\ro_k} q_{jrt} 			&=I_{jt} +\sum_{r'\in \ro_{k+1}}\left(\beta_{jr'} \sum_{i\in \loc_{k+1}}q_{ir't}\right)\quad 			
-   																	&\forall k&=1,\ldots,L-1, j\in \loc_k, t \in T 				\label{const:invflowdepots}\\
-&&I_{i,t-1}+\sum_{r\in \ro_L} q_{irt} &= I_{it} +d_{it} 			&\forall i&\in \cu,  t \in T					\label{const:invflowcustomers}\\
+&&I_{jt} - I_{j,t-1} &= \sum_{r\in\ro_k} q_{jrt} 	- \sum_{r'\in \ro_{k+1}}\left(\beta_{jr'} \sum_{i\in \loc_{k+1}}q_{ir't}\right)\quad 						&\forall k&=1,\ldots,L-1, j\in \loc_k, t \in T 				\label{const:invflowdepots}\\
+&&I_{it} - I_{i,t-1} &= \sum_{r\in \ro_L} q_{irt} - d_{it} 			&\forall i&\in \cu,  t \in T					\label{const:invflowcustomers}\\
 &&I_{jt}	&\leq I_j^{\max} y_j  									&\forall k&=1,\ldots,L-1,  j\in \loc_k, t \in T \label{const:invdepotUB}\\	
 &&I_{it} 	&\leq \min\left(I_i^{\max}, \sum_{t' > t}d_{it'}\right)	&\forall i&\in \cu,  t \in T					\label{const:invcustUB}\\
 &&q_{irt}			&\geq 0 										&\forall k&=1,\ldots,L,  i\in \loc_k,  r\in \ro_k,\forall t \in T	\label{const:upos}	\\
 &&I_{it}			&\geq 0 										&\forall i &\in \loc,  t \in T					\label{const:invCpos}	\\
 &&y_{j}				& \in \{0,1\} 								&\forall j&\in \loc\setminus\cu						\label{const:ybool}\\	
-&&z_{rt}			&\in \{0,1\} 									&\forall r&\in \ro,  t \in T					\label{const:zbool}
+&&z_{rt}			&\in \{0,1\} 									&\forall r&\in \ro,  t \in T.					\label{const:zbool}
 \end{alignat}
 
 
-Single delivery constraints~\eqref{const:singleroutecustomers} state that, at any period, the whole demand of customers is delivered by at most one route. 
+Single delivery constraints~\eqref{const:singleroutecustomers} state that, at any period, each customer is delivered by at most one route. 
 %
-Constraints ~\eqref{const:singleroutedc} express the same idea for DCs: at any period, the whole demand of a DC is served by at most one route serving the corresponding level. Moreover, this constraint prevents from delivering non selected DCs. 
+Constraints ~\eqref{const:singleroutedc} express the same idea for DCs: at any period, DCs are served by at most one route serving the corresponding level. Moreover, this constraint prevents from delivering non selected DCs. 
 %
-Constraint~\eqref{const:startfromopendepots} ensures that routes start only from selected depots. 
+Constraint~\eqref{const:startfromopendepots} ensures that a route at level $k+1$ can start only from a depot selected at level $k$ (Note that by definition $\sum_{j\in\loc_{k}} \beta_{jr} \leq 1$).
 %
 Constraints~\eqref{const:fleetcapa} states that the number of routes used to serve the locations of a given level $k$ in period $t$ does not exceed the number of vehicles allocated to that level. 
 %
 Constraints~\eqref{const:deliveryUB} ensure that the sum of the quantities delivered through a route $r\in\ro_k$ in period $t$ is compatible with the vehicles capacity. 
 %
-Constraints ~\label{const:deliveryConstLoc} \OP{la vérifier} state that routes cannot deliver facilities they do not visit. 
+Constraints ~\eqref{const:deliveryConstLoc}  state that routes cannot deliver facilities they do not visit. 
 %
-Constraints~\eqref{const:invflowdepots} and~\eqref{const:invflowcustomers} are flow conservation constraint at DCs and customers, respectively. 
-\OP{Faut-il détailler explication constraintes (8)?}
+Constraints~\eqref{const:invflowdepots} are flow conservation constraint at DCs. 
+The inventory variation at DC $j \in \loc_k$ is the difference between quantities $q_{jrt}$ delivered by routes at level $k$ and outgoing quantities leaving $j$ in routes of level $k+1$. 
+%
+Constraints~\eqref{const:invflowcustomers} are flow conservation at customers.
+
 %
 Capacity constraints~\eqref{const:invdepotUB} limits the amount of inventory at selected depots and impose zero inventory at non selected depots. 
 %
-Constraint ~\eqref{const:invcustUB} states that the inventory at customer $i \in C$ cannot exceed $I_i^{max}$ nor the sum of future demands. 
+Constraints ~\eqref{const:invcustUB} state that the inventory at customer $i \in C$ cannot exceed $I_i^{max}$ or an upper bound calculated as the sum of future demands. 
 %
-Finally, constraints \ref{const:upos}--\ref{const:zbool} define the nature of decision variables. 
-
+Finally, constraints (\ref{const:upos})--(\ref{const:zbool}) define the nature of decision variables. 
 
 
 
@@ -445,33 +426,35 @@ Finally, constraints \ref{const:upos}--\ref{const:zbool} define the nature of de
 
 \subsection{Targeted use cases}
 
-The MIP formulation presented in section \ref{subsection:MIP} models a general version of the LIRP, 
-that allows many supply chain networks and routing policies. 
-In this paper, we specifically address the case of a distribution network with one production facility and two tiers of facilities in the distribution network ($L=2$): one set ($\loc_1$) of DCs and one set $\cu=\loc_2$ of clients. 
-Moreover, routes are concentrated in one single echelon whereas only direct shipments are performed at the second echelon. 
-Under these assumptions, we consider two particular cases:
+The MILP formulation presented in section \ref{subsection:MIP} models a general version of the LIRP, 
+that is compatible with many supply chain networks and transportation policies (direct shipments or routes). 
+Without loss of generality, the model can be applied to the case where goods are collected at multiples origins and carried to a set of collection centers and a single processing or recycling center. 
 
- Figure~\ref{fig:dl} illustrates the ``Direct+Loop'' network, in which the set $\ro_1$ consists of direct shipments from the production center to DCs
- and the set $\ro_2$ consists of routes starting at a DC and visiting one or several clients.  This type of network is commonly used by two-level distribution systems that deliver DCs with full truckloads and individual clients by routes starting at a DC.
- 
- \begin{figure}[htbp]
-    \centering
- 	\inputfig{model1}
+From now on, we specifically address the case of distribution networks with one production facility and two levels
+in the distribution network ($L=2$): one set $\loc_1$ of DCs and one set $\cu=\loc_2$ of clients. 
+Moreover, routes are concentrated in one level only. 
+Under these assumptions, we consider two particular cases, illustrated by Figures ~\ref{fig:dl} and ~\ref{fig:ld}, respectively. 
+
+\begin{figure}[htbp]
+	\centering
+	\inputfig{model1}
 	\caption{ ``Direct-Loop'' network}
-	  \label{fig:dl}
+	\label{fig:dl}
 	
 \end{figure}
 
-Figure~\ref{fig:ld} illustrates the ``Loop+Direct'' network, in which the set $\ro_1$  consists of routes starting at the production center and visiting one one several DCs, and the set $\ro_2$ consists of direct shipments from DCs to clients. This type of network may concern all distribution networks in which clients collect goods at the distribution center or a locker. 
+In the ``Direct+Loop'' network (Figure~\ref{fig:dl}), the set $\ro_1$ consists of direct shipments from the production center to DCs  and the set $\ro_2$ consists of routes starting at a DC and visiting one or several clients.  This type of network is commonly used by two-level distribution systems that deliver DCs with full truckloads and individual clients by routes starting at a DC.
 
 \begin{figure}[htbp]
 	\centering
 	\inputfig{model2}
 	\caption{``Loop-Direct'' network}
 	\label{fig:ld}
-	\end{figure}
+\end{figure}
+ 
+ 
+In the ``Loop+Direct'' network (Figure~\ref{fig:ld}), the set $\ro_1$  consists of routes starting at the production center and visiting one of several DCs, and the set $\ro_2$ consists of direct shipments from DCs to clients. This type of network may concern all applications in which client move to the DC by their own means. This is the case in e-commerce (DCs can be pickup point or a locker) as well as in health or humanitarian logistics. 
 
-In this paper we present the case of a distribution network. Without loss of generality, our model can be applied to the collection of goods from multiples origins to a set of collection centers and one single processing center. 
 
 
 
@@ -479,22 +462,17 @@ In this paper we present the case of a distribution network. Without loss of gen
 \section{Matheuristic method} 
 \label{sec:algo}
 
-The LIRP  results from the integration of several classical NP-hard optimization problems. 
-Hence it is doubtful that any solver could produce optimal solutions directly from the above formulation in reasonable time, except for very small instances. The computational complexity of the problem is strongly influenced by the number of routes considered.
-A great number of routes implies that there are several ways to serve each location, which in turns makes the inventory problem more difficult.
-Finally, one may observe that in a simple network with two levels, one DC and $n$ clients, even restricting the problem to routes with at most $m$ stops, the number of admissible routes is $\mathcal{O}(n^m)$.
+The LIRP  results from the integration of several classical NP-hard optimization problems. So, it is obviously NP-hard.
+Except for very small instances, it is doubtful that any solver could produce optimal solutions directly from the above formulation in reasonable time. The computational complexity of the problem is strongly influenced by the number of routes considered.
+
+A great number of routes implies that there are multiple ways to deliver each location, which in turns makes the inventory problem more difficult. Finally, one may observe that in a simple network with two levels, one DC and $n$ clients, even restricting the problem to routes with at most $m$ stops, the number of admissible routes is $\mathcal{O}(n^m)$.
 
 To overcome this complexity issue, we propose a two-stage heuristic method to obtain good solutions within acceptable time.
-The heuristic relies on the assumption that an MILP solver is able to find optimal or non-optimal good solutions for small instances of the LIRP. 
-Thus, the main idea of our heuristic is (i) to split the original MILP into several subproblems for which it is possible to compute (near) optimal solutions independently and (ii) to collect the routes contained in these (near) optimal solutions to form a restricted pool of elite routes. 
-By doing this, we expect than the MILP solver will be able to solve one elite instance made of routes of the elite pool only. 
-Hence, the main challenge of our algorithm is to find a good partition of the original problem into smaller subproblems and to progressively shrink the set of routes available to the model. 
-
-
-We propose a Route Sampling Heuristic (RSH) which simplified scheme is described in Figure \ref{fig:algo1}. 
-
-The algorithm starts with the full set of routes, which is randomly shuffled, and then partitioned into independent subsets of routes of identical size. Each subset is solved independently with an MILP solver (we used IBM Cplex 12.8). All routes contained in the solutions returned by the solved are stored in a pool of so-called elite routes. 
-Finally, we hope that the pool of elite routes will be tractable by an MILP solver. 
+The heuristic relies on the assumption that an MILP solver is able to find optimal or non-optimal good solutions for small enough instances of the LIRP. 
+Thus, the main idea of our heuristic is (i) to split the original MILP into several independent subproblems for which it is possible to compute (near) optimal solutions and (ii) to collect the routes contained in these (near) optimal solutions to form a pool of elite routes. 
+By doing this, the heuristic method will define a new instance containing only elite routes and we hope that
+ the MILP solver will be able to solve this new instance.  
+Hence, the main challenge of our algorithm is to find a good partition of the original problem into smaller subproblems and to progressively shrink the set of routes available to the model. The simplified scheme of our Route Sampling Heuristic (RSH) is described in Figure \ref{fig:algo1}. 
 
 \begin{figure}[htbp]
 	\centering
@@ -521,11 +499,11 @@ Finally, we hope that the pool of elite routes will be tractable by an MILP solv
 	\draw[arc] (t1.south) -- (set3) ;
 	\draw[arc] (t1.south) -- (set4) ;
 	\draw[arc] (t1.south) -- (set5) ;
-	\node[instruct3] 	(cplex1) at (0,5) 	{\scriptsize{CPLEX}};
-	\node[instruct3] 	(cplex2) at (3,5) 	{\scriptsize{CPLEX}};
-	\node[instruct3] 	(cplex3) at (6,5) 	{\scriptsize{CPLEX}};
-	\node[instruct3] 	(cplex4) at (9,5) 	{\scriptsize{CPLEX}};
-	\node[instruct3] 	(cplex5) at (12,5) {\scriptsize{CPLEX}};
+	\node[instruct3] 	(cplex1) at (0,5) 	{\scriptsize{ Solver}};
+	\node[instruct3] 	(cplex2) at (3,5) 	{\scriptsize{ Solver}};
+	\node[instruct3] 	(cplex3) at (6,5) 	{\scriptsize{ Solver}};
+	\node[instruct3] 	(cplex4) at (9,5) 	{\scriptsize{ Solver}};
+	\node[instruct3] 	(cplex5) at (12,5) {\scriptsize{ Solver}};
 	\draw[arc] (set1.south) -- (cplex1.north) ;
 	\draw[arc] (set2.south) -- (cplex2.north) ;
 	\draw[arc] (set3.south) -- (cplex3.north) ;
@@ -547,7 +525,7 @@ Finally, we hope that the pool of elite routes will be tractable by an MILP solv
 	\draw[arc] (sol3.south) -- (pool) ;
 	\draw[arc] (sol4.south) -- (pool) ;
 	\draw[arc] (sol5.south) -- (pool) ;
-	\node[instruct3] 	(cplex) at (6,1) 	{\scriptsize{CPLEX}};
+	\node[instruct3] 	(cplex) at (6,1) 	{\scriptsize{Solver}};
 	\draw[arc] (pool.south) -- (cplex) ;
 	\node[instruct2]		(end)	at (6,0) {\scriptsize{Solution}};
 	\draw[arc] (cplex.south) -- (end) ;
@@ -557,62 +535,74 @@ Finally, we hope that the pool of elite routes will be tractable by an MILP solv
 	\label{fig:algo1}
 \end{figure}
 
+The algorithm starts with the full set of routes, which is randomly shuffled and partitioned into independent subsets of routes. Each subset defines a new LIRP instance that is solved with an MILP solver. The routes contained in the solutions are stored in a pool of so-called elite routes. 
+Finally, we hope that the pool of elite routes will be tractable by the MILP solver. 
 
-
-\subsection{Refinements of the algorithm} 
 
 Figure \ref{fig:algo1} presents an idealistic situation in which 
-(i) each set $R_i, i \in 1\dots, \alpha$ yields a feasible instances that can be solved to optimality in reasonable computing time
-(ii) the pool of elite routes also yields a feasible instance which is also tractable with an MILP solver. 
-
-This is not always the case in practice. In this section, we explain how to improve the algorithm in order to avoid infeasibility and manage the size of subsets $R_i$ as well as the elite pool. 
-
-
-Algorithm \ref{mainalgo} gives a more detailed description of our approach. 
+(i) the quality of the solution is not too sensitive to the initial partition into subsets $R_i$  
+(ii) each subset $R_i, i \in 1\dots, \alpha$ yields a feasible instance that can be solved to optimality in reasonable computing time
+(iii) the pool of elite routes also yields a feasible instance tractable with an MILP solver. 
 
 
-In lines 12-16, sets $R_1$--$R_\alpha$ can be repeatedly used to yield elite routes. If $I_{max}=1$ the situation is like that presented by Figure \ref{fig:algo1}. Otherwise, the routes belonging to the solutions found by the MILP solver are removed from subsets $R_1 -- R_\alpha $ are the MILP solver is called again from this restricted set. This procedure can be used to extend the number of elite routes. 
+\OP{ICI Mercredi 17}
+A direct implementation of this algorithm is likely to produce very poor results. 
+It seems crucial to repeat the shuffle and partitioning step in order to generate various subsets $R_i$. 
+ 
+Hence, the the algorithm in order to avoid infeasibility and manage the size of subsets $R_i$ as well as the elite pool. 
 
 
-
+Algorithm \ref{mainalgo} gives a more detailed description of the RSH algorithm. 
 
 \begin{algorithm}
-	\caption{The sampling matheuristic}
+	\caption{The Route Sampling Heuristic}
 	\label{mainalgo}
 	%\scriptsize
 	\begin{algorithmic}[1]
 		\REQUIRE  The set $R$ of all routes generated
 		\REQUIRE A parameter $\alpha$ (number of subsets)
-		\REQUIRE $t1, t2$: CPU allocated to Cplex
+		\REQUIRE $t1, t2$: CPU (time budget) allocated to the MILP solver
 		\REQUIRE $I_{max}$ : parameter
 		\STATE $z^*= +\infty$
 		\STATE $eliteRoutes \leftarrow \emptyset$
 		\REPEAT
-			\STATE $amelioration = FALSE$
-			\STATE $R =  R \backslash eliteRoutes$
-			\STATE Shuffle all routes in $R$
-			\STATE $LocationSampling(R,\alpha)$ \COMMENT{partitions $R$ into at most $\alpha$ subset of routes, regrouped by starting depots}
-			\STATE $RouteSampling(R,\alpha)$	\COMMENT{partition $R$ into $\alpha$ independent subsets of routes}
-			\FOR{$s=1$ to $\alpha$}
-				\STATE $R_s = $ routes in subset $s$
-				\STATE $bestRoutes_s = \emptyset$
-				\FOR {$i=1$ to $I_{max}$}
-					\STATE $(z,bestRoutes_s) = solveLIRP(R_s,t1)$ 
-					\STATE $eliteRoutes \leftarrow bestRoutes_s$
-					\STATE $R_s \leftarrow R_s \backslash bestRoutes_s$
-					
-				\ENDFOR
-			\ENDFOR
-			\STATE 	$(z,bestRoutes) = solveLIRP(eliteRoute, t2)$
-			\IF {$z < z^*$}
-				\STATE $z^*=z$
-				\STATE $amelioration =TRUE$
-			\ENDIF
+		\STATE $amelioration = FALSE$
+		\STATE $R =  R \backslash eliteRoutes$
+		\STATE Shuffle all routes in $R$
+		\STATE $LocationSampling(R,\alpha)$ \COMMENT{partitions $R$ into at most $\alpha$ subset of routes, regrouped by starting depots}
+		\STATE $RouteSampling(R,\alpha)$	\COMMENT{partition $R$ into $\alpha$ independent subsets of routes}
+		\FOR{$s=1$ to $\alpha$}
+		\STATE $R_s = $ routes in subset $s$
+		\STATE $bestRoutes_s = \emptyset$
+		\FOR {$i=1$ to $I_{max}$}
+		\STATE $(z,bestRoutes_s) = solveLIRP(R_s,t1)$ 
+		\STATE $eliteRoutes \leftarrow bestRoutes_s$
+		\STATE $R_s \leftarrow R_s \backslash bestRoutes_s$
+		
+		\ENDFOR
+		\ENDFOR
+		\STATE 	$(z,bestRoutes) = solveLIRP(eliteRoute, t2)$
+		\IF {$z < z^*$}
+		\STATE $z^*=z$
+		\STATE $amelioration =TRUE$
+		\ENDIF
 		\UNTIL {$amelioration = FALSE$}
 		\RETURN $bestRoutes$
 	\end{algorithmic}
 \end{algorithm}
 
+
+The RSH algorithm is initialized with the set of routes and several parameters that control the number of subsets as well as the time budget allocated to the solver. 
+The main loop (lines 3--23) repeats as long as the objective function is being improved. 
+Each loop consists of running the algorithm representing by Figure  \ref{fig:algo1}. 
+
+
+ generating of partition of the set of routes into subsets, solving each subset independently and collecting  (line 13) and collecting elite routes (line 14)
+
+In lines 12-16, sets $R_1$--$R_\alpha$ can be repeatedly used to yield elite routes. If $I_{max}=1$ the situation is like that presented by Figure \ref{fig:algo1}. Otherwise, the routes belonging to the solutions found by the MILP solver are removed from subsets $R_1 -- R_\alpha $ are the MILP solver is called again from this restricted set. This procedure can be used to extend the number of elite routes. 
+
+
+\subsection{title}
 
 
 
@@ -625,6 +615,10 @@ In lines 12-16, sets $R_1$--$R_\alpha$ can be repeatedly used to yield elite rou
 %\draw[arc] (t4.south) -- (cplex) node[midway]{\scriptsize{yes}};
 %\node[instruct2] 	(R) at (12,7) 	{\scriptsize{$R \leftarrow R \backslash R^*$}};
 %\draw[arc] (t4.east) --  (R.west) node[midway]{\scriptsize{no}};
+
+
+\subsection{Pre-processing}
+
 
 
 \subsection{Location based sampling}
