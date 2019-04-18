@@ -1,0 +1,65 @@
+\section{Strengthening the formulation}
+\subsection{A difference approach}
+\begin{table}[htbp]
+\centering
+\begin{tabular}{ll}
+\toprule
+$f_j$ & Fixed cost of opening distribution center $j\in\loc \setminus \cu$\\ 
+$d_{it}$ & Demand of customer $i\in\cu$ in period $t \in T$\\
+        $h_{it}$ & Unitary holding cost at facility $i\in\loc$ in period $t \in T$\\
+        $c_r$ & Cost of route $r\in \ro$\\
+        $\alpha(r)$ & Set of facilities $i$ delivered by route $r$\\
+        $\beta(r)$ & Index of the starting DC of route $r$\\
+        $Q_k$ & Capacity of vehicles delivering locations at level $k$\\ 
+        $\nu_k$ & Fleet size for vehicles delivering locations of level $k$\\ 
+        \bottomrule
+        \end{tabular}
+        \caption{Data}
+        \label{tab:data}
+        \end{table}       
+        \begin{table}[htbp]
+        \centering
+        \begin{tabular}{ll}
+        \toprule
+        \multicolumn{2}{l}{\textit{Binary Variables}}\\
+            $y_{j}$ & $=1$ if distribution center $j \in \loc \backslash \cu$ is selected \\
+            $z_{rt}$ & $=1$ if route $r \in \ro$  is selected in period $t \in T$\\
+            \midrule
+            \multicolumn{2}{l}{\textit{Continuous variables}}\\
+                $x^{it}_{js}\in[0,1]$ & Proportion of demand $(i,t)$ delivered to location $j\in \loc$ in period $s\leq t$\\
+                \bottomrule
+                \end{tabular}
+                \caption{Variables}
+                \label{tab:var}
+                \end{table}    
+
+                %Partition the demand points in time and space. Accessible demand points are on a given route starting from a given source, and only the future periods are considered.
+                \begin{alignat}{3}
+                    \text{minimize} &&\sum_{j\in \loc \setminus \cu} f_{j} y_{j} +\sum_{t=1}^{T} \left( \sum_{r\in \ro} c_r z_{rt} + \sum_{i\in \cu} \sum_{j\in\loc}\sum_{s=1}^t h^{it}_{js}x^{it}_{js}\right)\span\span\label{objfunct2}\\ 
+    \text{s.t.}  %&&\sum_{r\in \ro} \gamma_{jr} z_{rt} &\leq 1 															&\forall j&\in \, \forall t=1,\ldots,T  \label{const:singleroutedepots}\\
+    &&\sum_{r : i\in\alpha(r)} z_{rs} &\leq 1 															&\forall i&\in \loc, \forall s=1,\ldots,T  \label{const:singleroutecustomers2}\\
+    &&\sum_{r : j\in\alpha(r)} z_{rs} &\leq y_j 															&\forall j&\in \loc\setminus \cu, \forall s=1,\ldots,T  \label{const:singleroutedc2}\\
+    %&&\gamma_{jr}z_{rt} 					&\leq y_j 													&\forall k&=1,\ldots,L, \forall j\in\loc_{k-1}, \forall r\in \ro_k, \forall t=1,\ldots,T\label{const:serveopendepots}\\
+    &&z_{rs} 					&\leq y_{\beta(r)} 													&\forall r&\in \ro, \forall s=1,\ldots,T\label{const:startfromopendepots2}\\
+    &&\sum_{r\in \ro_k} z_{rs} &\leq 	\nu_k													&\forall k&=1,\ldots,L, \forall s=1,\ldots,T  \label{const:fleetcapa2}\\
+    %            &&\sum_{r\in \roc} z_{rt} &\leq 	\nu_{\cu}													&\forall t&=1,\ldots,T  \label{const:fleetcapaclients}\\
+    &&\sum_{s=1}^t x^{it}_{is}   		& = 1 														&\forall i&\in \cu, \forall t=1,\ldots, T\label{const:satdemands}\\
+    &&x^{it}_{js}   		&\leq \sum_{r\in\ro : j\in\alpha(r)} z_{rs}													&\forall i&\in \cu, t=1,\ldots,T, s=1,\ldots,t,j\in\loc\setminus\cu\cup\{i\}\label{const:deliveryConstLoc2}\\
+    &&\sum_{i\in\cu}\sum_{t=s}^T\sum_{j\in\alpha(r)} d_{it} x^{it}_{js}   		&\leq Q_k z_{rs} 														&\forall k&=1,\ldots,L, \forall r\in \ro, s=1,\ldots,T\label{const:deliveryUB2}\\
+    %&&\sum_{i\in \cu} u^t_{ir}   		&\leq \kc z_{rt} 														&\forall r&\in \roc, t=1,\ldots,T\label{const:deliveryUBcustomers}\\
+    &&\sum_{u=1}^s \left(\sum_{j\in\loc_{k}} x^{it}_{js} - \sum_{l\in\loc_{k+1}} x^{it}_{ls}\right) &\geq 0\quad 			&\forall k&=1,\ldots,L-1, \forall i\in\cu, \forall t=1,\ldots,T \label{const:enoughunits}\\
+ %   &&I_{jt}					&\leq I_j^{\max} y_j  									&\forall k&=1,\ldots,L-1, \forall j\in \loc_k,\forall t=1,\ldots,T\label{const:invdepotUB2}\\	
+ %   &&I_{it} 					&\leq \min\left(I_i^{\max}, \sum_{t' > t}d_{it'}\right)											&\forall i&\in \cu, \forall t=1,\ldots,T\label{const:invcustUB2}\\
+    &&x^{it}_{js}			&\geq 0 															&\forall i&\in \cu,\forall t=1,\ldots, T, \forall j\in \loc\setminus\cu\cup\{i\}, \forall s= 1,\ldots t\label{const:upos2}	\\
+    &&y_{j}					& \in \{0,1\} 														&\forall j&\in \loc\setminus\cu\label{const:ybool2}\\	
+    &&z_{rs}					&\in \{0,1\} 														&\forall r&\in \ro, \forall s=1,\ldots,T\label{const:zbool2}
+\end{alignat}
+
+Constraint~\eqref{const:singleroutecustomers2} ensures that a customer is served by at most one route in each period.
+Constraint~\eqref{const:singleroutedc2} ensures that a dc is served by at most one route in each period.
+Constraint~\eqref{const:startfromopendepots2} ensures that each active route in period $s$ start from an open dc.
+Constraint~\eqref{const:fleetcapa2} ensures that there are no more active routes than the number of vehicles in period $s$.
+Constraint~\eqref{const:satdemands} ensures that all demands are satisfied.
+Constraint~\eqref{const:deliveryConstLoc2} ensures that units can be delivered to location $j$ in period $s$ only if it belongs to an active route in this period.
+Constraint~\eqref{const:deliveryUB2} ensures that a vehicle using a route $r$ in period $s$ do not deliver more units than its capacity.
+Constraint~\eqref{const:enoughunits} ensures that units delivered to the locations in a given layer are present on the upper level of the network.

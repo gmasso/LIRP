@@ -396,34 +396,6 @@ Finally, constraints (\ref{const:upos})--(\ref{const:zbool}) define the nature o
 
 
 
-%\subsection{Another formulation}
-%Partition the demand points in time and space. Accessible demand points are on a given route starting from a given source, and only the future periods are considered.
-%\begin{alignat}{3}
-%    \text{minimize} &&\sum_{j\in \loc \setminus \cu} f_{j} y_{j} &+\sum_{t=1}^{T} \left( \sum_{r\in \ro} c_r z_{rt} + \sum_{i\in \loc} h_{it} I_{it}\right)\label{objfunct2}\\ 
-%    \text{s.t.}  %&&\sum_{r\in \ro} \gamma_{jr} z_{rt} &\leq 1 															&\forall j&\in \, \forall t=1,\ldots,T  \label{const:singleroutedepots}\\
-%    &&\sum_{r\in \ro_L} \alpha_{ir} z_{rt} &\leq 1 															&\forall i&\in \cu, \forall t=1,\ldots,T  \label{const:singleroutecustomers2}\\
-%&&\sum_{r\in \ro_k} \alpha_{jr} z_{rt} &\leq y_j 															&\forall k&=1,\ldots,L-1, \forall j\in \loc_k, \forall t=1,\ldots,T  \label{const:singleroutedc2}\\
-%    %&&\gamma_{jr}z_{rt} 					&\leq y_j 													&\forall k&=1,\ldots,L, \forall j\in\loc_{k-1}, \forall r\in \ro_k, \forall t=1,\ldots,T\label{const:serveopendepots}\\
-%&&z_{rt} 					&\leq \sum_{j\in\loc_{k}}\beta_{jr}y_j 													&\forall k&=1,\ldots,L-1,r\in \ro_{k+1}, \forall t=1,\ldots,T\label{const:startfromopendepots2}\\
-%    &&\sum_{r\in \ro_k} z_{rt} &\leq 	\nu_k													&\forall k&=1,\ldots,L, \forall t=1,\ldots,T  \label{const:fleetcapa2}\\
-%    %            &&\sum_{r\in \roc} z_{rt} &\leq 	\nu_{\cu}													&\forall t&=1,\ldots,T  \label{const:fleetcapaclients}\\
-%    &&\sum_{i\in\cu}\sum_{t=s}^T\sum_{j\in \loc_k} d_{it} x^{it}_{jrs}   		&\leq \kappa_k z_{rs} 														&\forall k&=1,\ldots,L, \forall r\in \ro_k, s=1,\ldots,T\label{const:deliveryUB2}\\
-%    &&x^{it}_{jrs}   		&\leq \alpha_{jr}  														&\forall k&=1,\ldots,L, \forall r\in \ro_k, i\in \cu, t=1,\ldots,T, s=1,\ldots,t\label{const:deliveryConstLoc2}\\
-%    %&&\sum_{i\in \cu} u^t_{ir}   		&\leq \kc z_{rt} 														&\forall r&\in \roc, t=1,\ldots,T\label{const:deliveryUBcustomers}\\
-%    &&I_{j,t-1} + \sum_{r\in\ro_k} q_{jrt}   			&=I_{jt} +\sum_{r'\in \ro_{k+1}}\left(\beta_{jr'} \sum_{i\in \loc_{k+1}}q_{ir't}\right)\quad 			&\forall k&=1,\ldots,L-1, \forall j\in \loc_k, \forall t=1,\ldots,T \label{const:invflowdepots2}\\
-%    &&I_{i,t-1}+\sum_{r\in \ro_L} q_{irt} &= I_{it} +d_{it} 							&\forall i&\in \cu, \forall t=1,\ldots,T\label{const:invflowcustomers2}\\
-%    &&I_{jt}					&\leq I_j^{\max} y_j  									&\forall k&=1,\ldots,L-1, \forall j\in \loc_k,\forall t=1,\ldots,T\label{const:invdepotUB2}\\	
-%    &&I_{it} 					&\leq \min\left(I_i^{\max}, \sum_{t' > t}d_{it'}\right)											&\forall i&\in \cu, \forall t=1,\ldots,T\label{const:invcustUB2}\\
-%    &&q_{jrt} &= \sum_{i\in\cu}\sum_{t=1}^T d_{it} x^{it}_{jrt} 															&\forall k&=1,\ldots,L, \forall i\in \loc_k, \forall r\in \ro_k,\forall t=1,\ldots, T\label{const:upos2}	\\
-%    &&x^{it}_{jrt}			&\geq 0 															&\forall k&=1,\ldots,L, \forall i\in \loc_k, \forall r\in \ro_k,\forall t=1,\ldots, T\label{const:upos2}	\\
-%    % &&v^t_{jr}			&\geq 0 															&\forall j &\in \dc, \forall r\in \rod,\forall t=1,\ldots, T\label{const:vpos}	\\
-%    &&I_{it}			&\geq 0 															&\forall i &\in \loc, \forall t=1,\ldots, T\label{const:invCpos2}	\\
-%    %&&I^t_{j}			&\geq 0 															&\forall j &\in \dc, \forall t=1,\ldots, T\label{const:invDpos}	\\
-%    &&y_{j}					& \in \{0,1\} 														&\forall j&\in \loc\setminus\cu\label{const:ybool2}\\	
-%    &&z_{rt}					&\in \{0,1\} 														&\forall r&\in \ro, \forall t=1,\ldots,T\label{const:zbool2}
-%\end{alignat}
-
-
 \subsection{Targeted use cases}
 
 The MILP formulation presented in section \ref{subsection:MIP} models a general version of the LIRP, 
@@ -918,6 +890,7 @@ In the last level, routes that start at unselected DCs are removed from the rout
 %	\end{algorithmic}
 %\end{algorithm}
 
+\input{cuts}
 
 %--------------------------
 \section{Numerical experiments}
