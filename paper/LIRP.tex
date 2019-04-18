@@ -459,20 +459,27 @@ In the ``Loop+Direct'' network (Figure~\ref{fig:ld}), the set $\ro_1$  consists 
 
 
 %-----------------------------------------------
-\section{Matheuristic method} 
+\section{A Route Sampling Heuristic for the LIRP} 
 \label{sec:algo}
 
 The LIRP  results from the integration of several classical NP-hard optimization problems. So, it is obviously NP-hard.
-Except for very small instances, it is doubtful that any solver could produce optimal solutions directly from the above formulation in reasonable time. The computational complexity of the problem is strongly influenced by the number of routes considered.
+Except for very small instances, it is doubtful that any solver could produce optimal solutions directly from the above formulation in reasonable time. The computational complexity of the problem is strongly influenced by the number of routes considered. A great number of routes implies that there are multiple ways to deliver each location, which in turns makes the inventory problem more difficult. 
 
-A great number of routes implies that there are multiple ways to deliver each location, which in turns makes the inventory problem more difficult. Finally, one may observe that in a simple network with two levels, one DC and $n$ clients, even restricting the problem to routes with at most $m$ stops, the number of admissible routes is $\mathcal{O}(n^m)$.
+To overcome this complexity issue, we propose a Route Sampling Heuristic (RSH) based on the decomposition 
+of the original MILP into smaller subproblems and the progressive identification of the routes 
+that are likely to be part of an optimal solution. 
+Section \ref{sec:motivation} presents the motivation behind the RSH algorithm and Section \ref{sec:RSH} present its main scheme. Detail of the key procedures is then given in Section \ref{sec:details}. 
 
-To overcome this complexity issue, we propose a two-stage heuristic method to obtain good solutions within acceptable time.
-The heuristic relies on the assumption that an MILP solver is able to find optimal or non-optimal good solutions for small enough instances of the LIRP. 
-Thus, the main idea of our heuristic is (i) to split the original MILP into several independent subproblems for which it is possible to compute (near) optimal solutions and (ii) to collect the routes contained in these (near) optimal solutions to form a pool of elite routes. 
-By doing this, the heuristic method will define a new instance containing only elite routes and we hope that
- the MILP solver will be able to solve this new instance.  
-Hence, the main challenge of our algorithm is to find a good partition of the original problem into smaller subproblems and to progressively shrink the set of routes available to the model. The simplified scheme of our Route Sampling Heuristic (RSH) is described in Figure \ref{fig:algo1}. 
+
+\subsection{Motivation of the Route Sampling Heuristic} \label{sec:motivation}
+
+The RSH algorithm relies on the assumption that an MILP solver is able to find optimal or non-optimal good solutions for small enough instances of the LIRP. 
+The main idea of the heuristic, depicted by Figure \ref{fig:algo1}, is to decompose the original MILP into several independent subproblems that are tractable by an MILP solver. To do so, the set $\ro$ of routes is randomly shuffled and partitioned into independent subsets of routes. Each subset defines a new LIRP instance with is solved with an MILP solver. 
+Routes contained in the (optimal or approximated) solutions returned by the MILP solverare then collected
+and stored in a pool of elite routes. 
+
+Eventually, this pool of elite routes can be used to define a new instance which can (hopefully) be solved by the MILP solver and provide a solution to the original LIRP instance. 
+
 
 \begin{figure}[htbp]
 	\centering
@@ -486,8 +493,8 @@ Hence, the main challenge of our algorithm is to find a good partition of the or
 	\tikzstyle{arc}=[->,>=stealth',thick,rounded corners=2pt, black]
 	
 	% placement des noeuds
-	\node[instruct, fill=green!30] 	(s1) at (6,9) 	{\scriptsize{Initial set of Routes $R$}};
-	\node[instruct4, fill=blue!30] 	(t1) at (6,8) 	{\scriptsize{Shuffle and partition $R$}};
+	\node[instruct, fill=green!30] 	(s1) at (6,9) 	{\scriptsize{Initial set of Routes $\ro$}};
+	\node[instruct4, fill=blue!30] 	(t1) at (6,8) 	{\scriptsize{Shuffle and partition $\ro$}};
 	\draw[arc] (s1.south) -- (t1.north) ;
 	\node[instruct2] 	(set1) at (0,6) 	{\scriptsize{Set $R_1$}};
 	\node[instruct2] 	(set2) at (3,6) 	{\scriptsize{Set $R_2$}};
@@ -535,96 +542,91 @@ Hence, the main challenge of our algorithm is to find a good partition of the or
 	\label{fig:algo1}
 \end{figure}
 
-The algorithm starts with the full set of routes, which is randomly shuffled and partitioned into independent subsets of routes. Each subset defines a new LIRP instance that is solved with an MILP solver. The routes contained in the solutions are stored in a pool of so-called elite routes. 
-Finally, we hope that the pool of elite routes will be tractable by the MILP solver. 
-
-
 Figure \ref{fig:algo1} presents an idealistic situation in which 
-(i) the quality of the solution is not too sensitive to the initial partition into subsets $R_i$  
+(i) the quality of the solution is not too sensitive to the initial decomposition  into subsets $R_i$  
 (ii) each subset $R_i, i \in 1\dots, \alpha$ yields a feasible instance that can be solved to optimality in reasonable computing time
-(iii) the pool of elite routes also yields a feasible instance tractable with an MILP solver. 
+(iii) the pool of elite routes also yields a feasible instance tractable with the MILP solver. 
+
+The general principle described in \ref{fig:algo1} must be reinforced in order to manage the capacity of the MILP solver to solve subproblems and exhibit a good pool of elite routes. 
 
 
-\OP{ICI Mercredi 17}
-A direct implementation of this algorithm is likely to produce very poor results. 
-It seems crucial to repeat the shuffle and partitioning step in order to generate various subsets $R_i$. 
+\subsection{Main scheme of the RSH algorithm} \label{sec:RSH}
+
+
+Algorithm \ref{mainalgo} gives a more detailed description of our implementation of the RSH algorithm. 
+Several iterations of the process described by Figure 1 are necessary, in order to iteratively refine the elite pool through distinct successive decompositions of the set $\ro$. 
  
-Hence, the the algorithm in order to avoid infeasibility and manage the size of subsets $R_i$ as well as the elite pool. 
-
-
-Algorithm \ref{mainalgo} gives a more detailed description of the RSH algorithm. 
 
 \begin{algorithm}
 	\caption{The Route Sampling Heuristic}
 	\label{mainalgo}
 	%\scriptsize
 	\begin{algorithmic}[1]
-		\REQUIRE  The set $R$ of all routes generated
+		\REQUIRE  The set $\ro$ of all routes generated
 		\REQUIRE A parameter $\alpha$ (number of subsets)
-		\REQUIRE $t1, t2$: CPU (time budget) allocated to the MILP solver
-		\REQUIRE $I_{max}$ : parameter
+		\REQUIRE $t_1, t_2$: CPU (time budget) allocated to the MILP solver
+		\REQUIRE $MaxIter$ : parameter
 		\STATE $z^*= +\infty$
 		\STATE $eliteRoutes \leftarrow \emptyset$
 		\REPEAT
-		\STATE $amelioration = FALSE$
-		\STATE $R =  R \backslash eliteRoutes$
-		\STATE Shuffle all routes in $R$
-		\STATE $LocationSampling(R,\alpha)$ \COMMENT{partitions $R$ into at most $\alpha$ subset of routes, regrouped by starting depots}
-		\STATE $RouteSampling(R,\alpha)$	\COMMENT{partition $R$ into $\alpha$ independent subsets of routes}
+		\STATE $improve = FALSE$
+		\STATE $\ro =  \ro \backslash eliteRoutes$
+		\STATE Shuffle routes in $\ro$
+		\STATE $LocationSampling(R,\alpha)$ \COMMENT{partitions $\ro$ into at most $\alpha$ subset of routes, regrouped by starting depots}
+		\STATE $RouteSampling(R,\alpha)$	\COMMENT{partition $\ro$ into $\alpha$ independent subsets of routes}
 		\FOR{$s=1$ to $\alpha$}
 		\STATE $R_s = $ routes in subset $s$
 		\STATE $bestRoutes_s = \emptyset$
-		\FOR {$i=1$ to $I_{max}$}
-		\STATE $(z,bestRoutes_s) = solveLIRP(R_s,t1)$ 
-		\STATE $eliteRoutes \leftarrow bestRoutes_s$
+		\FOR {$i=1$ to $MaxIter$}
+		\STATE $(z,bestRoutes_s) = solveLIRP(R_s,t_1)$ 
+		\STATE $eliteRoutes \leftarrow eliteRoutes \cup bestRoutes_s$
 		\STATE $R_s \leftarrow R_s \backslash bestRoutes_s$
 		
 		\ENDFOR
 		\ENDFOR
-		\STATE 	$(z,bestRoutes) = solveLIRP(eliteRoute, t2)$
+		\STATE 	$(z,bestRoutes) = solveLIRP(eliteRoute, t_2)$
 		\IF {$z < z^*$}
 		\STATE $z^*=z$
-		\STATE $amelioration =TRUE$
+		\STATE $improve =TRUE$
 		\ENDIF
-		\UNTIL {$amelioration = FALSE$}
+		\UNTIL {$improve = FALSE$}
 		\RETURN $bestRoutes$
 	\end{algorithmic}
 \end{algorithm}
 
 
-The RSH algorithm is initialized with the set of routes and several parameters that control the number of subsets as well as the time budget allocated to the solver. 
+The RSH algorithm is initialized with the set of routes and several parameters that control the number of subsets as well as time budget values ($t_1$ and $t_2$) allocated to the solver. 
 The main loop (lines 3--23) repeats as long as the objective function is being improved. 
-Each loop consists of running the algorithm representing by Figure  \ref{fig:algo1}. 
+Each loop consists of running the algorithm represented by Figure \ref{fig:algo1}. 
+Elite routes found at one given iteration are not considered anymore during subsequent iterations (line 5). This help find new elite routes and, thus, favors diversification. 
 
 
  generating of partition of the set of routes into subsets, solving each subset independently and collecting  (line 13) and collecting elite routes (line 14)
 
-In lines 12-16, sets $R_1$--$R_\alpha$ can be repeatedly used to yield elite routes. If $I_{max}=1$ the situation is like that presented by Figure \ref{fig:algo1}. Otherwise, the routes belonging to the solutions found by the MILP solver are removed from subsets $R_1 -- R_\alpha $ are the MILP solver is called again from this restricted set. This procedure can be used to extend the number of elite routes. 
+In lines 12-16, sets $R_1$--$R_\alpha$ can be repeatedly used to progressively exhibit new elite routes. 
+If parameter $MaxIter$ is set at value 1, the situation is like that presented by Figure \ref{fig:algo1}. 
+It $MaxIter > 1$,  all routes belonging to the solutions returned by the MILP solvers are saved in the pool of elite routes and removed from the current subsets $R_1 -- R_\alpha $. 
+In total, the MILP solver is called $MaxIter$ times, giving more opportunity to enrich the pool of elite routes. 
 
-
-\subsection{title}
-
-
-
-
-
-%\node[test] 	(t4) at (6,7) 	{ };
-%\node[com2] 	(c4) at (t4) 		{\scriptsize{Size of pool big enough?}};
-%\draw[arc] (pool.south) -- (t4.north) ;
-%\node[instruct3] 	(cplex) at (6,5) 	{\scriptsize{CPLEX}};
-%\draw[arc] (t4.south) -- (cplex) node[midway]{\scriptsize{yes}};
-%\node[instruct2] 	(R) at (12,7) 	{\scriptsize{$R \leftarrow R \backslash R^*$}};
-%\draw[arc] (t4.east) --  (R.west) node[midway]{\scriptsize{no}};
-
-
-\subsection{Pre-processing}
+\subsection{Detail of the key procedures} \label{sec:details}
 
 
 
-\subsection{Location based sampling}
+\subsubsection{Pre-processing}
+
+\subsubsection{Various questions}
+
+\begin{itemize}
+	\item Termination criteria: stop when the number of routes in the pool is large enough? criteria based on CPU time? improvement? 
+	\item 
+\end{itemize}
 
 
-\subsubsection{Model associated with one DC}
+
+\subsubsection{Location based sampling}
+
+
+\paragraph{Model associated with one DC}
 
 In the next section, we shall present several decompositions to reduce the number of routes considered by the model. 
 One of these natural decompositions relies on a ``DC based'' splitting of the problem. 
@@ -755,7 +757,6 @@ $c'$ is pre-allocated to $d'$ and $dist(d',c') + dist(c',c) + dist(c,d') < \mu_3
 
 
 %------------------------------------------------------------
-\newpage
 
 \subsubsection{Heuristic selection of depots}
 
@@ -810,7 +811,7 @@ The final loop (lines 19--24) is used to allocate remaining clients to a dummy d
 
 \newpage
 
-\subsection{Filtering SD routes after depot selection}
+\subsubsection{Filtering SD routes after depot selection}
 
 After selecting a subset of DCs and allocating clients to selected DCs, routes must be filtered in order to remove useless ones. 
 In the first $L-1$ levels, all routes that contain at least one unselected DC are removed from the route set. 
@@ -922,14 +923,46 @@ In the last level, routes that start at unselected DCs are removed from the rout
 \section{Numerical experiments}
 \label{sec:expe}
 \subsection{Generation of instances}
+
 \paragraph{Assumptions}
 \begin{itemize}
-    \item Each route has a maximum duration, including the stops and the travel durations
     \item The cost of transportation is proportional to the duration of the route
-    \item The speed of the vehicles is equal to 45 $\text{km}\cdot\text{h}^{-1}$
+    \item The speed of the vehicles is equal to 45 km/h.
     \item The capacity of the vehicles is fixed
     \item Demand vary from one period to the next and from one client to another, as {\em high}, {\em low} or {\em mixed}
     \end{itemize}
+
+
+\paragraph{Generation of routes}
+
+\OP{Paragraph a rédiger}
+
+Considering one starting depot and $n$ customers, the number of potential routes visiting at most $m$ customers 
+is $\mathcal{O}(n^m)$.
+
+In practice, \textbf{long-haul carriers} are reluctant to perform routes with multiple stop and with long detours between the origin and the destination of their routes. 
+
+\begin{itemize}
+	\item stopover cost
+	\item max detour constraint
+\end{itemize}
+This limit the set of potential routes. 
+
+Add references \OP{chercher les bonnes réfs dans thèse Juliette}
+
+Last-mile deliveries / messagerie : routes with regular activities with frequent deliveries (postal services): many customer on a route. This relies on the assumption that (i) customers must be served frequently and (ii) represent a small part of the total vehicle capacity. In this case, logistics operators define template routes with multiple customers. These routes are operated everyday ; the drivers just skip customers with no demand on a given day. 
+
+If conditions (i) and (ii) are not satisfied: route cannot have multiple stops. Routes may change every day. 
+
+Large regions covered by a DC are divided into geographical areas. It is frequently assumed that a given route visits only customers in a given area.
+
+
+\cite{Zheng2019} restrict the number of variables by incorporating real-life constraints that are not part of their mathematical model: vehicles can visit at most four retailers at one trip due to vehicle capacity limitation, and DCs can only serve retailers within a given radius. These constraints help reduce the number of variables from 3 millions to 600 thousands.
+
+Our assumption : route length is limited both in time (working time regulation), in the number of customers visited and in areas.   Each route has a maximum duration, including the stops and the travel durations
+
+
+
 \paragraph{Methodology}
 We obtain different instances of LIRP by positioning the different locations involved on a shared map, combining different {\em layers}, where each layer contains specific elements of the final problem.
 carrying some of the elements of the final problem.
@@ -943,20 +976,19 @@ Specifically, we use the following procedure to build and combine the different 
 \end{description}
 
 
-\subsection{Constraints}
-
- \cite{Zheng2019} restrict the number of variables by incorporating real-life constraints that are not part of their mathematical model: 
- vehicles can visit at most four retailers at one trip due to vehicle capacity limitation, and DCs can only serve retailers within a given radius. 
- These constraints help reduce the number of variables from 3 millions to 600 thousands.
- 
- 
- Why we consider routes at one echelon only? 
- \begin{itemize}
- 	\item Distribution networks with multiple layer of routes: this requires combining routes obtained at each echelon. High combinatorial burden. 
-	\item LIPR = hard problem. Probably not tractable with two many echelons. 
- \end{itemize}
 
 \section{Conclusion}
+
+\paragraph{Extension to multi-level instances}
+
+Why do we consider routes at one level only? 
+
+\begin{itemize}
+	\item Distribution networks with multiple levels of routes: this requires combining routes obtained at each level. High combinatorial burden. 
+	\item LIPR = hard problem. Probably not tractable with two many route levels. 
+\end{itemize}
+
+
 
 
 
