@@ -44,10 +44,10 @@ $d_{it}$ & Demand of customer $i\in\cu$ in period $t \in T$\\
     &&\sum_{r\in \ro_k} z_{rs} &\leq 	\nu_k													&\forall k&=1,\ldots,L, \forall s=1,\ldots,T  \label{const:fleetcapa2}\\
     %            &&\sum_{r\in \roc} z_{rt} &\leq 	\nu_{\cu}													&\forall t&=1,\ldots,T  \label{const:fleetcapaclients}\\
     &&\sum_{s=1}^t x^{it}_{is}   		& = 1 														&\forall i&\in \cu, \forall t=1,\ldots, T\label{const:satdemands}\\
-    &&\sum_{i\in\cu}\sum_{t=s}^T\sum_{j\in \loc_k} d_{it} x^{it}_{js}   		&\leq Q_k z_{rs} 														&\forall k&=1,\ldots,L, \forall r\in \ro_k, s=1,\ldots,T\label{const:deliveryUB2}\\
     &&x^{it}_{js}   		&\leq \sum_{r\in\ro : j\in\alpha(r)} z_{rs}													&\forall i&\in \cu, t=1,\ldots,T, s=1,\ldots,t,j\in\loc\setminus\cu\cup\{i\}\label{const:deliveryConstLoc2}\\
+    &&\sum_{i\in\cu}\sum_{t=s}^T\sum_{j\in\alpha(r)} d_{it} x^{it}_{js}   		&\leq Q_k z_{rs} 														&\forall k&=1,\ldots,L, \forall r\in \ro, s=1,\ldots,T\label{const:deliveryUB2}\\
     %&&\sum_{i\in \cu} u^t_{ir}   		&\leq \kc z_{rt} 														&\forall r&\in \roc, t=1,\ldots,T\label{const:deliveryUBcustomers}\\
-    &&\sum_{u=1}^s \left(\sum_{j\in\loc_{k}} x^{it}_{js} - \sum_{l\in\loc_{k+1}} x^{it}_{ls}\right) &\geq 0\quad 			&\forall k&=1,\ldots,L-1, \forall i\in\cu, \forall t=1,\ldots,T \label{const:invflowdepots2}\\
+    &&\sum_{u=1}^s \left(\sum_{j\in\loc_{k}} x^{it}_{js} - \sum_{l\in\loc_{k+1}} x^{it}_{ls}\right) &\geq 0\quad 			&\forall k&=1,\ldots,L-1, \forall i\in\cu, \forall t=1,\ldots,T \label{const:enoughunits}\\
  %   &&I_{jt}					&\leq I_j^{\max} y_j  									&\forall k&=1,\ldots,L-1, \forall j\in \loc_k,\forall t=1,\ldots,T\label{const:invdepotUB2}\\	
  %   &&I_{it} 					&\leq \min\left(I_i^{\max}, \sum_{t' > t}d_{it'}\right)											&\forall i&\in \cu, \forall t=1,\ldots,T\label{const:invcustUB2}\\
     &&x^{it}_{js}			&\geq 0 															&\forall i&\in \cu,\forall t=1,\ldots, T, \forall j\in \loc\setminus\cu\cup\{i\}, \forall s= 1,\ldots t\label{const:upos2}	\\
@@ -55,3 +55,11 @@ $d_{it}$ & Demand of customer $i\in\cu$ in period $t \in T$\\
     &&z_{rs}					&\in \{0,1\} 														&\forall r&\in \ro, \forall s=1,\ldots,T\label{const:zbool2}
 \end{alignat}
 
+Constraint~\eqref{const:singleroutecustomers2} ensures that a customer is served by at most one route in each period.
+Constraint~\eqref{const:singleroutedc2} ensures that a dc is served by at most one route in each period.
+Constraint~\eqref{const:startfromopendepots2} ensures that each active route in period $s$ start from an open dc.
+Constraint~\eqref{const:fleetcapa2} ensures that there are no more active routes than the number of vehicles in period $s$.
+Constraint~\eqref{const:satdemands} ensures that all demands are satisfied.
+Constraint~\eqref{const:deliveryConstLoc2} ensures that units can be delivered to location $j$ in period $s$ only if it belongs to an active route in this period.
+Constraint~\eqref{const:deliveryUB2} ensures that a vehicle using a route $r$ in period $s$ do not deliver more units than its capacity.
+Constraint~\eqref{const:enoughunits} ensures that units delivered to the locations in a given layer are present on the upper level of the network.
