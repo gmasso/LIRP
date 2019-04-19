@@ -6,7 +6,7 @@
 \toprule
 $f_j$ & Fixed cost of opening distribution center $j\in\loc \setminus \cu$\\ 
 $d_{it}$ & Demand of customer $i\in\cu$ in period $t \in T$\\
-        $h_{it}$ & Unitary holding cost at facility $i\in\loc$ in period $t \in T$\\
+$h^{it}_{rjs}$ & Unitary holding cost for units serving $(i,t)$ arriving at location $j$ in period $s\leq t$ through route $r$\\
         $c_r$ & Cost of route $r\in \ro$\\
         $\alpha(r)$ & Set of facilities $i$ delivered by route $r$\\
         $\beta(r)$ & Index of the starting DC of route $r$\\
@@ -15,8 +15,23 @@ $d_{it}$ & Demand of customer $i\in\cu$ in period $t \in T$\\
         \bottomrule
         \end{tabular}
         \caption{Data}
-        \label{tab:data}
+        \label{tab:data2}
         \end{table}       
+
+        To ease the exposition of the modified formulation, we introduce some additional sets, which consists of pairs of indices from the sets defined in~\ref{tab:set}.
+        We denote $\mathcal{D}$ the set of all demands that must be satisfied over the entire planning horizon:
+        \begin{equation*}
+            \mathcal{D} =\left\{(i,t) : i\in\cu, t=1,\ldots,T\right\}
+        \end{equation*}
+        Given a period $s=1,\ldots,T$, we also define $\mathcal{D}(s)$ as the set of all demands occuring after period $s$:
+        \begin{equation*}
+            \mathcal{D}(s) =\left\{(i,t) : i\in\cu, t=s,\ldots,T\right\}
+        \end{equation*}
+        In particular, one can note that $\mathcal{D}(1) = \mathcal{D}$
+    Finally, we define for all $k=1,\ldots,L-1$ the set $\mathcal{S}_k$ of all pairs of routes in level $k$ with one of their stops. That is, for $k=1,\ldots,L$,
+        \begin{equation*}
+            \mathcal{S}_k =\left\{(r,j) : r\in\ro_k, j\in\alpha(r)\right\}
+        \end{equation*}
         \begin{table}[htbp]
         \centering
         \begin{tabular}{ll}
@@ -26,31 +41,31 @@ $d_{it}$ & Demand of customer $i\in\cu$ in period $t \in T$\\
             $z_{rt}$ & $=1$ if route $r \in \ro$  is selected in period $t \in T$\\
             \midrule
             \multicolumn{2}{l}{\textit{Continuous variables}}\\
-                $x^{it}_{js}\in[0,1]$ & Proportion of demand $(i,t)$ delivered to location $j\in \loc$ in period $s\leq t$\\
+                $x^{it}_{rjs}\in[0,1]$ & Proportion of demand $(i,t)$ delivered to location $j\in \loc$ in period $s\leq t$\\
                 \bottomrule
                 \end{tabular}
                 \caption{Variables}
-                \label{tab:var}
+                \label{tab:var2}
                 \end{table}    
 
                 %Partition the demand points in time and space. Accessible demand points are on a given route starting from a given source, and only the future periods are considered.
                 \begin{alignat}{3}
-                    \text{minimize} &&\sum_{j\in \loc \setminus \cu} f_{j} y_{j} +\sum_{t=1}^{T} \left( \sum_{r\in \ro} c_r z_{rt} + \sum_{i\in \cu} \sum_{j\in\loc}\sum_{s=1}^t h^{it}_{js}x^{it}_{js}\right)\span\span\label{objfunct2}\\ 
+                    \text{minimize} &&\sum_{j\in \loc \setminus \cu} f_{j} y_{j} +\sum_{s=1}^{T}  \sum_{r\in \ro} \left(c_r z_{rs} + \sum_{(i,t)\in\mathcal{D}(s)} \sum_{j\in\alpha(r)} h^{it}_{rjs}x^{it}_{rjs}\right)\span\span\label{objfunct2}\\ 
     \text{s.t.}  %&&\sum_{r\in \ro} \gamma_{jr} z_{rt} &\leq 1 															&\forall j&\in \, \forall t=1,\ldots,T  \label{const:singleroutedepots}\\
-    &&\sum_{r : i\in\alpha(r)} z_{rs} &\leq 1 															&\forall i&\in \loc, \forall s=1,\ldots,T  \label{const:singleroutecustomers2}\\
+    &&\sum_{r : i\in\alpha(r)} z_{rs} &\leq 1 															&\forall i&\in \cu, \forall s=1,\ldots,T  \label{const:singleroutecustomers2}\\
     &&\sum_{r : j\in\alpha(r)} z_{rs} &\leq y_j 															&\forall j&\in \loc\setminus \cu, \forall s=1,\ldots,T  \label{const:singleroutedc2}\\
     %&&\gamma_{jr}z_{rt} 					&\leq y_j 													&\forall k&=1,\ldots,L, \forall j\in\loc_{k-1}, \forall r\in \ro_k, \forall t=1,\ldots,T\label{const:serveopendepots}\\
     &&z_{rs} 					&\leq y_{\beta(r)} 													&\forall r&\in \ro, \forall s=1,\ldots,T\label{const:startfromopendepots2}\\
     &&\sum_{r\in \ro_k} z_{rs} &\leq 	\nu_k													&\forall k&=1,\ldots,L, \forall s=1,\ldots,T  \label{const:fleetcapa2}\\
     %            &&\sum_{r\in \roc} z_{rt} &\leq 	\nu_{\cu}													&\forall t&=1,\ldots,T  \label{const:fleetcapaclients}\\
-    &&\sum_{s=1}^t x^{it}_{is}   		& = 1 														&\forall i&\in \cu, \forall t=1,\ldots, T\label{const:satdemands}\\
-    &&x^{it}_{js}   		&\leq \sum_{r\in\ro : j\in\alpha(r)} z_{rs}													&\forall i&\in \cu, t=1,\ldots,T, s=1,\ldots,t,j\in\loc\setminus\cu\cup\{i\}\label{const:deliveryConstLoc2}\\
-    &&\sum_{i\in\cu}\sum_{t=s}^T\sum_{j\in\alpha(r)} d_{it} x^{it}_{js}   		&\leq Q_k z_{rs} 														&\forall k&=1,\ldots,L, \forall r\in \ro, s=1,\ldots,T\label{const:deliveryUB2}\\
+    &&\sum_{s=1}^t \sum_{(r,i)\in \mathcal{S}_L}x^{it}_{ris}   		& = 1 														&\forall (i,t)&\in\mathcal{D}\label{const:satdemands}\\
+    &&x^{it}_{rjs}   		&\leq  z_{rs}													&\forall (i,t)&\in\mathcal{D}, s=1,\ldots,t,k=1,\ldots,L, (r,j)\in\mathcal{S}_k\label{const:deliveryConstLoc2}\\
+    &&\sum_{(i,t)\in\mathcal{D}(s)}\sum_{j\in\alpha(r)} d_{it} x^{it}_{rjs}   		&\leq Q_k z_{rs} 														&\forall k&=1,\ldots,L, \forall r\in \ro_k, s=1,\ldots,T\label{const:deliveryUB2}\\
     %&&\sum_{i\in \cu} u^t_{ir}   		&\leq \kc z_{rt} 														&\forall r&\in \roc, t=1,\ldots,T\label{const:deliveryUBcustomers}\\
-    &&\sum_{u=1}^s \left(\sum_{j\in\loc_{k}} x^{it}_{js} - \sum_{l\in\loc_{k+1}} x^{it}_{ls}\right) &\geq 0\quad 			&\forall k&=1,\ldots,L-1, \forall i\in\cu, \forall t=1,\ldots,T \label{const:enoughunits}\\
+    &&\sum_{u=1}^s \left(\sum_{(r,j)\in\mathcal{S}_k} x^{it}_{rjs} - \sum_{(r',j')\in\mathcal{S}_{k+1}} x^{it}_{r'j's}\right) &\geq 0\quad 			&\forall k&=1,\ldots,L-1, \forall i\in\cu, \forall t=1,\ldots,T \label{const:enoughunits}\\
  %   &&I_{jt}					&\leq I_j^{\max} y_j  									&\forall k&=1,\ldots,L-1, \forall j\in \loc_k,\forall t=1,\ldots,T\label{const:invdepotUB2}\\	
  %   &&I_{it} 					&\leq \min\left(I_i^{\max}, \sum_{t' > t}d_{it'}\right)											&\forall i&\in \cu, \forall t=1,\ldots,T\label{const:invcustUB2}\\
-    &&x^{it}_{js}			&\geq 0 															&\forall i&\in \cu,\forall t=1,\ldots, T, \forall j\in \loc\setminus\cu\cup\{i\}, \forall s= 1,\ldots t\label{const:upos2}	\\
+    &&x^{it}_{rjs}			&\geq 0 															&\forall i&\in \cu,\forall t=1,\ldots, T, \forall j\in \loc\setminus\cu\cup\{i\}, \forall s= 1,\ldots t\label{const:upos2}	\\
     &&y_{j}					& \in \{0,1\} 														&\forall j&\in \loc\setminus\cu\label{const:ybool2}\\	
     &&z_{rs}					&\in \{0,1\} 														&\forall r&\in \ro, \forall s=1,\ldots,T\label{const:zbool2}
 \end{alignat}
@@ -63,3 +78,38 @@ Constraint~\eqref{const:satdemands} ensures that all demands are satisfied.
 Constraint~\eqref{const:deliveryConstLoc2} ensures that units can be delivered to location $j$ in period $s$ only if it belongs to an active route in this period.
 Constraint~\eqref{const:deliveryUB2} ensures that a vehicle using a route $r$ in period $s$ do not deliver more units than its capacity.
 Constraint~\eqref{const:enoughunits} ensures that units delivered to the locations in a given layer are present on the upper level of the network.
+
+\subsection{Valid flow cover inequalities}
+In our numerical experiments we shall compare the results obtained using the first formulation versus the second one to determine whether this one is stronger and gives better lower bounds.
+
+In addition, this latter allows us to add the so-called flow-cover inequalities as cuts to strengthen the LP formulation and obtain an even tighter lower bound.
+We use an approach similar than the one presented in~\cite{levi_approximation_2008}.
+Let $A$ be a subset of demand points $(i,t)\in\mathcal{D}$ and $D(A)=\sum_{(i,t)\in A} d_{it}$ the cumulative demand of $A$.
+Let $l^k_A=\lceil D(A)/Q_k \rceil$ be the {\em cover number of $A$ at level $k$}, $k=1,\ldots,L$, i.e. the minimum number of vehicles of level $k$ required to satisfy the demands in A. 
+Let $\lambda^k_A = l^k_A Q_k - D(A)$ be the capacity left in $l^k_A$ vehicles if they carry $D(A)$ units and let $R^k_A = Q_k - \lambda^k_A$ be the {\em residual capacity of $A$ at level $k$}, i.e. the capacity required to satisfy the demands in $A$ after $l^k_A - 1$ vehicles of level $k$ are fully used.
+Finally let $\rho^k_A = R^k_A/Q_k$ ($= 1 - l^k_A + D(A)/Q_k$) be the {\em fraction of the residual capacity at level $k$}. 
+Observe that by definition $0<R^k_A \leq Q_k$ and $0<\rho^k_A\leq 1$. 
+
+For each level $k=1,\ldots,L$ and $A$ a subset of demand points, we call a subset $F$ of periods (i.e., $F\subseteq \left\{1,\ldots,T\right\}$) a {\em cover of $A$ at level $k$} if $|F|\geq l^k_A$.
+We now present the route-based version of the flow-cover inequalities. 
+Let $A$ be a subset of demand points, $k=1,\ldots, L$ and let $F$ be a cover of $A$ at level $k$. First, note that 
+\begin{align}
+    D(A) &= \sum_{(i,t)\in A} \sum_{(r,j)\in\mathcal{S}_k} \sum_{s\in F} d_{it}x^{it}_{rjs}+  \sum_{(i,t)\in A}\sum_{s\notin F}\sum_{(r,j)\in\mathcal{S}_k} d_{it}x^{it}_{rjs}\nonumber\\
+         &\leq Q_k \sum_{r\in\ro_k}\sum_{s\in F} z_{rs}+  \sum_{(i,t)\in A}\sum_{(r,j)\in\mathcal{S}_k}\sum_{s\notin F} d_{it}x^{it}_{rjs}\label{ineq:ineqdemA_inter}\\
+    \frac{D(A)}{Q_k}&\leq \sum_{r\in\ro_k}\sum_{s\in F} z_{rs}+  \frac{1}{Q_k} \sum_{(i,t)\in A}\sum_{(r,j)\in\mathcal{S}_k}\sum_{s\notin F} d_{it}x^{it}_{rjs}\label{ineq:ineqdemA}
+\end{align}
+, where the inequality~\eqref{ineq:ineqdemA_inter} comes from constraint~\eqref{const:deliveryUB2}. 
+Since $z_{rs}$ are integers and $x^{it}_{rjs}$ are continuous, one can derive {\em Mixed Integer Rounding} (MIR) inequalities to obtain valid cuts for the LP formulation based on flows.
+MIR inequalities apply to mixed-integer sets of the form $\mathcal{Q} = \{x\in\mathbb{R}, y\in\mathbb{Z} : x+y\geq b, x\geq 0\}$. 
+Specifically, one can prove that the inequality $x+(b-\lfloor b\rfloor) y \geq (b-\lfloor b \rfloor)\lceil b\rceil$ is valid. 
+It is interesting to note that values of $y$ in the convex hull of $\mathcal{Q}$ that violate the MIR inequality fall within $(\lfloor b\rfloor, \lceil b \rceil)$.
+This can be generalized to more complicated sets that involve more variables, as long as the variables can be split into an integral part and a continuous nonnegative part. 
+In particular, we apply an MIR derivation to the mixed-integer set defined by inequalities~\eqref{ineq:ineqdemA} and obtain the following inequalities for all $k=1,\ldots,L$:
+\begin{equation}
+    \sum_{r\in\ro_k} \left(\rho^k_A  \sum_{s\in F} z_{rs}+  \frac{1}{Q_k} \sum_{(i,t)\in A}\sum_{j\in\alpha(r)}\sum_{s\notin F} d_{it}x^{it}_{rjs}\right)\geq \rho^k_A \left\lceil\frac{D(A)}{Q_k}\right\rceil   \label{ineq:FCCut}
+\end{equation}
+
+Finally, note that at level $L$, the set of locations eligible to collect units to serve demands of client $i$ is precisely reduced to the singleton $\{i\}$ and therefore inequality~\eqref{ineq:FCCut} simplifies into:
+\begin{equation}
+   \sum_{r\in\ro_L} \rho^L_A  \sum_{s\in F} z_{rs}+  \frac{1}{Q_L} \sum_{(i,t)\in A}\sum_{r:i\in\alpha(r)}\sum_{s\notin F} d_{it}x^{it}_{ris}\geq \rho^L_A \left\lceil\frac{D(A)}{Q_L}\right\rceil   \label{ineq:FCCutClient}
+\end{equation}
