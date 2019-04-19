@@ -23,6 +23,10 @@
 \end{abstract}
 
 
+\OP{Choix de vocabulaire: level }
+\OP{client ou customer ? }
+
+
 
 \modulolinenumbers[5]
 \linenumbers
@@ -104,7 +108,7 @@ As an integrated optimization problem, the LIRP usually arises in complex logist
 Depending on the volume of the shipments, transport can be organized in full truckload (FTL) or less than truckload (LTL) legs. 
 In FTL transport, shipments are sent directly from their origin to their destination. In LTL transport, routes have one origin and several delivery points. The roads are therefore multi-clients. The presence of a ``routing'' component in the LIRP assumes the existence of routes visiting multiple sites, at least in one part of the supply chain.
 The vast majority of LIRP articles deal with three-level networks such as that illustrated in Figure \ref{fig:directloop}. 
-Direct routes are performed between a production facility (large red circle) delivers a set of depots or distribution centers (small red circles). A second echelon includes routes visiting several end customers (blue circles).
+Direct routes are performed between a production facility (large red circle) delivers a set of DCs (small red circles). A second echelon includes routes visiting several end customers (blue circles).
 
 \begin{figure}[htbp]
 	\centering
@@ -215,10 +219,6 @@ Finally, we introduce new instances for the LIRP and present computational exper
 
 \subsection{Problem settings and notations}\label{subsection:settings}
 
-\OP{Choix de vocabulaire: comment appelle t-on un site ? Facility , location, facility location?}
-
-\OP{Choix de vocabulaire: layer, level? }
-
 
 In this section, we introduce a new mixed integer linear programming formulation for the LIRP, 
 that covers a broad spectrum of potential applications and distribution networks. 
@@ -226,7 +226,7 @@ In particular, the model includes the possibility of dealing with multiple level
 
 We consider a distribution network composed of one production center, several layers of distribution centers and a terminal layer of customers. Let us call $\loc$ the set of all facility locations (DCs and customers) in the distribution network. 
 We assume that $\loc$ is decomposed into levels and we denote by $\loc_k$ the set of facility locations at level $k$. 
-A depot lies on level 1 if it is delivered by the production facility only. 
+A DC lies on level 1 if it is delivered by the production facility only. 
 It lies at level $k$ if it is delivered by at least one DC from level $k-1$. 
 Let $L$ be the number of levels in the networks. By definition, the set $\cu$ of customers corresponds to $\loc_L$.
 Moreover, $\loc=\bigcup\limits_{k=1}^L \loc_k$.
@@ -255,7 +255,7 @@ $\alpha_{ir}$ is equal to 1 if route $r \in \ro_{L}$ visits facility $i \in \loc
 Each route 	$r\in \ro$ has a deterministic cost $c_r$ that consists of a (possibly zero) fixed ordering cost, 
 a routing cost roughly proportional to the route length and stopover costs for each facility visited.  
 Finally, each route level is operated by a homogeneous fleet of vehicles. 
-Let $\nu_k$ the number of vehicles available at level $k$ and $\kappa_k$ their capacity. 
+Let $\nu_k$ the number of vehicles available at level $k$ and $Q_k$ their capacity. 
 %
 
 
@@ -276,7 +276,7 @@ $$	z_{rt}  = \left\{
 \right.
 $$
 
-Moreover, continuous variables $q_{irt} \geq 0$ and $I_{it} \geq 0$  
+Moreover, continuous variables $x_{irt} \geq 0$ and $I_{it} \geq 0$  
 determine the quantities delivered by route $r \in \ro$ to facility $i \in \loc$ in period $t\in T$
 and the inventory at facility $i \in \loc_{k}$ in period $t \in T$, respectively. 
 Tables \ref{tab:set}--\ref{tab:var} summarize the mathematical notations that will be used throughout the paper.
@@ -287,9 +287,9 @@ Tables \ref{tab:set}--\ref{tab:var} summarize the mathematical notations that wi
 		\toprule
 		$T$ & Set of time periods. $T = 1,\dots,|T|$\\
 		$L$ & Number of levels in the distribution network\\
-		$\loc_k$ & Set of distribution centers $j$ of level $k=1, \ldots,L$ \\
-		$\loc=\cup_{k=1}^L \loc_k$ & Set of all locations in the distribution network\\
+		$\loc_k$ & Set of locations at level $k=1, \ldots,L$ \\
 		$\cu=\loc_L$ & Set of customers \\ 
+		$\loc=\cup_{k=1}^L \loc_k$ & Set of all locations in the distribution network\\
 		$\ro_k$ & Set of routes at level $k$\\
 		$\ro = \cup_{k=1}^{L} \ro_k$ & Set of all routes in the distribution network\\
 		\bottomrule
@@ -311,7 +311,7 @@ Tables \ref{tab:set}--\ref{tab:var} summarize the mathematical notations that wi
 		$c_r$ & Cost of route $r\in \ro$\\
 		$\alpha_{ir}$ & Indicator that route $r$ delivers facility $i \in \loc$\\
 		$\beta_{jr}$ & Indicator that route $r$ starts from DC $j \in \loc \setminus \cu$\\
-		$\kappa_k$ & Capacity of vehicles delivering locations at level $k$\\ 
+		$Q_k$ & Capacity of vehicles delivering locations at level $k$\\ 
 		$\nu_k$ & Fleet size for vehicles delivering locations of level $k$\\ 
 		\bottomrule
 	\end{tabular}
@@ -329,7 +329,7 @@ Tables \ref{tab:set}--\ref{tab:var} summarize the mathematical notations that wi
 		$z_{rt}$ & $=1$ if route $r \in \ro$  is selected in period $t \in T$\\
 		\midrule
 		\multicolumn{2}{l}{\textit{Continuous variables}}\\
-		$q_{irt}$ & Quantity delivered by route $r \in \ro$ to location $i\in \loc$ in period $t\in T$\\
+		$x_{irt}$ & Quantity delivered by route $r \in \ro$ to location $i\in \loc$ in period $t\in T$\\
 		$I_{it}$ &  Inventory at location $i \in \loc$ in period $t \in T$\\
 		\bottomrule
 	\end{tabular}
@@ -356,13 +356,13 @@ The objective function to be minimized can be stated as follows:
 &&\sum_{r\in \ro_k} \alpha_{jr} z_{rt} &\leq y_j 					&\forall k&=1,\ldots,L-1, j\in \loc_k, t \in T  \label{const:singleroutedc}\\
 &&z_{rt} 					&\leq \sum_{j\in\loc_{k}}\beta_{jr}y_j 	&\forall k&=1,\ldots,L-1,r\in \ro_{k+1}, t \in T \label{const:startfromopendepots}\\
 &&\sum_{r\in \ro_k} z_{rt} &\leq 	\nu_k							&\forall k&=1,\ldots,L, t \in T  				\label{const:fleetcapa}\\
-&&\sum_{i\in \loc_k} q_{irt}   		&\leq \kappa_k z_{rt} 			&\forall k&=1,\ldots,L,  r\in \ro_k, t \in T 	\label{const:deliveryUB}\\
-&&q_{jrt}   		&\leq \alpha_{jr}\kappa_k  						&\forall k&=1,\ldots,L,  r\in \ro_k, j \in \loc_k, t \in T	\label{const:deliveryConstLoc}\\
-&&I_{jt} - I_{j,t-1} &= \sum_{r\in\ro_k} q_{jrt} 	- \sum_{r'\in \ro_{k+1}}\left(\beta_{jr'} \sum_{i\in \loc_{k+1}}q_{ir't}\right)\quad 						&\forall k&=1,\ldots,L-1, j\in \loc_k, t \in T 				\label{const:invflowdepots}\\
-&&I_{it} - I_{i,t-1} &= \sum_{r\in \ro_L} q_{irt} - d_{it} 			&\forall i&\in \cu,  t \in T					\label{const:invflowcustomers}\\
+&&\sum_{i\in \loc_k} x_{irt}   		&\leq Q_k z_{rt} 			&\forall k&=1,\ldots,L,  r\in \ro_k, t \in T 	\label{const:deliveryUB}\\
+&&x_{jrt}   		&\leq \alpha_{jr} Q_k  						&\forall k&=1,\ldots,L,  r\in \ro_k, j \in \loc_k, t \in T	\label{const:deliveryConstLoc}\\
+&&I_{jt} - I_{j,t-1} &= \sum_{r\in\ro_k} x_{jrt} 	- \sum_{r'\in \ro_{k+1}}\left(\beta_{jr'} \sum_{i\in \loc_{k+1}}x_{ir't}\right)\quad 						&\forall k&=1,\ldots,L-1, j\in \loc_k, t \in T 				\label{const:invflowdepots}\\
+&&I_{it} - I_{i,t-1} &= \sum_{r\in \ro_L} x_{irt} - d_{it} 			&\forall i&\in \cu,  t \in T					\label{const:invflowcustomers}\\
 &&I_{jt}	&\leq I_j^{\max} y_j  									&\forall k&=1,\ldots,L-1,  j\in \loc_k, t \in T \label{const:invdepotUB}\\	
 &&I_{it} 	&\leq \min\left(I_i^{\max}, \sum_{t' > t}d_{it'}\right)	&\forall i&\in \cu,  t \in T					\label{const:invcustUB}\\
-&&q_{irt}			&\geq 0 										&\forall k&=1,\ldots,L,  i\in \loc_k,  r\in \ro_k,\forall t \in T	\label{const:upos}	\\
+&&x_{irt}			&\geq 0 										&\forall k&=1,\ldots,L,  i\in \loc_k,  r\in \ro_k,\forall t \in T	\label{const:upos}	\\
 &&I_{it}			&\geq 0 										&\forall i &\in \loc,  t \in T					\label{const:invCpos}	\\
 &&y_{j}				& \in \{0,1\} 								&\forall j&\in \loc\setminus\cu						\label{const:ybool}\\	
 &&z_{rt}			&\in \{0,1\} 									&\forall r&\in \ro,  t \in T.					\label{const:zbool}
@@ -373,7 +373,7 @@ Single delivery constraints~\eqref{const:singleroutecustomers} state that, at an
 %
 Constraints ~\eqref{const:singleroutedc} express the same idea for DCs: at any period, DCs are served by at most one route serving the corresponding level. Moreover, this constraint prevents from delivering non selected DCs. 
 %
-Constraint~\eqref{const:startfromopendepots} ensures that a route at level $k+1$ can start only from a depot selected at level $k$ (Note that by definition $\sum_{j\in\loc_{k}} \beta_{jr} \leq 1$).
+Constraint~\eqref{const:startfromopendepots} ensures that a route at level $k+1$ can start only from a DC selected at level $k$ (Note that by definition $\sum_{j\in\loc_{k}} \beta_{jr} \leq 1$).
 %
 Constraints~\eqref{const:fleetcapa} states that the number of routes used to serve the locations of a given level $k$ in period $t$ does not exceed the number of vehicles allocated to that level. 
 %
@@ -382,12 +382,12 @@ Constraints~\eqref{const:deliveryUB} ensure that the sum of the quantities deliv
 Constraints ~\eqref{const:deliveryConstLoc}  state that routes cannot deliver facilities they do not visit. 
 %
 Constraints~\eqref{const:invflowdepots} are flow conservation constraint at DCs. 
-The inventory variation at DC $j \in \loc_k$ is the difference between quantities $q_{jrt}$ delivered by routes at level $k$ and outgoing quantities leaving $j$ in routes of level $k+1$. 
+The inventory variation at DC $j \in \loc_k$ is the difference between quantities $x_{jrt}$ delivered by routes at level $k$ and outgoing quantities leaving $j$ in routes of level $k+1$. 
 %
 Constraints~\eqref{const:invflowcustomers} are flow conservation at customers.
 
 %
-Capacity constraints~\eqref{const:invdepotUB} limits the amount of inventory at selected depots and impose zero inventory at non selected depots. 
+Capacity constraints~\eqref{const:invdepotUB} limits the amount of inventory at selected DCs and impose zero inventory at non selected DCs. 
 %
 Constraints ~\eqref{const:invcustUB} state that the inventory at customer $i \in C$ cannot exceed $I_i^{max}$ or an upper bound calculated as the sum of future demands. 
 %
@@ -544,7 +544,7 @@ Several iterations of the process described by Figure 1 are necessary, in order 
 		\STATE $improve = FALSE$
 		\STATE $\ro =  \ro \backslash eliteRoutes$
 		\STATE Shuffle routes in $\ro$
-		\STATE $LocationSampling(R,\alpha)$ \COMMENT{partitions $\ro$ into at most $\alpha$ subset of routes, regrouped by starting depots}
+		\STATE $LocationSampling(R,\alpha)$ \COMMENT{partitions $\ro$ into at most $\alpha$ subset of routes, regrouped by starting DC}
 		\STATE $RouteSampling(R,\alpha)$	\COMMENT{partition $\ro$ into $\alpha$ independent subsets of routes}
 		\FOR{$s=1$ to $\alpha$}
 		\STATE $R_s = $ routes in subset $s$
@@ -577,151 +577,173 @@ Elite routes found at one given iteration are not considered anymore during subs
 
 In lines 12-16, sets $R_1$--$R_\alpha$ can be repeatedly used to progressively exhibit new elite routes. 
 If parameter $MaxIter$ is set at value 1, the situation is like that presented by Figure \ref{fig:algo1}. 
-It $MaxIter > 1$,  all routes belonging to the solutions returned by the MILP solvers are saved in the pool of elite routes and removed from the current subsets $R_1 -- R_\alpha $. 
+It $MaxIter > 1$,  all routes belonging to the solutions returned by the MILP solvers are saved in the pool of elite routes and removed from the current subsets $R_1 - R_\alpha $. 
 In total, the MILP solver is called $MaxIter$ times, giving more opportunity to enrich the pool of elite routes. 
 
 \subsection{Detail of the key procedures} \label{sec:details}
 
 
+\paragraph{LP-rounding pre-processing}
 
-\subsubsection{Pre-processing}
+	The idea of LP-rounding is to solve the linear relaxation of some MILPs, 
+	and to round variables with fractional value to recover integer feasible solutions. 
+	Despite its poor formal guarantee of performance, LP-rounding is known to yield good lower bounds 
+	for some optimization problems including assignment problems ((\cite{BvN82}), \cite{FW07}), 
+	lot-sizing problems (\cite{HNS07}), facility location (\cite{LSS2012}, \cite{CPS06}), 
+	and supply chain network design problems  (\cite{VMN06}, \cite{Thanh2010}).
+	
+	In the preprocessing step of the RSH algorithm, we solve the linear relaxation of the LIRP model. All routes which corresponding variable $z_{rt}$ has a fractional value larger than or equal to a given parameter $\bar{z}$ \OP{notation a modifier?} are directly placed in the elite pool and removed from set $\ro$.
+	
+	
+\paragraph{Case of direct routes}
 
-\subsubsection{Various questions}
-
-\begin{itemize}
-	\item Termination criteria: stop when the number of routes in the pool is large enough? criteria based on CPU time? improvement? 
-	\item 
-\end{itemize}
+	Consider one subset $R_i$ obtained from the decomposition of $\ro$ and the corresponding LIRP subproblem. it may happen that no route in $R_i$, or only ``bad routes'' visit some locations. To avoid the risk of unfeasibility and to help the MILP solver to find good solutions, direct routes from the origin(s) to the destinations of the routes are added to each subset $R_i$. 
+	
 
 
+\paragraph {Termination criteria}
 
-\subsubsection{Location based sampling}
+\OP{Stop when the number of routes in the pool is large enough? 
+	criteria based on CPU time? on improvement of the current solution? }
+
+\OP{Preciser articulation entre locatio based sampling (ligne 7) et route sampling (ligne 8) }
+
+\subsection{Location based sampling}
 
 
 \paragraph{Model associated with one DC}
 
-In the next section, we shall present several decompositions to reduce the number of routes considered by the model. 
-One of these natural decompositions relies on a ``DC based'' splitting of the problem. 
-Namely, this decomposition considers one subproblem $P_{\lambda}$ for each potential DC location $\lambda\in \loc_1$.
-$P_{\lambda}$ is a subproblem of the original LIRP where the set of routes considered is $\ro(\lambda)= \ro_1(\lambda) \cup \ro_2(\lambda)$, where $\ro_1(\lambda)=\left\{r\in\ro_1:\beta_{\lambda}r=1 \mbox{ and } \alpha_{jr}=0\ \forall j\neq \lambda\right\}$ is the unique direct route from the supplier to DC $\lambda$ and $\ro_2(\lambda)=\left\{r\in\ro_2: \beta_{\lambda r}=1\right\}$ is the set of routes starting from DC $\lambda$.
-The set of clients is restricted to $\cu(\lambda) =\{i\in\cu: \sum_{r\in\ro_2(\lambda)} \alpha_{ir}\geq 1 \}$, i.e. clients that can be served using a route that starts from DC $\lambda$ . 
-Hence problem $P_{\lambda}$ is an inventory routing problem derived from the original LIRP, in which the location considerations have been discarded, as well as the routing from the supplier to DC $\lambda$. 
-All the variables of the original MIP remain the same, except $q_{\lambda t}$ that represent the quantity delivered by the external supplier to DC $\lambda$ in period $t$.
-The following MIP is a valid formulation of $P_{\lambda}$:
+In this section, we present a DC-based decomposition that is used in ``direct-loop'' networks such as the one described by Figure \ref{fig:dl}. 
+For each potential DC location $\lambda\in \loc_1$, we define a subproblem $P_{\lambda}$ with the following 
+two types of routes: 
+a unique route $r_0$ from the supplier to DC
+and the set $\ro_2(\lambda)$ of routes at level 2 starting from DC $\lambda$, where 
+$\ro_2(\lambda)=\left\{r\in\ro_2: \beta_{\lambda r}=1\right\}$ 
+%
+%Moreover, we define $\ro(\lambda)= \ro_1(\lambda) \cup \ro_2(\lambda)$. 
+
+The set of clients is restricted to $\cu(\lambda) =\{i\in\cu: \sum_{r\in\ro_2(\lambda)} \alpha_{ir}\geq 1 \}$, i.e. clients that are reachable by at least a route starting from DC $\lambda$. 
+Hence problem $P_{\lambda}$ is an inventory routing problem derived from the original LIRP, in which location decisions as well as routing decisions at level 1 have been discarded. 
+Variables of the original MILP remain the same. 
+The following MILP is a valid formulation of $P_{\lambda}$:
+%
 \begin{alignat}{3}
-	\text{minimize} &&\sum_{t=1}^{T} \left( \sum_{r\in \ro(\lambda)} c_r z_{rt} + \sum_{i\in \left\{\lambda\right\}\cup \cu(\lambda)} h_{it} I_{it}\right)\span\omit\span\label{decomp_objfunct}\\ 
+	\text{min} &&\sum_{t=1}^{T} \left( \sum_{r\in \{r_0\} \cup \ro(\lambda)} c_r z_{rt} + \sum_{i\in \left\{\lambda\right\}\cup \cu(\lambda)} h_{it} I_{it}\right) \span\omit\label{decomp_objfunct}\\ 
 	\text{s.t.}  %&&\sum_{r\in \ro} \gamma_{jr} z_{rt} &\leq 1 															&\forall j&\in \, \forall t=1,\ldots,T  \label{const:singleroutedepots}\\
 	&&\sum_{r\in \ro_2(\lambda)} \alpha_{ir} z_{rt} &\leq 1 															&\forall i&\in \cu(\lambda), \forall t\in T  \label{const:decomp_singleroutecustomers}\\
-	&&\sum_{r\in \ro_2(\lambda)} z_{rt} &\leq 	\nu_2													&\forall t&\in T  \label{const:decomp_fleetcapa}\\
-	%            &&\sum_{r\in \roc} z_{rt} &\leq 	\nu_{\cu}													&\forall t&=1,\ldots,T  \label{const:fleetcapaclients}\\
-	&&q_{\lambda t}   		&\leq \kappa_1 z_{rt} 														&\forall r&\in \ro_1(\lambda), t\in T\label{const:decomp_deliveryDCUB}\\
-	&&\sum_{i\in \cu(\lambda)} q_{irt}   		&\leq \kappa_2 z_{rt} 														&\forall r&\in \ro_2(\lambda), t\in T\label{const:decomp_deliveryUB}\\
-	&&q_{irt}   		&\leq \alpha_{ir}\kappa_2  														&\forall i&\in\cu(\lambda), \forall r\in \ro_2(\lambda), t\in T\label{const:decomp_deliveryConstLoc}\\
-	&&I_{\lambda,t-1} + q_{\lambda t}   			&=I_{\lambda t} +\sum_{r\in \ro_2(\lambda)}\left( \sum_{i\in \cu(\lambda)}q_{irt}\right)\quad 			&\forall t& \in T \label{const:decomp_invflowdepots}\\
-	&&I_{i,t-1}+\sum_{r\in \ro_2(\lambda)} q_{irt} &= I_{it} +d_{it} 							&\forall i&\in \cu(\lambda), \forall t\in T\label{const:decomp_dinvflowcustomers}\\
-	&&I_{\lambda t}					&\leq I_\lambda^{\max}  									&\forall t&\in T\label{const:decomp_invdepotUB}\\	
-	&&I_{it} 					&\leq \min\left(I_i^{\max}, \sum_{t' > t}d_{it'}\right)											&\forall i&\in \cu(\lambda), \forall t\in T\label{const:decomp_invcustUB}\\
-	&&q_{irt}			&\geq 0 															&\forall i&\in \cu(\lambda), \forall r\in \ro_2(\lambda),\forall t \in T\label{const:decomp_qpos}	\\
-	&&q_{\lambda t}			&\geq 0 															&\forall t&\in T\label{const:decomp_qdcpos}	\\
-	&&I_{it}			&\geq 0 															&\forall i &\in \{\lambda\}\cup \cu(\lambda), \forall t\in T\label{const:decomp_invCpos}	\\
-	&&z_{rt}					&\in \{0,1\} 														&\forall r&\in \ro_2(\lambda), \forall t\in T\label{const:decomp_zbool}
+	&&\sum_{r\in \ro_2(\lambda)} z_{rt} &\leq 	\nu_2		&\forall t&\in T  \label{const:decomp_fleetcapa}\\
+	%          &&\sum_{r\in \roc} z_{rt} &\leq 	\nu_{\cu}						&\forall t&=1,\ldots,T  \label{const:fleetcapaclients}\\
+	&&x_{\lambda r_0 t}   		&\leq Q_1 z_{rt} 		&\forall t&\in T\label{const:decomp_deliveryDCUB}\\
+	&&\sum_{i\in \cu(\lambda)} x_{irt}   		&\leq Q_2 z_{rt} 														&\forall r&\in \ro_2(\lambda), t\in T\label{const:decomp_deliveryUB}\\
+	&&x_{irt}   		&\leq \alpha_{ir} Q_2  			&\forall i&\in\cu(\lambda), \forall r\in \ro_2(\lambda), t\in T\label{const:decomp_deliveryConstLoc}\\
+	&&I_{\lambda t}- I_{\lambda,t-1} &=     x_{\lambda r_0 t}   - \sum_{r\in \ro_2(\lambda)}\left( \sum_{i\in \cu(\lambda)}x_{irt}\right)\quad 			&\forall t& \in T \label{const:decomp_invflowdepots}\\
+	&&I_{it} - I_{i,t-1} &= \sum_{r\in \ro_2(\lambda)} x_{irt} - d_{it} 			&\forall i&\in \cu(\lambda), \forall t\in T\label{const:decomp_dinvflowcustomers}\\
+	&&I_{\lambda t}	&\leq I_\lambda^{\max}  			& \forall t&\in T\label{const:decomp_invdepotUB}\\	
+	&&I_{it} 		& \leq \min\left(I_i^{\max}, \sum_{t' > t}d_{it'}\right)											&\forall i&\in \cu(\lambda), \forall t\in T\label{const:decomp_invcustUB}\\
+	&&x_{irt}			&\geq 0 							&\forall i&\in \cu(\lambda), \forall r\in \ro_2(\lambda),\forall t \in T\label{const:decomp_qpos}	\\
+	&&x_{\lambda r_0 t}			&\geq 0 				&\forall t&\in T\label{const:decomp_qdcpos}	\\
+	&&I_{it}	&\geq 0 			&\forall i &\in \{\lambda\}\cup \cu(\lambda), \forall t\in T\label{const:decomp_invCpos}	\\
+	&&z_{rt}		&\in \{0,1\} 	&\forall r&\in \ro_2(\lambda), \forall t\in T\label{const:decomp_zbool}
 \end{alignat}
 
 
-Sampling is performed in two steps.
+Location based sampling is performed in two steps.
 First, the clients are pre-assigned to a number of DCs, as described in Algorithm \ref{algo:pre-allocation}.
 Then, this pre-assignment is used to build location-based subsets of routes, as described in Algorithm \ref{algo:location-sampling}.
 
-\subsubsection{Pre-allocation of clients to depots}
+\subsubsection{Pre-allocation of clients to DCs}
 
 One important issue in supply chain network design is the allocation of customer to DCs. 
-Constraint ~\eqref{const:singleroutecustomers} states that customers are delivered by at most one route everyday. However, we don't consider single-sourcing constraints. Thus, customer can be allocated to multiple DCs. 
+Constraint ~\eqref{const:singleroutecustomers} states that customers are delivered by at most one route everyday. 
+Since we don't impose single-sourcing constraints, customers can be served by different DCs at distinct periods. 
+So far, not all allocations of customers to DCs make sense. 
 
-Algorithm \ref{algo:pre-allocation} is used to pre-allocate clients to a subset of DCs (at least one in order to ensure feasibility). 
-This pre-allocation step returns a $|C| \times |D|$ matrix that defines a list of possible allocations for each client. 
-This matrix will be later modified in Algorithm \ref{algo:location-sampling} when open DCs are selected. 
-
-First, each client is pre-allocated to its closest depot (line 4). 
-Then, each client is allocated to its $N_{close}$ nearest depots provided the distance between the client and the depot is not larger than a value $\mu_1$ (line 5-8).
-
-\begin{figure}[htbp]
-	\centering
-	\begin{tikzpicture}[scale=0.8, auto,swap]
-	
-	\tikzstyle{client}=[circle,  text  badly centered, draw, color=black]
-	\tikzstyle{depot}=[circle, text  badly centered, draw, color=red]
-	\tikzstyle{value}=[color=blue]
-	
-	\tikzstyle{arc}=[->,thick, blue]
-	\tikzstyle{arc2}=[dotted, black]
-	
-	% placement des noeuds
-	\node[client] (c1) at (5,5) {$c$};
-	\node[client] (c2) at (5,6.5) {$c'$};
-	\node[depot] (d1) at (3,4) {$d$};
-	\node[depot] (d2) at (8.5,6.5) {$d'$};
-	
-	\draw[arc2] (d1) -- (c1) ;
-	\draw[arc2] (d2) -- (c1) ;
-	\draw[arc2] (d2) -- (c2) ;
-	\draw[arc] (c2) to [ bend left]   (d2)  ;
-	\draw[arc] (c1) to [ bend left] (c2) ;
-	\draw[arc] (d2) to [ bend left]  (c1) ;
-	\node[value] (mu3) at (6.5,7.5) {\scriptsize $route length \leq \mu_3$};
-	
-	\node[client] (o) at (9,3.5) {};	
-	\node[depot] (d) at (11,3.5) {};
-	\draw[arc2] (o) -- (d);
-	\node[] () at (12.5	,3.5) {\scriptsize Pre-allocation};
-	\node[client] (o') at (9,2.5) {};	
-	\node[client] (d') at (11,2.5) {};
-	\draw[arc] (o') -- (d');
-	\node[] () at (12.1,2.5) {\scriptsize Route arc};
-	
-	
-	\end{tikzpicture}
-	\caption{Pre-allocation in clusters}
-	\label{fig:prealloc}
-\end{figure}
-
-Finally, lines 11--22 implement a pre-allocation rule that is specific to clusters of clients. 
-As represented in Figure \ref{fig:prealloc}, 
-if two clients $c$ and $c'$ are distant of no more than a value $\mu_2$, and there exists a DC $d'$ such that
-$c'$ is pre-allocated to $d'$ and $dist(d',c') + dist(c',c) + dist(c,d') < \mu_3$, then $c$ is also pre-allocated to $d'$. 
-
- 
- \begin{algorithm}
-	\caption{Pre-allocations of clients to depots}
+Algorithm \ref{algo:pre-allocation} is used to pre-allocate clients to a non-empty subset of relevant DCs. 
+%
+\begin{algorithm}
+	\caption{Pre-allocations of clients to DCs}
 	\label{algo:pre-allocation}
 	%\scriptsize
 	\begin{algorithmic}[1]
-		\REQUIRE  $D$: set of depots, $C$: set of clients, $N_{close}, \mu_1, \mu_2, \mu_3$: parameters, 
-		$dist$: $|C|\times (|D|+|C|)$ distance matrix between clients and other clients + depot
-		\STATE Initialization: $A$: $|C| \times |D|$ pre-allocation matrix filled with zeros
-		\FOR {all clients $c \in C$}
-			\STATE $ClosestDepots(c) = $ List of all depots $d \in D$ ranked in non-decreasing order of the distances $dist(c,d)$.
-			\STATE 	$A(c,ClosestDepots(c)[1]) =1$ 	
-			\FOR {$n=2$ to $N_{close}$}
-				\IF {$dist(c,ClosestDepots(c)[n]) < \mu_1$}
-					\STATE 	$A(c,ClosestDepots(c)[n]) =1$ 			
-				\ENDIF
-			\ENDFOR
+		\REQUIRE  $\loc_1$: set of DCs, $\cu$: set of clients, $N_{close}, \mu_1, \mu_2, \mu_3$: parameters, 
+		$dist$: $|\cu|\times (|\loc_1|+|\cu|)$ distance matrix between clients and other clients + DC
+		\STATE Initialization: $A$: $|\cu| \times |\loc_1|$ pre-allocation matrix filled with zeros
+		\FOR {all clients $i \in \cu$}
+		\STATE $ClosestDepots(i) = $ List of all DCs $j \in \loc_1$ ranked in non-decreasing order of the distances $dist(i,j)$.
+		\STATE 	$A(i,ClosestDepots(i)[1]) =1$ 	
+		\FOR {$n=2$ to $N_{close}$}
+		\IF {$dist(i,ClosestDepots(i)[n]) < \mu_1$}
+		\STATE 	$A(i,ClosestDepots(i)[n]) =1$ 			
+		\ENDIF
 		\ENDFOR
-		\FOR {all clients $c \in C$ }
-			\STATE Rank all clients $c' \in C$, $c' \neq c$ in non-decreasing order of the distances $dist(c,c')$ 
-			\FOR {all clients $c'$}
-				\IF {$dist(c,c') < \mu_2$} 
-					\FOR {all $d \in ClosestDepots(c')$ such that $A(c',d)=1$}
-						\IF {$A(c,d)=0$ and $dist(d,c')+dist(c',c)+dist(c,d) < \mu_3$}
-							\STATE $A(c,d) =1$
-						\ENDIF
-					\ENDFOR
-				\ENDIF
-			\ENDFOR
+		\ENDFOR
+		\FOR {all clients $i \in \cu$ }
+		\STATE Rank clients $i' \in \cu$, $i' \neq i$ in non-decreasing order of the distances $dist(i,i')$ 
+		\FOR {all clients $i'$ such that $dist(i,i') < \mu_2$} 
+		\FOR {all $j \in ClosestDepots(i')$ such that $A(i',j)=1$}
+		\IF {$A(i,j)=0$ and $dist(j,i)+dist(i,i')+dist(i',j) < \mu_3$}
+		\STATE $A(i,j) =1$
+		\ENDIF
+		\ENDFOR
+		\ENDFOR
 		\ENDFOR
 		\RETURN $A$
 	\end{algorithmic}
 \end{algorithm}
+%
+This pre-allocation algorithm returns a $|\cu| \times |\loc_1|$ matrix that defines a list of potential allocations for each client. 
+The main loop (line 2-10) fills the pre-allocation matric for each client $i \in \cu$. 
+Given a client $i$, all DCs $j \in \loc_1$ are ranked in non-decreasing order of their distance to $i$. 
+First, $i$ is pre-allocated to its closest DC without any distance condition (line 4). 
+Then, $i$ is allocated to its $N_{close}$ nearest DCs provided they lie at a distance not larger than a given value $\mu_1$ (line 5-8).
+
+The second loop (lines 11--20) implements a pre-allocation rule that relaxes the distance constraint imposed by $\mu_1$ 
+in the presence of clusters of clients. 
+Let us consider two neighborhing clients $i_1$ and $i_2$, pre-allocated to DCs $j_1$ and $j_2$ respectively,
+ as represented in Figure \ref{fig:prealloc}, 
+Assuming that $dist(i_1,j_2) > \mu_1$, $i_1$ will be allocated to $j_2$ provided 
+$dist(j_2,i_1) + dist(i_1,i_2) + dist(i_2,j_2) < \mu_3$. 
+
+ 
+ \begin{figure}[htbp]
+ 	\centering
+ 	\begin{tikzpicture}[scale=0.8, auto,swap]
+ 	
+ 	\tikzstyle{client}=[circle,  text  badly centered, draw, color=black]
+ 	\tikzstyle{depot}=[circle, text  badly centered, draw, color=red]
+ 	\tikzstyle{value}=[color=blue]
+ 	\tikzstyle{arc}=[->,thick, blue]
+ 	\tikzstyle{arc2}=[dotted, black]
+ 	
+ 	% placement des noeuds
+ 	\node[client] (c1) at (5,5) {$i_1$};
+ 	\node[client] (c2) at (5,6.5) {$i_2$};
+ 	\node[depot] (d1) at (3,3) {$j_1$};
+ 	\node[depot] (d2) at (8.5,6.5) {$j_2$};
+ 	
+ 	\draw[arc2] (d1) -- (c1) ;
+ 	\draw[arc2] (d2) -- (c1) ;
+ 	\draw[arc2] (d2) -- (c2) ;
+ 	\draw[arc] (c2) to [ bend left]   (d2)  ;
+ 	\draw[arc] (c1) to [ bend left] (c2) ;
+ 	\draw[arc] (d2) to [ bend left]  (c1) ;
+ 	\node[value] (mu3) at (6.5,7.5) {\scriptsize $route length \leq \mu_3$};
+ 	
+ 	\node[client] (o) at (12,5) {};	
+ 	\node[depot] (d) at (14,5) {};
+ 	\draw[arc2] (o) -- (d);
+ 	\node[] () at (16,5) {\scriptsize Pre-allocation};
+ 	\node[client] (o') at (12,4) {};	
+ 	\node[client] (d') at (14,4) {};
+ 	\draw[arc] (o') -- (d');
+ 	\node[] () at (16,4) {\scriptsize Route arc};
+ 	
+ 	
+ 	\end{tikzpicture}
+ 	\caption{Pre-allocation in clusters}
+ 	\label{fig:prealloc}
+ \end{figure}
+ 
 
 
 
@@ -730,51 +752,56 @@ $c'$ is pre-allocated to $d'$ and $dist(d',c') + dist(c',c) + dist(c,d') < \mu_3
 
 %------------------------------------------------------------
 
-\subsubsection{Heuristic selection of depots}
+\newpage 
+\subsubsection{Heuristic selection of DCs}
 
-Algorithm \ref{algo:location-sampling} describes the selection of depots based on the pre-allocation of clients to depots defined by Algorithm \ref{algo:pre-allocation}. 
+ This matrix will be later modified in Algorithm \ref{algo:location-sampling} once open DCs are selected. 
+
+
+Algorithm \ref{algo:location-sampling} describes the selection of DCs based on the pre-allocation of clients to DCs defined by Algorithm \ref{algo:pre-allocation}. 
 
 \begin{algorithm}
-	\caption{Heuristic selection of depots}
+	\caption{Heuristic selection of DCs}
 	\label{algo:location-sampling}
 	%\scriptsize
 	\begin{algorithmic}[1]
-		\REQUIRE $D$: set of depots, $C$: set of clients, $A$: pre-allocation matrix, $p$: number of depots to be selected, $\beta$: parameter strictly greater than 1.
-		\STATE  $A' \leftarrow$  $|C| \times |D|$ allocation matrix filled with zeros
-		\STATE $S \leftarrow \emptyset$: list of selected depots
-		\STATE $n \leftarrow 0$: number of clients assigned to some depot
-		\WHILE {$|S| < p$ and $n < |C|$ } 
-			\STATE $ D \leftarrow D \backslash S$
-			\STATE Rank the set of depots $D$ by non-increasing order of the number of clients assigned to each depot
-			\STATE Choose a random number $y$ in interval $[0,1)$]
-			\STATE $d \leftarrow$ depot at position $\lceil y^\beta \; |D| \; \rceil$ in $D$.
-			\FOR {all clients $c \in C$}
-				\IF {$A[c][d] =1$}
-					\STATE $A'[c][d] = 1$
+		\REQUIRE $\loc_1$: set of DCs, $\cu$: set of clients, $A$: pre-allocation matrix, $p$: number of DCs to be selected, $\gamma>1$: parameter.
+		\STATE  $A' \leftarrow$  $|\cu| \times |\loc_1|$ allocation matrix filled with zeros
+		\STATE $S \leftarrow \emptyset$: list of selected DCs
+		\STATE $n \leftarrow 0$: number of clients assigned to some DC
+		\WHILE {$|S| < p$ and $n < |\cu|$ } 
+			\STATE $ \loc_1 \leftarrow \loc_1 \backslash S$
+			\STATE Rank $\loc_1$ by non-increasing order of the number of clients pre-allocated to each DC by Algorithm 
+\ref{algo:pre-allocation}
+			\STATE Choose a random value $v$ in interval $[0,1)$]
+			\STATE $j \leftarrow$ DC at position $\lceil v^\gamma \times |\loc_1| \; \rceil$ in $\loc_1$.
+			\FOR {all clients $i \in \cu$}
+				\IF {$A[i][j] =1$}
+					\STATE $A'[i][j] = 1$
 					\STATE $n \leftarrow n+1$
-					\FOR {all depots $d' \neq d$}
-						\STATE $A[c][d'] = 0$ 
+					\FOR {all DCs $j' \neq j$}
+						\STATE $A[i][j'] = 0$ 
 					\ENDFOR
 				\ENDIF		
 			\ENDFOR
 		\ENDWHILE
-		\IF {$n < |C|$}
-			\STATE Add a dummy depot $\delta$
-			\FOR {all $c\in C$ such that $\sum\limits_{d \in D} A[c][d] >0$}
-				\STATE $A'[c][\delta]=1$
+		\IF {$n < |\cu|$}
+			\STATE Add a dummy DC $\delta$
+			\FOR {all $i\in \cu$ such that $\sum\limits_{j \in \loc_1} A[i][j] >0$}
+				\STATE $A'[i][\delta]=1$
 			\ENDFOR
 		\ENDIF
 		\RETURN $S$ and $A'$
 	\end{algorithmic}
 \end{algorithm}
 
-All non selected depots are ranked by non-increasing number of clients pre-allocated to them (line 6).
-Then, a depot randomly is selected using a biased roulette wheel selection mechanism giving a much higher probability to the first depots (lines 7--8). 
+All non selected DC are ranked by non-increasing number of clients pre-allocated to them (line 6).
+Then, a DC randomly is selected using a biased roulette wheel selection mechanism giving a much higher probability to the first DCs (lines 7--8). 
 Since Algorithm \ref{algo:location-sampling} is called repeatedly in Algorithm \ref{mainalgo}, this randomized selection favours diversification. 
 
-After selecting a depot, all clients that were pre-allocated to this depot are now allocated to it (lines 10--11) 
-and their pre-allocation to all other depots is cancelled (line 14). 
-The final loop (lines 19--24) is used to allocate remaining clients to a dummy depot. 
+After selecting a DC, all clients that were pre-allocated to this DC are now allocated to it (lines 10--11) 
+and their pre-allocation to all other DCs is cancelled (line 14). 
+The final loop (lines 19--24) is used to allocate remaining clients to a dummy DC. 
 
 \textcolor{red}{Olivier: Là je ne suis plus très sûr. Pourquoi est-ce important d'allouer les clients restant à un dépot ? Que fait-on si on n'a pas sélectionné $p$ dépots ? Et d'ailleurs comment la valeur de $p$ est elle choisie ? }
 
@@ -783,112 +810,13 @@ The final loop (lines 19--24) is used to allocate remaining clients to a dummy d
 
 \newpage
 
-\subsubsection{Filtering SD routes after depot selection}
+\subsubsection{Filtering SD routes after DC selection}
 
 After selecting a subset of DCs and allocating clients to selected DCs, routes must be filtered in order to remove useless ones. 
 In the first $L-1$ levels, all routes that contain at least one unselected DC are removed from the route set. 
 In the last level, routes that start at unselected DCs are removed from the route set, as well as routes visiting clients that are not allocating to the starting DC. 
 
 
-%
-%\begin{algorithm}
-%	\caption{SD Routes filtering}
-%	\label{algo:filteringSD}
-%	%\scriptsize
-%	\begin{algorithmic}[1]
-%		\REQUIRE $SDloop$: set of SD routes
-%		\REQUIRE $D$ set of depots
-%		\REQUIRE $C$: set of clients
-%		\REQUIRE $A$: allocation matrix
-%		
-%		\STATE $filteredSD \leftarrow \emptyset$
-%		
-%		\FOR {all $d\in D$}
-%			\FOR {all $c \in C$}
-%				\IF {$A[c][d]=1$}
-%					\STATE $filteredSD = filteredSD \cup \{s,d\}$
-%					\STATE $c = nbclient$
-%				\ENDIF
-%			\ENDFOR
-%		\ENDFOR
-%		\RETURN $filteredSD$
-%	\end{algorithmic}
-%\end{algorithm}
-%
-%
-%
-%\subsection{Filtering DC routes after depot selection}
-%
-%\begin{algorithm}
-%	\caption{DC Routes filtering}
-%	\label{algo:filteringDC}
-%	%\scriptsize
-%	\begin{algorithmic}[1]
-%		\REQUIRE $DCloop$: set of DC routes
-%		\REQUIRE $A$: allocation matrix
-%		\REQUIRE $C$: set of clients
-%		\REQUIRE $D$ set of depots
-%		
-%		\STATE $filteredDC \leftarrow \emptyset$
-%				
-%		\FOR {each route $r \in DCloop$}
-%			\STATE $keep = 1$
-%			\FOR {all $c \in r$}	
-%				\IF{$A[c][depot(r)]=0$}
-%					\STATE $keep=0$
-%					\STATE $c \leftarrow $ end of the route
-%				\ENDIF
-%			\ENDFOR  
-%			\IF {$keep=1$} 
-%				\STATE $filteredDC =filteredDC \cup \{r \}$
-%			\ENDIF
-%		\ENDFOR
-%		\RETURN $filtered DC$
-%	\end{algorithmic}
-%\end{algorithm}
-
-
-
-%\begin{algorithm}
-%	\caption{Generation of location oriented subsets (old version)}
-%	\label{algo:location-sampling2}
-%	%\scriptsize
-%	\begin{algorithmic}[1]
-%		\REQUIRE  $D$: set of depots
-%		\REQUIRE $\alpha$: number of subsets to be generated
-%		\REQUIRE $A$: pre-allocation matrix
-%		\REQUIRE $\alpha$: number of subsets
-%		\IF {$\alpha \ge |D|$ } 
-%		\STATE $ListOfSubsets = \emptyset$
-%		\STATE
-%		\FOR {depot index $d=1$ to $|D|$} 
-%			\STATE $ListOfSubsets = ListOfSubsets \cup \{d\}$
-%		\ENDFOR
-%		\STATE $NbSubsets \leftarrow |D| $		
-%		\STATE
-%		\STATE $n \leftarrow 2$
-%		\WHILE{$NbSubsets < \alpha$}
-%			\STATE $S_n$ = set of all sets of $n$ depots, ranked in non-increasing order of the number of common pre-allocated clients.
-%			\REPEAT 
-%				\STATE $s =$ first element of $S_n$
-%				\STATE $ListOfSubsets = ListOfSubsets \cup \{s\}$
-%				\STATE Remove $s$ from $S_n$
-%				\STATE $NbSubsets \leftarrow NbSubsets+1$
-%			\UNTIL ($S_n = \emptyset$ or $NbSubsets = \alpha$)
-%		\STATE 	$n \leftarrow n+1$
-%		\ENDWHILE
-%		\ENDIF
-%		\STATE 
-%		\IF {$\alpha <  |D|$}
-%			\FOR {all pairs $(i,j)$ of depots} 
-%			\STATE Compute the similarity measure $M(i,j)$ equal to the number of clients pre-allocated both to $i$ and $j$.
-%			\ENDFOR
-%			\STATE Run $|D| - \alpha - 1$ iterations of Kruskal's algorithm with weights $\max\limits_{i,j} M(i,j) - M(i,j)$
-%			\STATE $ListOfSubsets$ = one subset for each subtree yielded by Kruskal's algorithm 
-%		\ENDIF
-%		\RETURN $ListOfSubsets$
-%	\end{algorithmic}
-%\end{algorithm}
 
 \input{cuts}
 
@@ -910,7 +838,7 @@ In the last level, routes that start at unselected DCs are removed from the rout
 
 \OP{Paragraph a rédiger}
 
-Considering one starting depot and $n$ customers, the number of potential routes visiting at most $m$ customers 
+Considering one starting DC and $n$ customers, the number of potential routes visiting at most $m$ customers 
 is $\mathcal{O}(n^m)$.
 
 In practice, \textbf{long-haul carriers} are reluctant to perform routes with multiple stop and with long detours between the origin and the destination of their routes. 
