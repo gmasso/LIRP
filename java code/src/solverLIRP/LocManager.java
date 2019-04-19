@@ -107,7 +107,7 @@ public class LocManager {
 	 * Allocate locations to the upper level dcs by considering routes going through other locations of the same level
 	 */
 	private void indirectAlloc() {
-		/* For each location, calculate the distance to all depots of the upper level */
+		/* For each location, calculate the distance to all locations of the same level */
 		for(int lvl = this.instLIRP.getNbLevels() - 1; lvl > 0; lvl--) {
 			int nbLocLvl = this.instLIRP.getNbLocations(lvl);
 			for (int loc  = 0; loc < nbLocLvl; loc++) {
@@ -123,7 +123,7 @@ public class LocManager {
 					}
 				}
 
-				/* Pre-allocation of the location to the k closest depots in the upper level */
+				/* If another location of the same level is not too far, allocate it to the dc of currentLoc (unless it is already allocated to this dc) */
 				Iterator<Location> iterLvl = bestDistToLoc.iterator();
 				boolean tooFar = false;
 				while(!tooFar && iterLvl.hasNext()){

@@ -32,7 +32,8 @@
 \usepackage{hyperref}
 \usepackage{verbatim}
 \usepackage{varwidth}
-\usepackage{ amssymb }    % pour \checkmark
+\usepackage{amssymb, amsmath, amsthm}    % pour \checkmark
+\usepackage{mathtools}
 
 %% Define the figures path
 \newcommand{\inputfig}[1]{\input{figures/#1}}
@@ -46,6 +47,9 @@
 \newcommand{\loc}{\mathcal{L}}
 \newcommand{\su}{\mathcal{S}}
 \newcommand{\ro}{\mathcal{R}}
+
+%%%%% Definition of math environment %%%%%
+\newtheorem{theorem}{Theorem}
 
 %%%%% Definitions for tikz %%%%%
 % Definition of styles for diagrams :

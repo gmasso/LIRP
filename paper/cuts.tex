@@ -111,5 +111,17 @@ In particular, we apply an MIR derivation to the mixed-integer set defined by in
 
 Finally, note that at level $L$, the set of locations eligible to collect units to serve demands of client $i$ is precisely reduced to the singleton $\{i\}$ and therefore inequality~\eqref{ineq:FCCut} simplifies into:
 \begin{equation}
-   \sum_{r\in\ro_L} \rho^L_A  \sum_{s\in F} z_{rs}+  \frac{1}{Q_L} \sum_{(i,t)\in A}\sum_{r:i\in\alpha(r)}\sum_{s\notin F} d_{it}x^{it}_{ris}\geq \rho^L_A \left\lceil\frac{D(A)}{Q_L}\right\rceil   \label{ineq:FCCutClient}
+    \sum_{r\in\ro_L:i\in\alpha(r)} \left(\rho^L_A  \sum_{s\in F} z_{rs}+  \frac{1}{Q_L} \sum_{(i,t)\in A}\sum_{s\notin F} d_{it}x^{it}_{ris}\right)\geq \rho^L_A \left\lceil\frac{D(A)}{Q_L}\right\rceil   \label{ineq:FCCutClient}
 \end{equation}
+
+\subsection{Separation of flow cover inequalities}
+Given a subset of periods $F\subseteq \{1,\ldots,T\}$, one may derive an exponential number of inequalities~\eqref{ineq:FCCut} and~\eqref{ineq:FCCutClient}.
+Nevertheless, these inequalities are similar to the ones studied in~\cite{atamturk_splittable_2002} and~\cite{magnanti_convex_1993} for the {\em splittable flow arc set}, defined as $\{x\in[0,1]^n, y\in\{0,1\}:\sum_{i=1}^n a_i x_i\leq a_0+y\}$, where the authors prove that the residual capacity inequalities are sufficient to describe $conv(X)$. 
+In order to define a polynomial separation algorithm for our residual capacity inequalities, we use an approach similar to the one used in~\cite{atamturk_splittable_2002} and~\cite{levi_approximation_2008}.
+
+\begin{theorem}
+    Let $F$ be a fixed subset of periods. There exists a polynomial time separation algorithm for the inequalities in~\eqref{ineq:FCCut} and~\eqref{ineq:FCCutClient}.
+\end{theorem}
+\begin{proof}
+    
+\end{proof}

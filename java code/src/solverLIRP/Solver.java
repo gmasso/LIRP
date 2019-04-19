@@ -1,7 +1,6 @@
 package solverLIRP;
 
 import java.util.ArrayList;
-
 import ilog.concert.IloConversion;
 import ilog.concert.IloException;
 import ilog.concert.IloIntVar;
@@ -12,7 +11,6 @@ import ilog.concert.IloNumVarType;
 import ilog.concert.IloObjectiveSense;
 import ilog.cplex.IloCplex;
 import ilog.cplex.IloCplex.DoubleParam;
-
 import instanceManager.Instance;
 import tools.Config;
 
@@ -28,18 +26,27 @@ public class Solver{
 	 ================*/
 	/* Boolean */
 	private IloIntVar[][] y;  			// facility location variables (depots) for each level
+	//HashMap<Depot,IloIntVar> dcToVariable;
+	//HashMap<IloIntVar, Depot> variableToDC;
+	
 	/* Integer variables */
 	private IloIntVar[][][] z;  		// = 1 if route r is used on period t (for each level)
+	//HashMap<Pair<Route, Integer>,IloIntVar> routeToVariable;
+	//HashMap<IloIntVar, Pair<Route, Integer>> variableToRoute;
 	
 	/* Conversion of variables for the linear relaxation */
 	private ArrayList<IloConversion> mipConversion = new ArrayList<IloConversion>();
 	
-	//private IloNumVar[][] yl;
-	///IloConversionprivate IloNumVar[][][] zl;
 	/* Continuous */
 	private IloNumVar[][][][] q; 			// quantity delivered by route r to location i of level l in period t
-	private IloNumVar[][][] invLoc; 	// inventory at depots
+	//HashMap<Pair<Pair<Location, Route>, Integer>,IloNumVar> quantityToVariable; //For all period t, map the quantity delivered to a given location using a given route
+	//HashMap<IloNumVar, Pair<Pair<Location, Route>, Integer>> variableToQuantity; //For all period t, map the quantity delivered to a given location using a given route
 
+	private IloNumVar[][][] invLoc; 	// inventory at depots
+	//HashMap<Pair<Location, Integer>,IloNumVar> inventoryToVariable;  //Map the inventory at a given location in period t to real variables
+	//HashMap<IloNumVar, Pair<Location, Integer>> variableToInventory; //Map real variables to the inventory at a given location in period t
+
+	private boolean defObj;				// States if the objective of the MIP has already been defined
 	private boolean isSolved; 			// States if the MIP has been solved or not
 
 	/**
@@ -56,6 +63,27 @@ public class Solver{
 		//		for(Route r : availRoutes.get(1)) {
 		//				System.out.print("{start: " + r.getStartIndex() + ", stops: " + r.getStops().toString() + "}, ");
 		//		};
+
+//		this.dcToVariable = new HashMap<Depot,IloIntVar>();
+//		this.variableToDC = new HashMap<IloIntVar, Depot>();
+//		
+//		this.routeToVariable = new HashMap<Pair<Route, Integer>, IloIntVar>();
+//		this.variableToRoute = new HashMap<IloIntVar,Pair<Route, Integer>>();
+//		
+//		this.quantityToVariable = new HashMap<Pair<Pair<Location, Route>, Integer>,IloNumVar>();
+//		this.variableToQuantity = new HashMap<IloNumVar, Pair<Pair<Location, Route>, Integer>>();
+//		
+//		this.inventoryToVariable = new HashMap<Pair<Location, Integer>,IloNumVar>();
+//		this.variableToInventory = new HashMap<IloNumVar, Pair<Location, Integer>>();
+//		
+//		for(int lvl : availRoutes.keySet())
+//			for(Route r : availRoutes.get(lvl))
+//				for(int t = 0; t < this.instLIRP.getNbPeriods(); t++) {
+//					IloIntVar v = this.LIRPSolver.boolVar();
+//					Pair<Route, Integer> k = new Pair<Route, Integer>(r,t);
+//					routeToVariable.put(k, v);
+//					variableToRoute.put(v, k);
+//				}
 
 		this.routes = new Route[this.instLIRP.getNbLevels()][];
 		for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
@@ -80,10 +108,14 @@ public class Solver{
 		 *   CONSTRAINTS 
 		 ==================*/
 		for (int t = 0; t < this.instLIRP.getNbPeriods(); t++) {
-
 			/*         =========
 			 * Constraints on routes usage
 			           =========          */
+//			for(Location loc : dcToVariable.keySet()) {
+//			for(Pair<Route, Integer> keyP : routeToVariable.keySet()) {
+//				if(keyP.getL().containsStop(loc)) {;
+//			}
+//			}
 			for(int lvl = 0; lvl < this.instLIRP.getNbLevels(); lvl++) {
 				/* Get the number of locations at this level and at the upper level */
 				int nbLocLvl = this.instLIRP.getNbLocations(lvl);
@@ -275,10 +307,9 @@ public class Solver{
 	 *  OBJECTIVE FUNCTION 
 	 ========================*/
 	/**
-	 * Solves the MIP related to the LIRP, setting the value of all the variables
-	 * @throws IloException
+	 * Define the objective function of the LIRP
 	 */
-	private void solveMIP(boolean relax) throws IloException {
+	private void defineObjective() throws IloException {
 
 		IloNumVar obj = this.LIRPSolver.numVar(0, Double.MAX_VALUE, "obj"); // objective function
 
@@ -310,12 +341,18 @@ public class Solver{
 			}
 		}
 
+		this.LIRPSolver.addLe(objexpr, obj);
+		this.LIRPSolver.addObjective(IloObjectiveSense.Minimize, obj);
+	}
+	
+	/**
+	 * Solves the MIP related to the LIRP, setting the value of all the variables
+	 * @throws IloException
+	 */
+	private void solveMIP(boolean relax) throws IloException {
 		/*================
 		 *   RESOLUTION 
 		 =================*/
-		this.LIRPSolver.addLe(objexpr, obj);
-		this.LIRPSolver.addObjective(IloObjectiveSense.Minimize, obj);
-		
 //		IloConversion[] convY = new IloConversion[y.length];
 //		IloConversion[][] convZ = new IloConversion[z.length][];
 //
@@ -354,6 +391,10 @@ public class Solver{
 //				}
 //			}
 		}
+		
+		if(!this.defObj)
+			this.defineObjective();
+		
 		this.isSolved = this.LIRPSolver.solve();
 		if(relax) {
 			System.out.print("Un-relaxing boolean constaints...");
@@ -369,6 +410,13 @@ public class Solver{
 		}
 	}
 
+	
+	private void addFlowCoverCuts(int start, int end) throws IloException {
+		if(!this.isSolved)
+			this.solveMIP(true);
+		
+	}
+	
 	/**
 	 * Creates a Solution object from the results of the solver on the LIRP problem considered
 	 * @param printStreamSol	the stream on which to print the solution
